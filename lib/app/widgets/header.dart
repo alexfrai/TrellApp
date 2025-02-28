@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/workspace_service.dart';
-import '../services/board_service.dart';
 
 class Header extends StatefulWidget {
   @override

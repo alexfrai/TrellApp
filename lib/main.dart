@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/screens/cards_screen.dart';
 
 Future<void> main() async {
-    WidgetsFlutterBinding.ensureInitialized(); // 📌 Assure l'initialisation avant tout
+  WidgetsFlutterBinding.ensureInitialized(); // 📌 Assure l'initialisation avant tout
 
   try {
     await dotenv.load(fileName: ".env"); // Charge les variables d'environnement
@@ -17,7 +17,6 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -26,13 +25,12 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Trello App',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/', // Démarrage sur la page d'accueil
       routes: {
         '/': (context) => const HomeScreen(),
-        '/cards': (context) => const CardsScreen(id: 'your_list_id'),
+        '/cards':
+            (context) => const CardsScreen(id: "67bc36eac821fc127236093a"),
       },
     );
   }
