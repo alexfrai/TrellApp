@@ -1,9 +1,11 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, public_member_api_docs
 
 import 'package:flutter/material.dart';
 
 /// header
 class Header extends StatefulWidget {
+  const Header({super.key});
+
   @override
   _HeaderState createState() => _HeaderState();
 }
@@ -97,7 +99,7 @@ class _HeaderState extends State<Header> {
   }
 
   Widget _buildSearchBar() {
-    return Container(
+    return SizedBox(
       width: 200,
       child: TextField(
         style: const TextStyle(color: Colors.white),

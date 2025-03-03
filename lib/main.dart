@@ -6,11 +6,12 @@ import 'app/components/getList.dart'; // Assurez-vous du bon chemin d'importatio
 import 'package:flutter_trell_app/app/screens/cards_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); /// 📌 Assure l'initialisation avant tout
+  WidgetsFlutterBinding.ensureInitialized();
 
+  /// 📌 Assure l'initialisation avant tout
 
   try {
-    await dotenv.load(); 
+    await dotenv.load();
     // print('✅ Fichier .env chargé avec succès !');
     // print("🔑 API Key: ${dotenv.env['NEXT_PUBLIC_API_KEY']}");
     // print("🔒 API Token: ${dotenv.env['NEXT_PUBLIC_API_TOKEN']}");
@@ -34,8 +35,8 @@ class MyApp extends StatelessWidget {
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => const HomeScreen(),
         '/cards':
-            (BuildContext context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
-
+            (BuildContext context) =>
+                const CardsScreen(id: '67bc36eac821fc127236093a'),
       },
     );
   }
@@ -49,30 +50,28 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Accueil')),
       body: Center(
-
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.center, // Centrer les éléments horizontalement
-          children: [
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Centrer les éléments horizontalement
+          children: <Widget>[
             ElevatedButton(
-              onPressed: () {
-                print("🟢 Navigation vers CardsScreen...");
-                Navigator.pushNamed(context, '/cards');
+              onPressed: () async {
+                // print('🟢 Navigation vers CardsScreen...');
+                await Navigator.pushNamed(context, '/cards');
               },
-              child: const Text("Voir les cartes"),
+              child: const Text('Voir les cartes'),
             ),
             const SizedBox(width: 20),
             ElevatedButton(
-              onPressed: () {
-                print("🟢 Navigation vers CardsScreen...");
-                Navigator.pushNamed(context, '/cards');
+              onPressed: () async {
+                // print('🟢 Navigation vers CardsScreen...');
+                await Navigator.pushNamed(context, '/cards');
               },
-              child: const Text("Voir les cartes"),
+              child: const Text('Voir les cartes'),
             ),
-            
           ],
         ),
       ),
     );
   }
 }
-
