@@ -1,15 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import '../widgets/cards_new.dart';
+import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 
+/// API KEYS
 const String apiKey = String.fromEnvironment('NEXT_PUBLIC_API_KEY');
+/// API TOKEN
 const String apiToken = String.fromEnvironment('NEXT_PUBLIC_API_TOKEN');
 
 class CardsScreen extends StatefulWidget {
-  final String id;
 
   const CardsScreen({super.key, required this.id});
+  final String id;
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -17,9 +19,9 @@ class CardsScreen extends StatefulWidget {
 
 class _CardsScreenState extends State<CardsScreen> {
   bool open = false;
-  List<Map<String, dynamic>> cards = [];
+  List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
   String? selectedCardId;
-  String taskOpen = "";
+  String taskOpen = '';
   bool isLoading = true;
 
   @override
@@ -32,7 +34,7 @@ class _CardsScreenState extends State<CardsScreen> {
     setState(() => isLoading = true);
 
     try {
-      final response = await http.get(
+      final http.Response response = await http.get(
         Uri.parse('https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken'),
       );
 
@@ -42,7 +44,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
       final List<dynamic> data = json.decode(response.body);
       setState(() {
-        cards = data.map((card) => {'id': card['id'], 'name': card['name']}).toList();
+        cards = data.map((card) => <String, >{'id': card['id'], 'name': card['name']}).toList();
       });
     } catch (error) {
       print('Erreur lors de la requête: $error');
@@ -75,14 +77,12 @@ class _CardsScreenState extends State<CardsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Cartes")),
+      appBar: AppBar(title: const Text('Cartes')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: Column(
-          children: [
-            isLoading
-                ? const CircularProgressIndicator()
-                : Expanded(
+          children: <Widget>[
+            if (isLoading) const CircularProgressIndicator() else Expanded(
                     child: cards.isNotEmpty
                         ? GridView.builder(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -92,15 +92,15 @@ class _CardsScreenState extends State<CardsScreen> {
                               childAspectRatio: 2,
                             ),
                             itemCount: cards.length,
-                            itemBuilder: (context, index) {
-                              final card = cards[index];
+                            itemBuilder: (BuildContext context, int index) {
+                              final Map<String, dynamic> card = cards[index];
                               return GestureDetector(
                                 onTap: () => _handleOpen(card),
                                 child: Card(
                                   elevation: 4,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                                   child: Padding(
-                                    padding: const EdgeInsets.all(12.0),
+                                    padding: const EdgeInsets.all(12),
                                     child: Center(
                                       child: Text(
                                         card['name'],
@@ -113,18 +113,18 @@ class _CardsScreenState extends State<CardsScreen> {
                               );
                             },
                           )
-                        : const Center(child: Text("Aucune carte trouvée", style: TextStyle(color: Colors.grey))),
+                        : const Center(child: Text('Aucune carte trouvée', style: TextStyle(color: Colors.grey))),
                   ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
                 final newCard = await showDialog(
                   context: context,
-                  builder: (context) => CardsNew(id: widget.id),
+                  builder: (BuildContext context) => CardsNew(id: widget.id),
                 );
                 if (newCard != null) _onCardCreated(newCard);
               },
-              child: const Text("Ajouter une nouvelle carte"),
+              child: const Text('Ajouter une nouvelle carte'),
             ),
           ],
         ),

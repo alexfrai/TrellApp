@@ -1,15 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// ignore_for_file: library_private_types_in_public_api, always_specify_types
 
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+
+/// API KEY
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
+
+/// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
+/// New card
 class CardsNew extends StatefulWidget {
+  // ignore: public_member_api_docs
+  const CardsNew({required this.id, super.key});
+  // ignore: public_member_api_docs
   final String id;
-
-  const CardsNew({super.key, required this.id});
 
   @override
   _CardsNewState createState() => _CardsNewState();
@@ -23,8 +31,10 @@ class _CardsNewState extends State<CardsNew> {
     if (newCardName.isEmpty) return;
 
     try {
-      final response = await http.post(
-        Uri.parse('https://api.trello.com/1/cards?name=$newCardName&idList=${widget.id}&key=$apiKey&token=$apiToken'),
+      final http.Response response = await http.post(
+        Uri.parse(
+          'https://api.trello.com/1/cards?name=$newCardName&idList=${widget.id}&key=$apiKey&token=$apiToken',
+        ),
       );
 
       if (response.statusCode == 200) {
@@ -34,27 +44,24 @@ class _CardsNewState extends State<CardsNew> {
         throw Exception('Erreur API: ${response.statusCode}');
       }
     } catch (error) {
-      print('❌ Erreur lors de la requête: $error');
+      // print('❌ Erreur lors de la requête: $error');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text("Nouvelle Carte"),
+      title: const Text('Nouvelle Carte'),
       content: TextField(
         controller: _controller,
-        decoration: const InputDecoration(hintText: "Nom de la carte"),
+        decoration: const InputDecoration(hintText: 'Nom de la carte'),
       ),
-      actions: [
+      actions: <Widget>[
         TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text("Annuler"),
+          child: const Text('Annuler'),
         ),
-        ElevatedButton(
-          onPressed: _createCard,
-          child: const Text("Créer"),
-        ),
+        ElevatedButton(onPressed: _createCard, child: const Text('Créer')),
       ],
     );
   }
