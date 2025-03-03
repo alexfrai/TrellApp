@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/screens/cards_screen.dart';
+import './app/screens/boards_screen.dart'
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // 📌 Assure l'initialisation avant tout
+  WidgetsFlutterBinding.ensureInitialized(); /// 📌 Assure l'initialisation avant tout
 
   try {
     await dotenv.load(fileName: ".env"); // Charge les variables d'environnement
@@ -31,6 +32,8 @@ class MyApp extends StatelessWidget {
         '/': (context) => const HomeScreen(),
         '/cards':
             (context) => const CardsScreen(id: "67bc36eac821fc127236093a"),
+        '/boards':
+            (context) => const Board(boardId: )
       },
     );
   }
@@ -44,14 +47,29 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text("Accueil")),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            print("🟢 Navigation vers CardsScreen...");
-            Navigator.pushNamed(context, '/cards');
-          },
-          child: const Text("Voir les cartes"),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center, // Centrer les éléments horizontalement
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                print("🟢 Navigation vers CardsScreen...");
+                Navigator.pushNamed(context, '/cards');
+              },
+              child: const Text("Voir les cartes"),
+            ),
+            const SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                print("🟢 Navigation vers CardsScreen...");
+                Navigator.pushNamed(context, '/cards');
+              },
+              child: const Text("Voir les cartes"),
+            ),
+            
+          ],
         ),
       ),
     );
   }
 }
+
