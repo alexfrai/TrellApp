@@ -1,7 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, always_specify_types
+
 import 'dart:convert';
+
+import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
+import 'package:http/http.dart' as http;
 
 /// API KEYS
 const String apiKey = String.fromEnvironment('NEXT_PUBLIC_API_KEY');
@@ -10,7 +13,7 @@ const String apiToken = String.fromEnvironment('NEXT_PUBLIC_API_TOKEN');
 
 class CardsScreen extends StatefulWidget {
 
-  const CardsScreen({super.key, required this.id});
+  const CardsScreen({required this.id, super.key});
   final String id;
 
   @override
@@ -25,9 +28,9 @@ class _CardsScreenState extends State<CardsScreen> {
   bool isLoading = true;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
-    _getCardsInList();
+    await _getCardsInList();
   }
 
   Future<void> _getCardsInList() async {
@@ -44,10 +47,10 @@ class _CardsScreenState extends State<CardsScreen> {
 
       final List<dynamic> data = json.decode(response.body);
       setState(() {
-        cards = data.map((card) => <String, >{'id': card['id'], 'name': card['name']}).toList();
+        cards = data.map((card) => <String,>{'id': card['id'], 'name': card['name']}).toList();
       });
     } catch (error) {
-      print('Erreur lors de la requête: $error');
+      // print('Erreur lors de la requête: $error');
     } finally {
       setState(() => isLoading = false);
     }
