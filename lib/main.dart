@@ -3,10 +3,10 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/screens/cards_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // 📌 Assure l'initialisation avant tout
+  WidgetsFlutterBinding.ensureInitialized(); 
 
   try {
-    await dotenv.load(fileName: ".env"); // Charge les variables d'environnement
+    await dotenv.load(fileName: ".env"); 
     print("✅ Fichier .env chargé avec succès !");
     print("🔑 API Key: ${dotenv.env['NEXT_PUBLIC_API_KEY']}");
     print("🔒 API Token: ${dotenv.env['NEXT_PUBLIC_API_TOKEN']}");
