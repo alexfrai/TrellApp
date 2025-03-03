@@ -20,7 +20,7 @@ class ListService {
   }
   
   ///Retourne les listes présentes dans un board
-  ///\n @var Board_Id
+  ///@var Board_Id
   static Future<List<dynamic>> getList(String Board_ID) async {
     // Vérifie que les variables d'environnement sont bien chargées
     if (API_KEY == null || API_TOKEN == null) {
