@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class GetOneListWidget extends StatelessWidget {
 
-  const GetOneListWidget({Key? key, required this.list}) : super(key: key);
+  const GetOneListWidget({super.key, required this.list});
   final Map<String, dynamic> list;
 
   @override

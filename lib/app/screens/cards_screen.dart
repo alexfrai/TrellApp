@@ -59,13 +59,13 @@ class _CardsScreenState extends State<CardsScreen> {
             .toList();
       });
 
-      print("✅ ${cards.length} cartes chargées !");
+      print('✅ ${cards.length} cartes chargées !');
     } catch (error) {
       setState(() {
         errorMessage =
-            "Impossible de charger les cartes. Vérifiez votre connexion.";
+            'Impossible de charger les cartes. Vérifiez votre connexion.';
       });
-      print("❌ Erreur lors de la requête: $error");
+      print('❌ Erreur lors de la requête: $error');
     } finally {
       setState(() => isLoading = false);
     }
@@ -84,7 +84,7 @@ class _CardsScreenState extends State<CardsScreen> {
           backgroundColor: const Color(0xFF94C5CC),
           elevation: 4,
         ),
-        body: Container(
+        body: DecoratedBox(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
               colors: [Color(0xFFF8F8F8), Color(0xFFB4D2E7)], // Dégradé élégant
@@ -165,7 +165,7 @@ class _CardsScreenState extends State<CardsScreen> {
                                           ),
                                         ),
                                         const Icon(Icons.arrow_forward_ios,
-                                            color: Color(0xFFA1A6B4), size: 18),
+                                            color: Color(0xFFA1A6B4), size: 18,),
                                       ],
                                     ),
                                   ),
@@ -177,7 +177,7 @@ class _CardsScreenState extends State<CardsScreen> {
                             child: Text(
                               'Aucune carte trouvée',
                               style: TextStyle(
-                                  color: Color(0xFFA1A6B4), fontSize: 16),
+                                  color: Color(0xFFA1A6B4), fontSize: 16,),
                             ),
                           ),
           ),
