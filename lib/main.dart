@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import './app/screens/cards_screen.dart';
-import './app/screens/boards_screen.dart'
+import './app/screens/boards_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); /// 📌 Assure l'initialisation avant tout
@@ -33,8 +33,7 @@ class MyApp extends StatelessWidget {
         '/': (context) => const HomeScreen(),
         '/cards':
             (context) => const CardsScreen(id: "67bc36eac821fc127236093a"),
-        '/boards':
-            (context) => const Board(boardId: )
+        
       },
     );
   }
