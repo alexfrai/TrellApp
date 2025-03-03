@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/widgets/createListButton.dart'; // Import the CreateListButton
 import '../services/list_service.dart';
-import '../widgets/getOneListWidget.dart'; // Import du composant
+import '../widgets/getOneListWidget.dart'; // Import the GetOneListWidget
 
 class GetListWidget extends StatefulWidget {
   final String boardId;
@@ -17,13 +18,13 @@ class _GetListWidgetState extends State<GetListWidget> {
   @override
   void initState() {
     super.initState();
-    _listsFuture = ListService.getList(widget.boardId);
+    _listsFuture = ListService.getList(widget.boardId); // Fetch the lists when the widget is initialized
   }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<dynamic>>(
-      future: _listsFuture,
+      future: _listsFuture, // Use the future to load the data
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
@@ -34,11 +35,24 @@ class _GetListWidgetState extends State<GetListWidget> {
         }
 
         List<dynamic> lists = snapshot.data!;
-        return ListView.builder(
-          itemCount: lists.length,
-          itemBuilder: (context, index) {
-            return GetOneListWidget(list: lists[index]); // ✅ Utilisation du composant
-          },
+
+        // Return a ListView containing the fetched lists and the CreateListButton
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: lists.length,
+                itemBuilder: (context, index) {
+                  return GetOneListWidget(list: lists[index]); // Use the GetOneListWidget to display each list
+                },
+              ),
+            ),
+            // Add CreateListButton below the list of items
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Createlistbutton(BOARD_ID: widget.boardId), // Place the CreateListButton widget here
+            ),
+          ],
         );
       },
     );

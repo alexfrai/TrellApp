@@ -23,7 +23,7 @@ class MyApp extends StatelessWidget {
     return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
-        body: GetListWidget(boardId: "XuEuw84e"), // Remplacez par un vrai Board ID
+        body: GetListWidget(boardId: "67b31302370bb706da4fa2cd"), // Remplacez par un vrai Board ID
       ),
     );
   }
