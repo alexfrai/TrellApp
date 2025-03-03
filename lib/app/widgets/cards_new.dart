@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 /// API KEY
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 
-/// API TOKEN
+/// API TOKEN-
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 /// New card
