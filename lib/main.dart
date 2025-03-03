@@ -6,8 +6,9 @@ import './app/screens/boards_screen.dart'
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); /// 📌 Assure l'initialisation avant tout
 
+
   try {
-    await dotenv.load(fileName: ".env"); // Charge les variables d'environnement
+    await dotenv.load(fileName: ".env"); 
     print("✅ Fichier .env chargé avec succès !");
     print("🔑 API Key: ${dotenv.env['NEXT_PUBLIC_API_KEY']}");
     print("🔒 API Token: ${dotenv.env['NEXT_PUBLIC_API_TOKEN']}");
