@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../widgets/cards_new.dart';
-import '../widgets/cards_modal.dart'; // Importation de la modale
+import '../widgets/cards_modal.dart';
 
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
@@ -34,7 +34,6 @@ class _CardsScreenState extends State<CardsScreen> {
     final String url = 'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken';
 
     print("🔗 URL API: $url");
-    print("📦 ID de la liste Trello: ${widget.id}");
 
     try {
       final response = await http.get(Uri.parse(url));
@@ -58,8 +57,6 @@ class _CardsScreenState extends State<CardsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print("🟢 CardsScreen chargé !");
-
     return Scaffold(
       appBar: AppBar(title: const Text("Cartes")),
       body: Padding(
@@ -82,7 +79,7 @@ class _CardsScreenState extends State<CardsScreen> {
                           onTap: () {
                             print("🟢 Carte sélectionnée : ${card['name']}");
 
-                            // Ouvre la modale avec les détails de la carte sélectionnée
+                            // Ouvre la modale avec fetchCards() pour actualiser après suppression
                             showDialog(
                               context: context,
                               builder: (BuildContext context) {
@@ -92,6 +89,7 @@ class _CardsScreenState extends State<CardsScreen> {
                                   handleClose: () {
                                     Navigator.of(context).pop();
                                   },
+                                  fetchCards: _getCardsInList, // 👈 Passe la fonction ici
                                 );
                               },
                             );
@@ -114,7 +112,7 @@ class _CardsScreenState extends State<CardsScreen> {
             builder: (context) => CardsNew(id: widget.id),
           );
           if (newCard != null) {
-            setState(() => cards.add(newCard));
+            _getCardsInList(); // 👈 Mise à jour après ajout d'une nouvelle carte
           }
         },
         child: const Icon(Icons.add),

@@ -1,15 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
+final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class CardsModal extends StatefulWidget {
   final String taskName;
   final String? selectedCardId;
   final VoidCallback handleClose;
+  final VoidCallback fetchCards;
 
   const CardsModal({
     super.key,
     required this.taskName,
     required this.selectedCardId,
     required this.handleClose,
+    required this.fetchCards,
   });
 
   @override
@@ -19,19 +26,31 @@ class CardsModal extends StatefulWidget {
 class _CardsModalState extends State<CardsModal> {
   final TextEditingController _commentController = TextEditingController();
   bool _error = false;
+  bool _isDeleting = false;
 
-  void _handleSave() {
-    if (_commentController.text.trim().isEmpty) {
-      setState(() {
-        _error = true;
-      });
-      return;
+  /// 🔥 Supprimer une carte depuis l'API Trello
+  Future<void> _deleteCard() async {
+    if (widget.selectedCardId == null) return;
+
+    setState(() => _isDeleting = true);
+
+    final String url = 'https://api.trello.com/1/cards/${widget.selectedCardId}?key=$apiKey&token=$apiToken';
+
+    try {
+      final response = await http.delete(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        print("✅ Carte supprimée avec succès !");
+        widget.fetchCards(); // ✅ Rafraîchir CardsScreen après suppression
+        widget.handleClose(); // ✅ Fermer la modale
+      } else {
+        throw Exception("❌ Erreur API: ${response.statusCode}");
+      }
+    } catch (error) {
+      print("❌ Erreur lors de la suppression : $error");
+    } finally {
+      setState(() => _isDeleting = false);
     }
-    
-    print("Commentaire sauvegardé: ${_commentController.text}");
-    
-    _commentController.clear();
-    widget.handleClose();
   }
 
   @override
@@ -67,11 +86,14 @@ class _CardsModalState extends State<CardsModal> {
               ],
             ),
             const SizedBox(height: 16),
-            
-            // Description temporaire
+
+            // Description (Lorem Ipsum)
             const Text(
-              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex.",
+              "Lorem ipsum dolor sit amet, consectetur adipiscing elit. "
+              "Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget. "
+              "Fusce vel dui eget ligula tristique convallis.",
               style: TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
 
@@ -92,7 +114,14 @@ class _CardsModalState extends State<CardsModal> {
 
             // Bouton Sauvegarder
             ElevatedButton(
-              onPressed: _handleSave,
+              onPressed: () {
+                if (_commentController.text.trim().isEmpty) {
+                  setState(() => _error = true);
+                } else {
+                  print("Commentaire sauvegardé: ${_commentController.text}");
+                  widget.handleClose();
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.white,
                 foregroundColor: Colors.black,
@@ -100,6 +129,17 @@ class _CardsModalState extends State<CardsModal> {
               ),
               child: const Text("Sauvegarder"),
             ),
+
+            const SizedBox(height: 16),
+
+            // Bouton Supprimer avec indicateur de chargement
+            _isDeleting
+                ? const CircularProgressIndicator()
+                : TextButton(
+                    onPressed: _deleteCard,
+                    style: TextButton.styleFrom(foregroundColor: Colors.red),
+                    child: const Text("Supprimer la carte"),
+                  ),
           ],
         ),
       ),
