@@ -5,7 +5,8 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/screens/cards_screen.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized(); 
+  WidgetsFlutterBinding.ensureInitialized(); /// 📌 Assure l'initialisation avant tout
+
 
   try {
     await dotenv.load(); 
@@ -33,6 +34,7 @@ class MyApp extends StatelessWidget {
         '/': (BuildContext context) => const HomeScreen(),
         '/cards':
             (BuildContext context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
+
       },
     );
   }
@@ -46,14 +48,30 @@ class HomeScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Accueil')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            // print('🟢 Navigation vers CardsScreen...');
-            await Navigator.pushNamed(context, '/cards');
-          },
-          child: const Text('Voir les cartes'),
+
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center, // Centrer les éléments horizontalement
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                print("🟢 Navigation vers CardsScreen...");
+                Navigator.pushNamed(context, '/cards');
+              },
+              child: const Text("Voir les cartes"),
+            ),
+            const SizedBox(width: 20),
+            ElevatedButton(
+              onPressed: () {
+                print("🟢 Navigation vers CardsScreen...");
+                Navigator.pushNamed(context, '/cards');
+              },
+              child: const Text("Voir les cartes"),
+            ),
+            
+          ],
         ),
       ),
     );
   }
 }
+
