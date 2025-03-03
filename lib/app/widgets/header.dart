@@ -1,62 +1,74 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
+/// header
 class Header extends StatefulWidget {
   @override
   _HeaderState createState() => _HeaderState();
 }
 
 class _HeaderState extends State<Header> {
-  final String userId = "5e31418954e5fd1a91bd6ae5";
+  final String userId = '5e31418954e5fd1a91bd6ae5';
 
-  List<String> workspaces = [];
-  List<String> favoriteBoards = [];
+  List<String> workspaces = <String>[];
+  List<String> favoriteBoards = <String>[];
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
-    fetchData();
+    await fetchData();
   }
 
   Future<void> fetchData() async {
     try {
-      List<String> fetchedWorkspaces = await GetAllWorkspaces(userId);
-      List<String> fetchedFavoriteBoards = await GetBoardFromFavorite(userId);
+      final List<String> fetchedWorkspaces = await GetAllWorkspaces(userId);
+      final List<String> fetchedFavoriteBoards = await GetBoardFromFavorite(
+        userId,
+      );
 
       setState(() {
         workspaces = fetchedWorkspaces;
         favoriteBoards = fetchedFavoriteBoards;
       });
     } catch (e) {
-      print('Erreur lors du chargement des données : $e');
+      // print('Erreur lors du chargement des données : $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       color: Colors.grey[800],
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
+        children: <Widget>[
           Row(
-            children: [
-              Text(
-                'Trell\'Wish',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            children: <Widget>[
+              const Text(
+                "Trell'Wish",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
               ),
-              SizedBox(width: 16),
+              const SizedBox(width: 16),
               _buildDropdown('Workspace', workspaces),
               _buildDropdown('Favorite', favoriteBoards),
-              _buildDropdown('Template', ['q', 'zzzs']),
-              _buildDropdown('Create', ['Create a board', 'Create from a template']),
+              _buildDropdown('Template', <String>['q', 'zzzs']),
+              _buildDropdown('Create', <String>[
+                'Create a board',
+                'Create from a template',
+              ]),
             ],
           ),
           Row(
-            children: [
+            children: <Widget>[
               _buildSearchBar(),
-              SizedBox(width: 10),
-              CircleAvatar(
+              const SizedBox(width: 10),
+              const CircleAvatar(
                 backgroundColor: Colors.blue,
                 child: Icon(Icons.person, color: Colors.white),
               ),
@@ -70,14 +82,15 @@ class _HeaderState extends State<Header> {
   Widget _buildDropdown(String label, List<String> options) {
     return DropdownButton<String>(
       dropdownColor: Colors.grey[900],
-      hint: Text(label, style: TextStyle(color: Colors.white)),
-      items: options.map((String value) {
-        return DropdownMenuItem<String>(
-          value: value,
-          child: Text(value, style: TextStyle(color: Colors.white)),
-        );
-      }).toList(),
-      onChanged: (value) {
+      hint: Text(label, style: const TextStyle(color: Colors.white)),
+      items:
+          options.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value, style: const TextStyle(color: Colors.white)),
+            );
+          }).toList(),
+      onChanged: (String? value) {
         // Gérer la sélection
       },
     );
@@ -87,17 +100,17 @@ class _HeaderState extends State<Header> {
     return Container(
       width: 200,
       child: TextField(
-        style: TextStyle(color: Colors.white),
+        style: const TextStyle(color: Colors.white),
         decoration: InputDecoration(
           labelText: 'Research',
-          labelStyle: TextStyle(color: Colors.white),
+          labelStyle: const TextStyle(color: Colors.white),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white),
+            borderSide: const BorderSide(color: Colors.white),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.blue),
+            borderSide: const BorderSide(color: Colors.blue),
           ),
         ),
       ),
