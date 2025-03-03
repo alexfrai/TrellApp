@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'app/components/getList.dart'; // Assurez-vous du bon chemin d'importation
 import 'package:flutter_trell_app/app/screens/cards_screen.dart';
 
 Future<void> main() async {
@@ -25,9 +26,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Trello App',
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
+
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/', // Démarrage sur la page d'accueil
       routes: <String, WidgetBuilder>{
