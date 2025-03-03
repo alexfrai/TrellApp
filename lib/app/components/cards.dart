@@ -3,7 +3,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../widgets/cards_new.dart';
 
+/// API KEYS
 const String apiKey = String.fromEnvironment('NEXT_PUBLIC_API_KEY');
+/// API TOKEN
 const String apiToken = String.fromEnvironment('NEXT_PUBLIC_API_TOKEN');
 
 class CardsScreen extends StatefulWidget {
@@ -80,9 +82,7 @@ class _CardsScreenState extends State<CardsScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            isLoading
-                ? const CircularProgressIndicator()
-                : Expanded(
+            if (isLoading) const CircularProgressIndicator() else Expanded(
                     child: cards.isNotEmpty
                         ? GridView.builder(
                             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
