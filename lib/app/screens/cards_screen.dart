@@ -1,17 +1,23 @@
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../widgets/cards_new.dart';
-import '../widgets/cards_modal.dart';
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, always_specify_types
 
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
+import 'package:flutter_trell_app/app/widgets/cards_new.dart';
+import 'package:http/http.dart' as http;
+
+/// API KEY
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
+
+/// API KEY
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class CardsScreen extends StatefulWidget {
-  final String id;
 
-  const CardsScreen({super.key, required this.id});
+  const CardsScreen({required this.id, super.key});
+  final String id;
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -22,9 +28,9 @@ class _CardsScreenState extends State<CardsScreen> {
   bool isLoading = true;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
-    _getCardsInList();
+    await _getCardsInList();
   }
 
   /// 🔹 Récupération des cartes depuis l'API Trello
@@ -33,10 +39,10 @@ class _CardsScreenState extends State<CardsScreen> {
 
     final String url = 'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken';
 
-    print("🔗 URL API: $url");
+    // print("🔗 URL API: $url");
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
 
       if (response.statusCode != 200) {
         throw Exception('Erreur API: ${response.statusCode} - ${response.body}');
@@ -47,9 +53,9 @@ class _CardsScreenState extends State<CardsScreen> {
         cards = data.map((card) => {'id': card['id'], 'name': card['name']}).toList();
       });
 
-      print("✅ ${cards.length} cartes chargées !");
+      // print("✅ ${cards.length} cartes chargées !");
     } catch (error) {
-      print("❌ Erreur lors de la requête: $error");
+      // print("❌ Erreur lors de la requête: $error");
     } finally {
       setState(() => isLoading = false);
     }
@@ -58,16 +64,16 @@ class _CardsScreenState extends State<CardsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Cartes")),
+      appBar: AppBar(title: const Text('Cartes')),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : cards.isNotEmpty
                 ? ListView.builder(
                     itemCount: cards.length,
                     itemBuilder: (context, index) {
-                      final card = cards[index];
+                      final Map<String, dynamic> card = cards[index];
 
                       return Card(
                         elevation: 4,
@@ -76,11 +82,11 @@ class _CardsScreenState extends State<CardsScreen> {
                         ),
                         child: ListTile(
                           title: Text(card['name']),
-                          onTap: () {
-                            print("🟢 Carte sélectionnée : ${card['name']}");
+                          onTap: () async {
+                            // print("🟢 Carte sélectionnée : ${card['name']}");
 
                             // Ouvre la modale avec fetchCards() pour actualiser après suppression
-                            showDialog(
+                            await showDialog(
                               context: context,
                               builder: (BuildContext context) {
                                 return CardsModal(
@@ -100,7 +106,7 @@ class _CardsScreenState extends State<CardsScreen> {
                   )
                 : const Center(
                     child: Text(
-                      "Aucune carte trouvée",
+                      'Aucune carte trouvée',
                       style: TextStyle(color: Colors.grey),
                     ),
                   ),
@@ -109,10 +115,10 @@ class _CardsScreenState extends State<CardsScreen> {
         onPressed: () async {
           final newCard = await showDialog(
             context: context,
-            builder: (context) => CardsNew(id: widget.id),
+            builder: (BuildContext context) => CardsNew(id: widget.id),
           );
           if (newCard != null) {
-            _getCardsInList(); // 👈 Mise à jour après ajout d'une nouvelle carte
+            await _getCardsInList(); // 👈 Mise à jour après ajout d'une nouvelle carte
           }
         },
         child: const Icon(Icons.add),
