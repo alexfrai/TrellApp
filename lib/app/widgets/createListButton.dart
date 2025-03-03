@@ -1,9 +1,11 @@
+// ignore_for_file: file_names
+
 import 'package:flutter/material.dart';
-import '../services/list_service.dart'; // Assuming the ListService contains the createList method
+import 'package:flutter_trell_app/app/services/list_service.dart'; // Assuming the ListService contains the createList method
 
 class Createlistbutton extends StatefulWidget {
-  final String BOARD_ID;
   const Createlistbutton({Key? key, required this.BOARD_ID}) : super(key: key);
+  final String BOARD_ID;
 
   @override
   _CreatelistbuttonState createState() => _CreatelistbuttonState();
@@ -23,7 +25,7 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
     if (_controller.text.isEmpty) {
       // Show an error if the text field is empty
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Le nom de la liste ne peut pas être vide")),
+        const SnackBar(content: Text('Le nom de la liste ne peut pas être vide')),
       );
       return;
     }
@@ -35,12 +37,12 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
       // Call the createList function from ListService
       final response = await ListService.createList(_controller.text, widget.BOARD_ID,);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Liste créée avec succès!")),
+        const SnackBar(content: Text('Liste créée avec succès!')),
       );
       _controller.clear(); // Clear the text field
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur: $error")),
+        SnackBar(content: Text('Erreur: $error')),
       );
     } finally {
       setState(() {
@@ -52,25 +54,22 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
   @override
   Widget build(BuildContext context) {
     return Column(
-      children: [
+      children: <Widget>[
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: TextField(
             controller: _controller,
-            decoration: InputDecoration(
+            decoration: const InputDecoration(
               labelText: 'Nom de la liste',
               border: OutlineInputBorder(),
             ),
           ),
         ),
        ElevatedButton(
-          onPressed: _isLoading ? null : () {
-            // Print the boardId when the button is pressed
-            _createList(); // Call the function to create the list
-          }, 
+          onPressed: _isLoading ? null : _createList, 
           child: _isLoading
-              ? CircularProgressIndicator(color: Colors.white)
-              : Text("Créer la liste"),
+              ? const CircularProgressIndicator(color: Colors.white)
+              : const Text('Créer la liste'),
         ),
 
       ],

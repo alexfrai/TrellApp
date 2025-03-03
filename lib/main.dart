@@ -1,20 +1,16 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, prefer_const_constructors, always_specify_types
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'app/components/getList.dart'; // Assurez-vous du bon chemin d'importation
 import 'package:flutter_trell_app/app/screens/cards_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   /// 📌 Assure l'initialisation avant tout
-
   try {
     await dotenv.load();
     // print('✅ Fichier .env chargé avec succès !');
-    // print("🔑 API Key: ${dotenv.env['NEXT_PUBLIC_API_KEY']}");
-    // print("🔒 API Token: ${dotenv.env['NEXT_PUBLIC_API_TOKEN']}");
   } catch (e) {
     // print('❌ Erreur lors du chargement du fichier .env : $e');
   }
@@ -27,16 +23,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       debugShowCheckedModeBanner: false,
-
       theme: ThemeData(primarySwatch: Colors.blue),
       initialRoute: '/', // Démarrage sur la page d'accueil
-      routes: <String, WidgetBuilder>{
-        '/': (BuildContext context) => const HomeScreen(),
-        '/cards':
-            (BuildContext context) =>
-                const CardsScreen(id: '67bc36eac821fc127236093a'),
+      routes: {
+        '/': (context) => const HomeScreen(),
+        '/cards': (context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
       },
     );
   }
@@ -51,21 +44,20 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Accueil')),
       body: Center(
         child: Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Centrer les éléments horizontalement
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              onPressed: () async {
+              onPressed: () {
                 // print('🟢 Navigation vers CardsScreen...');
-                await Navigator.pushNamed(context, '/cards');
+                Navigator.pushNamed(context, '/cards');
               },
               child: const Text('Voir les cartes'),
             ),
             const SizedBox(width: 20),
             ElevatedButton(
-              onPressed: () async {
+              onPressed: () {
                 // print('🟢 Navigation vers CardsScreen...');
-                await Navigator.pushNamed(context, '/cards');
+                Navigator.pushNamed(context, '/cards');
               },
               child: const Text('Voir les cartes'),
             ),
