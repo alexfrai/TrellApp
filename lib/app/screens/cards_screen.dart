@@ -52,11 +52,11 @@ class _CardsScreenState extends State<CardsScreen> {
 
       final List<dynamic> data = json.decode(response.body);
       setState(() {
-        cards = data
-            .map((card) => {'id': card['id'], 'name': card['name']})
-            .toList();
+        cards =
+            data
+                .map((card) => {'id': card['id'], 'name': card['name']})
+                .toList();
       });
-
     } catch (error) {
       setState(() {
         errorMessage =
@@ -81,64 +81,69 @@ class _CardsScreenState extends State<CardsScreen> {
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
-          child: isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : errorMessage.isNotEmpty
+          child:
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : errorMessage.isNotEmpty
                   ? Center(
-                      child: Text(
-                        errorMessage,
-                        style: const TextStyle(color: Colors.red, fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                    )
-                  : ListView.builder(
-                      itemCount: cards.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final Map<String, dynamic> card = cards[index];
-
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8),
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF7B0D1E), // Rouge foncé
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.2),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: ListTile(
-                              title: Text(
-                                card['name'],
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFFF8E5EE), // Texte clair
-                                ),
-                              ),
-                              onTap: () async {
-                                await showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return CardsModal(
-                                      taskName: card['name'],
-                                      selectedCardId: card['id'],
-                                      handleClose: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      fetchCards: _getCardsInList,
-                                    );
-                                  },
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      },
+                    child: Text(
+                      errorMessage,
+                      style: const TextStyle(color: Colors.red, fontSize: 16),
+                      textAlign: TextAlign.center,
                     ),
+                  )
+                  : ListView.builder(
+                    itemCount: cards.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final Map<String, dynamic> card = cards[index];
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF7B0D1E), // Rouge foncé
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: Colors.red,
+                              width: 2,
+                            ), // ✅ Ajout de la bordure rouge
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: ListTile(
+                            title: Text(
+                              card['name'],
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFFF8E5EE), // Texte clair
+                              ),
+                            ),
+                            onTap: () async {
+                              await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return CardsModal(
+                                    taskName: card['name'],
+                                    selectedCardId: card['id'],
+                                    handleClose: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    fetchCards: _getCardsInList,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
         ),
         floatingActionButton: FloatingActionButton(
           onPressed: () async {

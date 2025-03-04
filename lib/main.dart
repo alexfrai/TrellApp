@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_trell_app/app/screens/cards_screen.dart';
 import 'package:flutter_trell_app/app/screens/getList_screen.dart';
 
 Future<void> main() async {
@@ -30,7 +29,6 @@ class MyApp extends StatelessWidget {
       initialRoute: '/', 
       routes: {
         '/': (context) => const HomeScreen(),
-        '/cards': (context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
         '/getlist': (context) => const GetListWidget(boardId: '67b31302370bb706da4fa2cd'),
       },
     );

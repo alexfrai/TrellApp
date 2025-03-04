@@ -8,11 +8,11 @@ import 'package:http/http.dart' as http;
 
 /// API KEYS
 const String apiKey = String.fromEnvironment('NEXT_PUBLIC_API_KEY');
+
 /// API TOKEN
 const String apiToken = String.fromEnvironment('NEXT_PUBLIC_API_TOKEN');
 
 class CardsScreen extends StatefulWidget {
-
   const CardsScreen({required this.id, super.key});
   final String id;
 
@@ -38,7 +38,9 @@ class _CardsScreenState extends State<CardsScreen> {
 
     try {
       final http.Response response = await http.get(
-        Uri.parse('https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken'),
+        Uri.parse(
+          'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken',
+        ),
       );
 
       if (response.statusCode != 200) {
@@ -47,7 +49,15 @@ class _CardsScreenState extends State<CardsScreen> {
 
       final List<dynamic> data = json.decode(response.body);
       setState(() {
-        cards = data.map((card) => <String, dynamic>{'id': card['id'], 'name': card['name']}).toList();
+        cards =
+            data
+                .map(
+                  (card) => <String, dynamic>{
+                    'id': card['id'],
+                    'name': card['name'],
+                  },
+                )
+                .toList();
       });
     } catch (error) {
       // print('Erreur lors de la requête: $error');
@@ -85,39 +95,58 @@ class _CardsScreenState extends State<CardsScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: <Widget>[
-            if (isLoading) const CircularProgressIndicator() else Expanded(
-                    child: cards.isNotEmpty
+            if (isLoading)
+              const CircularProgressIndicator()
+            else
+              Expanded(
+                child:
+                    cards.isNotEmpty
                         ? GridView.builder(
-                            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 10,
-                              mainAxisSpacing: 10,
-                              childAspectRatio: 2,
-                            ),
-                            itemCount: cards.length,
-                            itemBuilder: (BuildContext context, int index) {
-                              final Map<String, dynamic> card = cards[index];
-                              return GestureDetector(
-                                onTap: () => _handleOpen(card),
-                                child: Card(
-                                  elevation: 4,
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Center(
-                                      child: Text(
-                                        card['name'],
-                                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.center,
+                          gridDelegate:
+                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: 2,
+                                crossAxisSpacing: 10,
+                                mainAxisSpacing: 10,
+                                childAspectRatio: 2,
+                              ),
+                          itemCount: cards.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final Map<String, dynamic> card = cards[index];
+                            return GestureDetector(
+                              onTap: () => _handleOpen(card),
+                              child: Card(
+                                elevation: 4,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                  side: const BorderSide(
+                                    color: Colors.red, // ✅ Bordure rouge
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12),
+                                  child: Center(
+                                    child: Text(
+                                      card['name'],
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
                                       ),
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
-                              );
-                            },
-                          )
-                        : const Center(child: Text('Aucune carte trouvée', style: TextStyle(color: Colors.grey))),
-                  ),
+                              ),
+                            );
+                          },
+                        )
+                        : const Center(
+                          child: Text(
+                            'Aucune carte trouvée',
+                            style: TextStyle(color: Colors.grey),
+                          ),
+                        ),
+              ),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () async {
@@ -132,12 +161,13 @@ class _CardsScreenState extends State<CardsScreen> {
           ],
         ),
       ),
-      floatingActionButton: open
-          ? FloatingActionButton(
-              onPressed: _handleClose,
-              child: const Icon(Icons.close),
-            )
-          : null,
+      floatingActionButton:
+          open
+              ? FloatingActionButton(
+                onPressed: _handleClose,
+                child: const Icon(Icons.close),
+              )
+              : null,
     );
   }
 }

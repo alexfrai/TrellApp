@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api, always_specify_types
+// ignore_for_file: library_private_types_in_public_api, always_specify_types, deprecated_member_use, public_member_api_docs, use_build_context_synchronously
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -44,7 +44,7 @@ class _CardsNewState extends State<CardsNew> {
         throw Exception('Erreur API: ${response.statusCode}');
       }
     } catch (error) {
-      print('❌ Erreur lors de la requête: $error');
+      // print('❌ Erreur lors de la requête: $error');
     } finally {
       setState(() => _isLoading = false);
     }

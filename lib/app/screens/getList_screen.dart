@@ -5,7 +5,7 @@ import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
 class GetListWidget extends StatefulWidget {
-  const GetListWidget({super.key, required this.boardId});
+  const GetListWidget({required this.boardId, super.key});
   final String boardId;
 
   @override
@@ -30,9 +30,9 @@ class _GetListWidgetState extends State<GetListWidget> {
 
   /// Récupère les listes et leurs cartes associées
   Future<Map<String, dynamic>> _fetchData() async {
-    List<dynamic> lists = await ListService.getList(widget.boardId);
-    List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
-    return {'lists': lists, 'cards': cards};
+    final List<dynamic> lists = await ListService.getList(widget.boardId);
+    final List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
+    return <String, dynamic>{'lists': lists, 'cards': cards};
   }
 
   @override
@@ -41,7 +41,7 @@ class _GetListWidgetState extends State<GetListWidget> {
       appBar: AppBar(title: const Text('Listes et Cartes Trello')),
       body: FutureBuilder<Map<String, dynamic>>(
         future: _dataFuture,
-        builder: (context, snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
@@ -58,7 +58,7 @@ class _GetListWidgetState extends State<GetListWidget> {
               Expanded(
                 child: ListView.builder(
                   itemCount: lists.length,
-                  itemBuilder: (context, index) {
+                  itemBuilder: (BuildContext context, int index) {
                     final list = lists[index];
                     final listCards = cards.where((card) => card['listId'] == list['id']).toList();
 

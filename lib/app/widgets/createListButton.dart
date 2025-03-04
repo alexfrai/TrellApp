@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart'; // Assuming the ListService contains the createList method
 
 class Createlistbutton extends StatefulWidget {
-  const Createlistbutton({super.key, required this.BOARD_ID});
+  const Createlistbutton({required this.BOARD_ID, super.key});
   final String BOARD_ID;
 
   @override

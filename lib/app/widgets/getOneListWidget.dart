@@ -8,10 +8,7 @@ import 'package:http/http.dart' as http;
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
-class GetOneListWidget extends StatefulWidget {
-  final Map<String, dynamic> list;
-  final List<Map<String, dynamic>> cards;
-  final Function() refreshLists; // Ajout d'une fonction de rafraîchissement
+class GetOneListWidget extends StatefulWidget { // Ajout d'une fonction de rafraîchissement
 
   const GetOneListWidget({
     super.key,
@@ -19,6 +16,9 @@ class GetOneListWidget extends StatefulWidget {
     required this.cards,
     required this.refreshLists,
   });
+  final Map<String, dynamic> list;
+  final List<Map<String, dynamic>> cards;
+  final Function() refreshLists;
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
@@ -70,11 +70,11 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               if (newCard != null) widget.refreshLists();
             },
             icon: const Icon(Icons.add),
-            label: const Text("Ajouter une carte"),
+            label: const Text('Ajouter une carte'),
           ),
 
           // 📌 Liste des cartes
-          ...widget.cards.map((card) {
+          ...widget.cards.map((Map<String, dynamic> card) {
             return ListTile(
               title: Text(
                 card['name'],
@@ -100,12 +100,12 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                 onPressed: () => _deleteCard(card['id']),
               ),
             );
-          }).toList(),
+          }),
 
           if (widget.cards.isEmpty)
             const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text("Aucune carte dans cette liste"),
+              padding: EdgeInsets.all(8),
+              child: Text('Aucune carte dans cette liste'),
             ),
         ],
       ),
