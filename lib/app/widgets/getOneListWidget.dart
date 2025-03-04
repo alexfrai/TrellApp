@@ -84,7 +84,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
           widget.list['name'],
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text("ID: ${widget.list['id']}"),
         children: <Widget>[
           ...widget.cards.map((card) {
             return ListTile(
@@ -160,7 +159,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
 
           if (widget.cards.isEmpty)
             const Padding(
-              padding: EdgeInsets.all(8.0),
+              padding: EdgeInsets.all(8),
               child: Text('Aucune carte dans cette liste'),
             ),
 
