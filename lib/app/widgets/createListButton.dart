@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import '../services/list_service.dart'; // Assuming the ListService contains the createList method
 
@@ -32,15 +34,17 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
       _isLoading = true; // Show loading indicator
     });
     try {
-      // Call the createList function from ListService
-      final response = await ListService.createList(_controller.text, widget.BOARD_ID,);
+      // Appelle les fonctions de list_service
+      final response = await ListService.createList(_controller.text, widget.BOARD_ID);
+      final String listId = response['id']; // Récupère l'ID de la liste
+      unawaited(ListService.updateListPos(listId, 'bottom'));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Liste créée avec succès!")),
+        SnackBar(content: Text('Liste créée avec succès!')),
       );
-      _controller.clear(); // Clear the text field
+      _controller.clear();
     } catch (error) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Erreur: $error")),
+        SnackBar(content: Text('Erreur: $error')),
       );
     } finally {
       setState(() {
