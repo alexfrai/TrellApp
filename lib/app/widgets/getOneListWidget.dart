@@ -11,7 +11,7 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 class GetOneListWidget extends StatefulWidget {
   final Map<String, dynamic> list;
   final List<Map<String, dynamic>> cards;
-  final Function() refreshLists; // Ajout d'une fonction de rafraîchissement
+  final Function() refreshLists;
 
   const GetOneListWidget({
     super.key,
@@ -27,7 +27,6 @@ class GetOneListWidget extends StatefulWidget {
 class _GetOneListWidgetState extends State<GetOneListWidget> {
   bool _isLoading = false;
 
-  /// 🔥 Supprimer une carte depuis l'API Trello
   Future<void> _deleteCard(String cardId) async {
     setState(() => _isLoading = true);
 
@@ -38,12 +37,12 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
       final http.Response response = await http.delete(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        widget.refreshLists(); // 🔄 Rafraîchir après suppression
+        widget.refreshLists();
       } else {
         throw Exception('❌ Erreur API: ${response.statusCode}');
       }
     } catch (error) {
-      print('❌ Erreur lors de la suppression : $error');
+      // print('❌ Erreur lors de la suppression : $error');
     } finally {
       setState(() => _isLoading = false);
     }
@@ -53,7 +52,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      
       child: ExpansionTile(
         title: Text(
           widget.list['name'],
@@ -61,20 +59,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
         ),
         subtitle: Text("ID: ${widget.list['id']}"),
         children: <Widget>[
-          // 📌 Bouton pour ajouter une carte
-          TextButton.icon(
-            onPressed: () async {
-              final newCard = await showDialog(
-                context: context,
-                builder: (BuildContext context) => CardsNew(id: widget.list['id']),
-              );
-              if (newCard != null) widget.refreshLists();
-            },
-            icon: const Icon(Icons.add),
-            label: const Text("Ajouter une carte"),
-          ),
-
-          // 📌 Liste des cartes
           ...widget.cards.map((card) {
             return ListTile(
               title: Text(
@@ -106,8 +90,21 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
           if (widget.cards.isEmpty)
             const Padding(
               padding: EdgeInsets.all(8.0),
-              child: Text("Aucune carte dans cette liste"),
+              child: Text('Aucune carte dans cette liste'),
             ),
+
+          // 📌 Bouton pour ajouter une carte (déplacé après la liste des cartes)
+          TextButton.icon(
+            onPressed: () async {
+              final newCard = await showDialog(
+                context: context,
+                builder: (BuildContext context) => CardsNew(id: widget.list['id']),
+              );
+              if (newCard != null) widget.refreshLists();
+            },
+            icon: const Icon(Icons.add),
+            label: const Text('Ajouter une carte'),
+          ),
         ],
       ),
     );
