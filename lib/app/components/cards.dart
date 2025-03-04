@@ -47,7 +47,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
       final List<dynamic> data = json.decode(response.body);
       setState(() {
-        cards = data.map((card) => <String,>{'id': card['id'], 'name': card['name']}).toList();
+        cards = data.map((card) => <String, dynamic>{'id': card['id'], 'name': card['name']}).toList();
       });
     } catch (error) {
       // print('Erreur lors de la requête: $error');
