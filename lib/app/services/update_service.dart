@@ -53,8 +53,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
   Future<void> _updateCard(String cardId, String newName) async {
     setState(() => _isLoading = true);
 
-    final String url =
-        'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
+    final String url = 'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
 
     try {
       final response = await http.put(
@@ -64,7 +63,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
       );
 
       if (response.statusCode == 200) {
-        widget.refreshLists(); // 🔄 Rafraîchir les listes après mise à jour
+        widget.refreshLists();
       } else {
         throw Exception('❌ Erreur API: ${response.statusCode}');
       }
@@ -88,7 +87,10 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
         children: <Widget>[
           ...widget.cards.map((card) {
             return ListTile(
-              title: Text(card['name'], style: const TextStyle(fontSize: 16)),
+              title: Text(
+                card['name'],
+                style: const TextStyle(fontSize: 16),
+              ),
               onTap: () async {
                 await showDialog(
                   context: context,
@@ -107,13 +109,10 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Bouton Modifier la carte
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blueAccent),
                     onPressed: () async {
-                      TextEditingController _controller = TextEditingController(
-                        text: card['name'],
-                      );
+                      TextEditingController _controller = TextEditingController(text: card['name']);
                       final newName = await showDialog<String>(
                         context: context,
                         builder: (BuildContext context) {
@@ -121,9 +120,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                             title: const Text('Modifier la carte'),
                             content: TextField(
                               controller: _controller,
-                              decoration: const InputDecoration(
-                                hintText: 'Nouveau nom de la carte',
-                              ),
+                              decoration: const InputDecoration(hintText: 'Nouveau nom de la carte'),
                             ),
                             actions: [
                               TextButton(
@@ -131,11 +128,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                 child: const Text('Annuler'),
                               ),
                               TextButton(
-                                onPressed:
-                                    () => Navigator.pop(
-                                      context,
-                                      _controller.text,
-                                    ),
+                                onPressed: () => Navigator.pop(context, _controller.text),
                                 child: const Text('Mettre à jour'),
                               ),
                             ],
@@ -147,8 +140,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                       }
                     },
                   ),
-
-                  // Bouton Supprimer la carte
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.redAccent),
                     onPressed: () => _deleteCard(card['id']),
@@ -164,13 +155,11 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               child: Text('Aucune carte dans cette liste'),
             ),
 
-          // Bouton pour ajouter une carte
           TextButton.icon(
             onPressed: () async {
               final newCard = await showDialog(
                 context: context,
-                builder:
-                    (BuildContext context) => CardsNew(id: widget.list['id']),
+                builder: (BuildContext context) => CardsNew(id: widget.list['id']),
               );
               if (newCard != null) widget.refreshLists();
             },
