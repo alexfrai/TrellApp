@@ -7,7 +7,7 @@ import 'package:http/http.dart' as http;
 /// API KEY
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 
-///API TOKEN
+/// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 /// Modale cartes
@@ -19,6 +19,7 @@ class CardsModal extends StatefulWidget {
     required this.fetchCards,
     super.key,
   });
+
   final String taskName;
   final String? selectedCardId;
   final VoidCallback handleClose;
@@ -30,7 +31,7 @@ class CardsModal extends StatefulWidget {
 
 class _CardsModalState extends State<CardsModal> {
   final TextEditingController _commentController = TextEditingController();
-  bool _error = false;
+  final bool _error = false;
   bool _isDeleting = false;
 
   /// 🔥 Supprimer une carte depuis l'API Trello
@@ -46,14 +47,13 @@ class _CardsModalState extends State<CardsModal> {
       final http.Response response = await http.delete(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        // print('✅ Carte supprimée avec succès !');
         widget.fetchCards(); // ✅ Rafraîchir CardsScreen après suppression
         widget.handleClose(); // ✅ Fermer la modale
       } else {
         throw Exception('❌ Erreur API: ${response.statusCode}');
       }
     } catch (error) {
-      // print("❌ Erreur lors de la suppression : $error");
+      print('❌ Erreur lors de la suppression : $error');
     } finally {
       setState(() => _isDeleting = false);
     }
@@ -63,34 +63,43 @@ class _CardsModalState extends State<CardsModal> {
   Widget build(BuildContext context) {
     return Dialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 10, // 🌟 Ombre douce pour un effet premium
+      backgroundColor: Colors.transparent, // Fond transparent pour l'effet modal
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.6,
-        padding: const EdgeInsets.all(16),
+        width: MediaQuery.of(context).size.width * 0.7,
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: <Color>[Color(0xFF2193B0), Color(0xFF6DD5ED)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: const Color(0xFF3D1308), // Fond bordeaux profond
           borderRadius: BorderRadius.circular(12),
+          boxShadow: <BoxShadow>[
+            BoxShadow(
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 12,
+              spreadRadius: 3,
+              offset: const Offset(0, 6),
+            ),
+          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            // Header avec le titre et le bouton de fermeture
+            // Titre et bouton de fermeture
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(
-                  widget.taskName,
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Expanded(
+                  child: Text(
+                    widget.taskName,
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF8E5EE), // Texte clair
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: const Icon(Icons.close, color: Color(0xFFF8E5EE)),
                   onPressed: widget.handleClose,
                 ),
               ],
@@ -102,7 +111,7 @@ class _CardsModalState extends State<CardsModal> {
               'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
               'Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget. '
               'Fusce vel dui eget ligula tristique convallis.',
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: Color(0xFFF8E5EE)),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 16),
@@ -112,51 +121,58 @@ class _CardsModalState extends State<CardsModal> {
               controller: _commentController,
               decoration: InputDecoration(
                 labelText: 'Commentaire',
-                labelStyle: const TextStyle(color: Colors.white),
+                labelStyle: const TextStyle(color: Color(0xFFF8E5EE)),
                 filled: true,
-                // ignore: deprecated_member_use
-                fillColor: Colors.white.withOpacity(0.2),
+                fillColor: const Color(0xFF9F2042).withOpacity(0.2),
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 errorText: _error ? 'Le champ ne peut pas être vide' : null,
               ),
               style: const TextStyle(color: Colors.white),
+              maxLines: 2,
             ),
             const SizedBox(height: 16),
 
-            // Bouton Sauvegarder
-            ElevatedButton(
-              onPressed: () {
-                if (_commentController.text.trim().isEmpty) {
-                  setState(() => _error = true);
-                } else {
-                  // print("Commentaire sauvegardé: ${_commentController.text}");
-                  widget.handleClose();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
+            // Boutons actions
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                // Bouton Fermer
+                ElevatedButton(
+                  onPressed: widget.handleClose,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9F2042),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Fermer'),
                 ),
-              ),
-              child: const Text('Sauvegarder'),
+
+                // Bouton Supprimer avec indicateur de chargement
+                if (_isDeleting) const CircularProgressIndicator(color: Colors.white) else ElevatedButton(
+                        onPressed: _deleteCard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.redAccent,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: const Text('Supprimer'),
+                      ),
+              ],
             ),
-
-            const SizedBox(height: 16),
-
-            // Bouton Supprimer avec indicateur de chargement
-            if (_isDeleting)
-              const CircularProgressIndicator()
-            else
-              TextButton(
-                onPressed: _deleteCard,
-                style: TextButton.styleFrom(foregroundColor: Colors.red),
-                child: const Text('Supprimer la carte'),
-              ),
           ],
         ),
       ),

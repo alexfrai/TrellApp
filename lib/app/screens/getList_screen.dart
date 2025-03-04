@@ -1,56 +1,78 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_trell_app/app/widgets/createListButton.dart';
+import 'package:flutter_trell_app/app/services/get_all_cards.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
+import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
 class GetListWidget extends StatefulWidget {
+  const GetListWidget({super.key, required this.boardId});
   final String boardId;
-
-  const GetListWidget({Key? key, required this.boardId}) : super(key: key);
 
   @override
   _GetListWidgetState createState() => _GetListWidgetState();
 }
 
 class _GetListWidgetState extends State<GetListWidget> {
-  late Future<List<dynamic>> _listsFuture;
+  late Future<Map<String, dynamic>> _dataFuture;
 
   @override
   void initState() {
     super.initState();
-    _listsFuture = ListService.getList(widget.boardId);
+    _loadData();
+  }
+
+  /// 🔄 Rafraîchir les données (listes et cartes)
+  Future<void> _loadData() async {
+    setState(() {
+      _dataFuture = _fetchData();
+    });
+  }
+
+  /// Récupère les listes et leurs cartes associées
+  Future<Map<String, dynamic>> _fetchData() async {
+    List<dynamic> lists = await ListService.getList(widget.boardId);
+    List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
+    return {'lists': lists, 'cards': cards};
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold( // ✅ Ajout d'un Scaffold ici
-      appBar: AppBar(title: const Text("Listes Trello")),
-      body: FutureBuilder<List<dynamic>>(
-        future: _listsFuture,
+    return Scaffold(
+      appBar: AppBar(title: const Text('Listes et Cartes Trello')),
+      body: FutureBuilder<Map<String, dynamic>>(
+        future: _dataFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            return Center(child: Text("Erreur: ${snapshot.error}"));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text("Aucune liste trouvée"));
+            return Center(child: Text('Erreur: ${snapshot.error}'));
+          } else if (!snapshot.hasData || snapshot.data!['lists'].isEmpty) {
+            return const Center(child: Text('Aucune liste trouvée'));
           }
 
-          List<dynamic> lists = snapshot.data!;
+          final lists = snapshot.data!['lists'];
+          final cards = snapshot.data!['cards'];
 
           return Column(
-            children: [
+            children: <Widget>[
               Expanded(
                 child: ListView.builder(
                   itemCount: lists.length,
                   itemBuilder: (context, index) {
-                    return GetOneListWidget(list: lists[index]);
+                    final list = lists[index];
+                    final listCards = cards.where((card) => card['listId'] == list['id']).toList();
+
+                    return GetOneListWidget(
+                      list: list,
+                      cards: listCards,
+                      refreshLists: _loadData, // 🔄 Passer la fonction de mise à jour
+                    );
                   },
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Createlistbutton(BOARD_ID: widget.boardId), // ✅ Correction du nom du widget
+                padding: const EdgeInsets.all(16),
+                child: Createlistbutton(BOARD_ID: widget.boardId),
               ),
             ],
           );
