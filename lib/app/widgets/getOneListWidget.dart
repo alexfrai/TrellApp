@@ -53,6 +53,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      
       child: ExpansionTile(
         title: Text(
           widget.list['name'],

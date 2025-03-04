@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/screens/cards_screen.dart';
+import 'package:flutter_trell_app/app/screens/getlist_screen.dart';
 import 'package:flutter_trell_app/app/screens/getList_screen.dart';
 
 Future<void> main() async {
