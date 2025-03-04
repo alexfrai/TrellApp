@@ -11,9 +11,9 @@ Future<void> main() async {
   /// 📌 Assure l'initialisation avant tout
   try {
     await dotenv.load();
-    print('✅ Fichier .env chargé avec succès !');
+    // print('✅ Fichier .env chargé avec succès !');
   } catch (e) {
-    print('❌ Erreur lors du chargement du fichier .env : $e');
+    // print('❌ Erreur lors du chargement du fichier .env : $e');
   }
 
   runApp(const MyApp());
@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialRoute: '/', // Démarrage sur la page d'accueil
+      initialRoute: '/', 
       routes: {
         '/': (context) => const HomeScreen(),
         '/cards': (context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
@@ -49,17 +49,17 @@ class HomeScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             ElevatedButton(
-              onPressed: () {
-                print('🟢 Navigation vers CardsScreen...');
-                Navigator.pushNamed(context, '/cards');
+              onPressed: () async {
+                // print('🟢 Navigation vers CardsScreen...');
+                await Navigator.pushNamed(context, '/cards');
               },
               child: const Text('Voir les cartes'),
             ),
             const SizedBox(width: 20),
             ElevatedButton(
-              onPressed: () {
-                print('🟢 Navigation vers CardsScreen...');
-                Navigator.pushNamed(context, '/getlist');
+              onPressed: () async {
+                // print('🟢 Navigation vers CardsScreen...');
+                await Navigator.pushNamed(context, '/getlist');
               },
               child: const Text('Voir les listes'),
             ),
