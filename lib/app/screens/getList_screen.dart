@@ -104,7 +104,7 @@ class _GetListWidgetState extends State<GetListWidget> {
                     return GetOneListWidget(
                       list: list,
                       cards: listCards,
-                      refreshLists: _loadData, // 🔄 Passer la fonction de mise à jour
+                      refreshLists: _loadData, // Passer la fonction de mise à jour
                     );
                   },
 
