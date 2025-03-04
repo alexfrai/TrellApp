@@ -1,20 +1,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_all_cards.dart';
-
 import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
+///Affiche une liste
 class GetListWidget extends StatefulWidget {
-  const GetListWidget({super.key, required this.boardId});
+
+  /// Constructeur
+  const GetListWidget({required this.boardId, super.key});
+  /// ID du board (requis)
   final String boardId;
 
   @override
-  _GetListWidgetState createState() => _GetListWidgetState();
+  GetListWidgetState createState() => GetListWidgetState();
 }
 
-class _GetListWidgetState extends State<GetListWidget> {
+///Prend l etat du get
+class GetListWidgetState extends State<GetListWidget> {
   late Future<Map<String, dynamic>> _dataFuture;
   final StreamController<List<dynamic>> _listsStreamController = StreamController.broadcast();
   List<dynamic> _currentLists = []; // Stocke les listes actuelles pour comparer avec les nouvelles
@@ -22,41 +26,51 @@ class _GetListWidgetState extends State<GetListWidget> {
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _loadData(); // Initial load
+    _fetchAndUpdateLists(); // Start the continuous fetch
   }
 
-  /// 🔄 Rafraîchir les données (listes et cartes)
+  // Load the data (lists and cards) initially
   Future<void> _loadData() async {
     setState(() {
       _dataFuture = _fetchData();
     });
   }
 
-  /// Récupère les listes et leurs cartes associées
+  // Fetch the lists and their associated cards
   Future<Map<String, dynamic>> _fetchData() async {
-    List<dynamic> lists = await ListService.getList(widget.boardId);
-    List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
+    final List<dynamic> lists = await ListService.getList(widget.boardId);
+    final List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
     return {'lists': lists, 'cards': cards};
-    _fetchAndUpdateLists(); // Chargement initial
   }
 
-  /// Fonction pour récupérer les listes et mettre à jour le Stream si elles changent
+  /// Fetch and update lists periodically (every 10 seconds)
   Future<void> _fetchAndUpdateLists() async {
-    while (mounted) { // Vérifie que le widget est toujours actif
+    int retryCount = 0;
+    while (mounted) { // Check if the widget is still active
       try {
-        final newLists = await ListService.getList(widget.boardId);
+        final List newLists = await ListService.getList(widget.boardId);
         if (_listsHaveChanged(newLists)) {
-          _currentLists = newLists; // Met à jour l'état actuel
-          _listsStreamController.add(newLists); // Envoie les nouvelles listes au Stream
+          _currentLists = newLists; // Update the current lists state
+          _listsStreamController.add(newLists); // Push the new lists to the stream
         }
+        retryCount = 0; // Reset retry count on success
       } catch (error) {
-        debugPrint("Erreur lors de la récupération des listes: $error");
+        if (error.toString().contains('429')) {
+          retryCount++;
+          final int waitTime = 2 ^ retryCount;  // Exponential backoff
+          debugPrint('Trop de requêtes. Nouvelle tentative dans $waitTime secondes.');
+          await Future.delayed(Duration(seconds: waitTime));
+        } else {
+          debugPrint('Erreur lors de la mise à jour: $error');
+          break;  // If it's another error, stop the loop
+        }
       }
-      await Future.delayed(const Duration(seconds: 2)); // Rafraîchit toutes les 2s (uniquement si changement)
+      await Future.delayed(const Duration(seconds: 10)); // Refresh every 10 seconds if changed
     }
   }
 
-  /// Compare les nouvelles listes avec les anciennes pour éviter des mises à jour inutiles
+  // Compare new lists with the previous ones to avoid unnecessary updates
   bool _listsHaveChanged(List<dynamic> newLists) {
     if (_currentLists.length != newLists.length) return true;
     for (int i = 0; i < _currentLists.length; i++) {
@@ -68,8 +82,8 @@ class _GetListWidgetState extends State<GetListWidget> {
   }
 
   @override
-  void dispose() {
-    _listsStreamController.close(); // Ferme le StreamController pour éviter les fuites mémoire
+  Future<void> dispose() async {
+    await _listsStreamController.close(); // Close the StreamController to avoid memory leaks
     super.dispose();
   }
 
@@ -77,44 +91,60 @@ class _GetListWidgetState extends State<GetListWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Listes et Cartes Trello')),
-      body: FutureBuilder<Map<String, dynamic>>(
-        future: _dataFuture,
+      body: StreamBuilder<List<dynamic>>(
+        stream: _listsStreamController.stream,
         builder: (context, snapshot) {
-
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Erreur: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!['lists'].isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(child: Text('Aucune liste trouvée'));
           }
 
-          final lists = snapshot.data!['lists'];
-          final cards = snapshot.data!['cards'];
+          final lists = snapshot.data!;
+          return FutureBuilder<Map<String, dynamic>>(
+            future: _dataFuture,
+            builder: (context, dataSnapshot) {
+              if (dataSnapshot.connectionState == ConnectionState.waiting) {
+                return const Center(child: CircularProgressIndicator());
+              } else if (dataSnapshot.hasError) {
+                return Center(child: Text('Erreur: ${dataSnapshot.error}'));
+              } else if (!dataSnapshot.hasData || dataSnapshot.data!['lists'].isEmpty) {
+                return const Center(child: Text('Aucune liste trouvée'));
+              }
 
-          return Column(
-            children: <Widget>[
-              Expanded(
-                child: ListView.builder(
-                  itemCount: lists.length,
-                  itemBuilder: (context, index) {
-                    final list = lists[index];
-                    final listCards = cards.where((card) => card['listId'] == list['id']).toList();
+              final cards = dataSnapshot.data!['cards'];
 
-                    return GetOneListWidget(
-                      list: list,
-                      cards: listCards,
-                      refreshLists: _loadData, // 🔄 Passer la fonction de mise à jour
-                    );
-                  },
-
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: Createlistbutton(BOARD_ID: widget.boardId),
-              ),
-            ],
+              return Column(
+                children: <Widget>[
+                  Expanded(
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: lists.map<Widget>((list) {
+                        final List<Map<String, dynamic>> listCards = 
+                            cards.where((Map<String, dynamic> card) => card['listId'] == list['id']).toList();
+                          return SizedBox(
+                            width: 300,
+                            child: GetOneListWidget(
+                              list: list,
+                              cards: listCards,
+                              refreshLists: _loadData,
+                            ),
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Createlistbutton(BOARD_ID: widget.boardId),
+                  ),
+                ],
+              );
+            },
           );
         },
       ),
