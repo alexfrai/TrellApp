@@ -84,43 +84,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  // Bouton Modifier la carte
-                  IconButton(
-                    icon: const Icon(Icons.edit, color: Colors.blueAccent),
-                    onPressed: () async {
-                      final TextEditingController controller = TextEditingController(
-                        text: card['name'],
-                      );
-                      final String? newName = await showDialog<String>(
-                        context: context,
-                        builder: (BuildContext context) {
-                          return AlertDialog(
-                            title: const Text('Modifier la carte'),
-                            content: TextField(
-                              controller: controller,
-                              decoration: const InputDecoration(
-                                hintText: 'Nouveau nom de la carte',
-                              ),
-                            ),
-                            actions: <Widget>[
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Annuler'),
-                              ),
-                              TextButton(
-                                onPressed: () => Navigator.pop(context, controller.text),
-                                child: const Text('Mettre à jour'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                      if (newName != null && newName.isNotEmpty) {
-                        await _updateCard(card['id'], newName);
-                      }
-                    },
-                  ),
-
                   // Bouton Supprimer la carte
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.redAccent),
@@ -142,7 +105,8 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
             onPressed: () async {
               final newCard = await showDialog(
                 context: context,
-                builder: (BuildContext context) => CardsNew(id: widget.list['id']),
+                builder:
+                    (BuildContext context) => CardsNew(id: widget.list['id']),
               );
               if (newCard != null) widget.refreshLists();
             },
