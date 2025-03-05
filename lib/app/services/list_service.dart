@@ -92,8 +92,8 @@ static Future<dynamic> updateListPos(String idlist, String newpos) async {
 
     final http.Response response = await http.put(
       url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'pos': newpos}), // Envoi du paramètre pos correctement
+      headers: <String, String>{'Content-Type': 'application/json'},
+      body: jsonEncode(<String, String>{'pos': newpos}), // Envoi du paramètre pos correctement
     );
 
     if (response.statusCode != 200) {

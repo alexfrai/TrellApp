@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, library_private_types_in_public_api
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -53,7 +53,7 @@ class _CardsModalState extends State<CardsModal> {
         throw Exception('❌ Erreur API: ${response.statusCode}');
       }
     } catch (error) {
-      print('❌ Erreur lors de la suppression : $error');
+      // print('❌ Erreur lors de la suppression : $error');
     } finally {
       setState(() => _isDeleting = false);
     }

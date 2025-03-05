@@ -1,26 +1,22 @@
-import 'dart:convert';
+// ignore_for_file: always_specify_types
 
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/services/delete_service.dart';
+import 'package:flutter_trell_app/app/services/update_service.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
-import 'package:http/http.dart' as http;
-
-/// API KEYS
-final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
-final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class GetOneListWidget extends StatefulWidget {
-  final Map<String, dynamic> list;
-  final List<Map<String, dynamic>> cards;
-  final Function() refreshLists;
-
   const GetOneListWidget({
     super.key,
     required this.list,
     required this.cards,
     required this.refreshLists,
   });
+
+  final Map<String, dynamic> list;
+  final List<Map<String, dynamic>> cards;
+  final Function() refreshLists;
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
@@ -29,50 +25,32 @@ class GetOneListWidget extends StatefulWidget {
 class _GetOneListWidgetState extends State<GetOneListWidget> {
   bool _isLoading = false;
 
-  Future<void> _deleteCard(String cardId) async {
-    setState(() => _isLoading = true);
-
-    final String url =
-        'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
-
-    try {
-      final http.Response response = await http.delete(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        widget.refreshLists();
-      } else {
-        throw Exception('❌ Erreur API: ${response.statusCode}');
-      }
-    } catch (error) {
-      // print('❌ Erreur lors de la suppression : $error');
-    } finally {
-      setState(() => _isLoading = false);
-    }
-  }
-
   Future<void> _updateCard(String cardId, String newName) async {
     setState(() => _isLoading = true);
 
-    final String url =
-        'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
+    bool success = await UpdateService.updateCard(cardId, newName);
 
-    try {
-      final response = await http.put(
-        Uri.parse(url),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'name': newName}),
-      );
-
-      if (response.statusCode == 200) {
-        widget.refreshLists(); // 🔄 Rafraîchir les listes après mise à jour
-      } else {
-        throw Exception('❌ Erreur API: ${response.statusCode}');
-      }
-    } catch (error) {
-      // print('❌ Erreur lors de la mise à jour : $error');
-    } finally {
-      setState(() => _isLoading = false);
+    if (success) {
+      widget.refreshLists();
+    } else {
+      print('❌ Mise à jour échouée');
     }
+
+    setState(() => _isLoading = false);
+  }
+
+  Future<void> _deleteCard(String cardId) async {
+    setState(() => _isLoading = true);
+
+    bool success = await DeleteService.deleteCard(cardId);
+
+    if (success) {
+      widget.refreshLists();
+    } else {
+      // print('❌ Suppression échouée');
+    }
+
+    setState(() => _isLoading = false);
   }
 
   @override
@@ -85,7 +63,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
           style: const TextStyle(fontWeight: FontWeight.bold),
         ),
         children: <Widget>[
-          ...widget.cards.map((card) {
+          ...widget.cards.map((Map<String, dynamic> card) {
             return ListTile(
               title: Text(card['name'], style: const TextStyle(fontSize: 16)),
               onTap: () async {
@@ -105,36 +83,32 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               },
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [
+                children: <Widget>[
                   // Bouton Modifier la carte
                   IconButton(
                     icon: const Icon(Icons.edit, color: Colors.blueAccent),
                     onPressed: () async {
-                      TextEditingController _controller = TextEditingController(
+                      final TextEditingController controller = TextEditingController(
                         text: card['name'],
                       );
-                      final newName = await showDialog<String>(
+                      final String? newName = await showDialog<String>(
                         context: context,
                         builder: (BuildContext context) {
                           return AlertDialog(
                             title: const Text('Modifier la carte'),
                             content: TextField(
-                              controller: _controller,
+                              controller: controller,
                               decoration: const InputDecoration(
                                 hintText: 'Nouveau nom de la carte',
                               ),
                             ),
-                            actions: [
+                            actions: <Widget>[
                               TextButton(
-                                onPressed: () => Navigator.pop(context, null),
+                                onPressed: () => Navigator.pop(context),
                                 child: const Text('Annuler'),
                               ),
                               TextButton(
-                                onPressed:
-                                    () => Navigator.pop(
-                                      context,
-                                      _controller.text,
-                                    ),
+                                onPressed: () => Navigator.pop(context, controller.text),
                                 child: const Text('Mettre à jour'),
                               ),
                             ],
@@ -155,7 +129,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                 ],
               ),
             );
-          }).toList(),
+          }),
 
           if (widget.cards.isEmpty)
             const Padding(
@@ -168,8 +142,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
             onPressed: () async {
               final newCard = await showDialog(
                 context: context,
-                builder:
-                    (BuildContext context) => CardsNew(id: widget.list['id']),
+                builder: (BuildContext context) => CardsNew(id: widget.list['id']),
               );
               if (newCard != null) widget.refreshLists();
             },
