@@ -1,6 +1,8 @@
+// ignore_for_file: deprecated_member_use
+
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
-import 'package:http/http.dart' as http;
 
 class CardsModal extends StatefulWidget {
   const CardsModal({
@@ -43,35 +45,28 @@ class _CardsModalState extends State<CardsModal> {
       widget.fetchCards(); // 🔄 Rafraîchir l'affichage après mise à jour
       widget.handleClose(); // ✅ Fermer la modale
     } else {
-      print('❌ Échec de la mise à jour');
+      // print('❌ Échec de la mise à jour');
     }
 
     setState(() => _isUpdating = false);
   }
 
-  /// 🔥 Supprimer une carte
+  /// 🔥 Supprimer une carte via `DeleteService`
   Future<void> _deleteCard() async {
     if (widget.selectedCardId == null) return;
 
     setState(() => _isDeleting = true);
 
-    final String url =
-        'https://api.trello.com/1/cards/${widget.selectedCardId}?key=$apiKey&token=$apiToken';
+    bool success = await DeleteService.deleteCard(widget.selectedCardId!);
 
-    try {
-      final http.Response response = await http.delete(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        widget.fetchCards(); // ✅ Rafraîchir CardsScreen après suppression
-        widget.handleClose(); // ✅ Fermer la modale
-      } else {
-        throw Exception('❌ Erreur API: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('❌ Erreur lors de la suppression : $error');
-    } finally {
-      setState(() => _isDeleting = false);
+    if (success) {
+      widget.fetchCards(); // ✅ Rafraîchir CardsScreen après suppression
+      widget.handleClose(); // ✅ Fermer la modale
+    } else {
+      // print('❌ Échec de la suppression');
     }
+
+    setState(() => _isDeleting = false);
   }
 
   @override
