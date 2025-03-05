@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, always_specify_types, discarded_futures
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, always_specify_types, discarded_futures, deprecated_member_use
 
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -7,7 +7,7 @@ import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 import 'package:http/http.dart' as http;
 
-/// API Trello-
+/// API Trello
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
@@ -22,39 +22,46 @@ class CardsScreen extends StatefulWidget {
 class _CardsScreenState extends State<CardsScreen> {
   List<Map<String, dynamic>> cards = [];
   bool isLoading = true;
+  String errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _loadCards(); // ✅ Appelle une méthode async sans await
+    _loadCards();
   }
 
-  /// 🔹 Méthode intermédiaire pour éviter `async` dans `initState()`
   void _loadCards() {
     _getCardsInList();
   }
 
-  /// 🔹 Récupération des cartes depuis l'API Trello
   Future<void> _getCardsInList() async {
-    setState(() => isLoading = true);
+    setState(() {
+      isLoading = true;
+      errorMessage = '';
+    });
 
-    final String url = 'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken';
+    final String url =
+        'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken';
 
     try {
       final http.Response response = await http.get(Uri.parse(url));
 
       if (response.statusCode != 200) {
-        throw Exception('Erreur API: ${response.statusCode} - ${response.body}');
+        throw Exception('Erreur API: ${response.statusCode}');
       }
 
       final List<dynamic> data = json.decode(response.body);
       setState(() {
-        cards = data.map((card) => {'id': card['id'], 'name': card['name']}).toList();
+        cards = data
+            .map((card) => {'id': card['id'], 'name': card['name']})
+            .toList();
       });
 
-      // print("✅ ${cards.length} cartes chargées !");
     } catch (error) {
-      // print("❌ Erreur lors de la requête: $error");
+      setState(() {
+        errorMessage =
+            'Impossible de charger les cartes. Vérifiez votre connexion.';
+      });
     } finally {
       setState(() => isLoading = false);
     }
@@ -62,65 +69,90 @@ class _CardsScreenState extends State<CardsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Cartes')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : cards.isNotEmpty
-                ? ListView.builder(
-                    itemCount: cards.length,
-                    itemBuilder: (context, index) {
-                      final Map<String, dynamic> card = cards[index];
+    return MaterialApp(
+      theme: ThemeData(
+        scaffoldBackgroundColor: const Color(0xFF211103), // Fond Chocolat foncé
+      ),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Cartes Trello'),
+          backgroundColor: const Color(0xFF3D1308),
+          elevation: 4,
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : errorMessage.isNotEmpty
+                  ? Center(
+                      child: Text(
+                        errorMessage,
+                        style: const TextStyle(color: Colors.red, fontSize: 16),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: cards.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        final Map<String, dynamic> card = cards[index];
 
-                      return Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: ListTile(
-                          title: Text(card['name']),
-                          onTap: () async {
-                            // print("🟢 Carte sélectionnée : ${card['name']}");
-
-                            // Ouvre la modale avec fetchCards() pour actualiser après suppression
-                            await showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return CardsModal(
-                                  taskName: card['name'],
-                                  selectedCardId: card['id'],
-                                  handleClose: () {
-                                    Navigator.of(context).pop();
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF7B0D1E), // Rouge foncé
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              title: Text(
+                                card['name'],
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFFF8E5EE), // Texte clair
+                                ),
+                              ),
+                              onTap: () async {
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return CardsModal(
+                                      taskName: card['name'],
+                                      selectedCardId: card['id'],
+                                      handleClose: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                      fetchCards: _getCardsInList,
+                                    );
                                   },
-                                  fetchCards: _getCardsInList, // ✅ Rafraîchissement après suppression
                                 );
                               },
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  )
-                : const Center(
-                    child: Text(
-                      'Aucune carte trouvée',
-                      style: TextStyle(color: Colors.grey),
+                            ),
+                          ),
+                        );
+                      },
                     ),
-                  ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final newCard = await showDialog(
-            context: context,
-            builder: (BuildContext context) => CardsNew(id: widget.id),
-          );
-          if (newCard != null) {
-            await _getCardsInList(); // ✅ Mise à jour après ajout
-          }
-        },
-        child: const Icon(Icons.add),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () async {
+            final newCard = await showDialog(
+              context: context,
+              builder: (BuildContext context) => CardsNew(id: widget.id),
+            );
+            if (newCard != null) {
+              await _getCardsInList();
+            }
+          },
+          backgroundColor: const Color(0xFF9F2042), // Rouge Framboise
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }

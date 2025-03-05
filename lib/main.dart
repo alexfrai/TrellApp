@@ -11,9 +11,9 @@ Future<void> main() async {
   /// 📌 Assure l'initialisation avant tout
   try {
     await dotenv.load();
-    print('✅ Fichier .env chargé avec succès !');
+    // print('✅ Fichier .env chargé avec succès !');
   } catch (e) {
-    print('❌ Erreur lors du chargement du fichier .env : $e');
+    // print('❌ Erreur lors du chargement du fichier .env : $e');
   }
 
   runApp(const MyApp());
@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialRoute: '/', // Démarrage sur la page d'accueil
+      initialRoute: '/', 
       routes: {
         '/': (context) => const HomeScreen(),
         '/cards': (context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
@@ -173,6 +173,7 @@ class HomeScreen extends StatelessWidget {
                   ),
               
               ],
+
             ),
           ),
         ],
