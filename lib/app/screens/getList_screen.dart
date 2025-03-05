@@ -26,8 +26,8 @@ class GetListWidgetState extends State<GetListWidget> {
   @override
   void initState() {
     super.initState();
-    _loadData(); // Initial load
-    _fetchAndUpdateLists(); // Start the continuous fetch
+    unawaited(_loadData()); // Initial load
+    unawaited(_fetchAndUpdateLists()); // Start the continuous fetch
   }
 
   // Load the data (lists and cards) initially
