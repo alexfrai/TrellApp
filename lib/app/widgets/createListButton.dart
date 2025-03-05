@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart'; // Assuming the ListService contains the createList method
 
 class Createlistbutton extends StatefulWidget {
-  const Createlistbutton({super.key, required this.BOARD_ID});
+  const Createlistbutton({required this.BOARD_ID, super.key});
   final String BOARD_ID;
 
   @override
@@ -39,7 +39,7 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
       final String listId = response['id']; // Récupère l'ID de la liste
       unawaited(ListService.updateListPos(listId, 'bottom'));
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Liste créée avec succès!')),
+        const SnackBar(content: Text('Liste créée avec succès!')),
       );
       _controller.clear();
     } catch (error) {

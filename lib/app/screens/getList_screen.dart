@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_all_cards.dart';
@@ -41,7 +43,7 @@ class GetListWidgetState extends State<GetListWidget> {
   Future<Map<String, dynamic>> _fetchData() async {
     final List<dynamic> lists = await ListService.getList(widget.boardId);
     final List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
-    return {'lists': lists, 'cards': cards};
+    return <String, dynamic>{'lists': lists, 'cards': cards};
   }
 
   /// Fetch and update lists periodically (every 10 seconds)
@@ -93,7 +95,7 @@ class GetListWidgetState extends State<GetListWidget> {
       appBar: AppBar(title: const Text('Listes et Cartes Trello')),
       body: StreamBuilder<List<dynamic>>(
         stream: _listsStreamController.stream,
-        builder: (context, snapshot) {
+        builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
@@ -102,10 +104,10 @@ class GetListWidgetState extends State<GetListWidget> {
             return const Center(child: Text('Aucune liste trouvée'));
           }
 
-          final lists = snapshot.data!;
+          final List lists = snapshot.data!;
           return FutureBuilder<Map<String, dynamic>>(
             future: _dataFuture,
-            builder: (context, dataSnapshot) {
+            builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> dataSnapshot) {
               if (dataSnapshot.connectionState == ConnectionState.waiting) {
                 return const Center(child: CircularProgressIndicator());
               } else if (dataSnapshot.hasError) {
