@@ -86,7 +86,6 @@ class _WorkspaceState extends State<Workspace> {
     if (data != null) {
       setState(() {
         boardData = data;
-        print(boardData);
       });
     }
   }
