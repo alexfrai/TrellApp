@@ -71,11 +71,12 @@ class _CardsScreenState extends State<CardsScreen> {
     });
   }
 
-  void _onCardCreated(Map<String, dynamic> newCard) {
-    setState(() {
-      cards.add(newCard);
-    });
-  }
+void _onCardCreated(Map<String, dynamic> newCard) {
+  setState(() {
+    cards.add(newCard);
+  });
+}
+
 
   @override
   Widget build(BuildContext context) {
