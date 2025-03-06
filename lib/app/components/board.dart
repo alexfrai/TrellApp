@@ -3,6 +3,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
 class Board extends StatefulWidget {
@@ -14,8 +15,8 @@ class Board extends StatefulWidget {
 }
 
 class _BoardState extends State<Board> {
-  String apiKey = 'TA_CLE_API';
-  String apiToken = 'TON_TOKEN';
+  static final String? apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'];
+  static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   String userId = '5e31418954e5fd1a91bd6ae5';
 
   Map<String, dynamic>? currentBoard;
