@@ -64,7 +64,7 @@ class _WorkspaceState extends State<Workspace> {
 
   Future<void> changeBoard(Map<String, dynamic> data) async {
     setState(() {
-      boardId = data['shortLink'];
+      boardId = data['id'];
       boardData = data;
     });
     debugPrint('Board sélectionné: $boardId');
@@ -86,6 +86,7 @@ class _WorkspaceState extends State<Workspace> {
     if (data != null) {
       setState(() {
         boardData = data;
+        print(boardData);
       });
     }
   }
@@ -194,7 +195,6 @@ class _WorkspaceState extends State<Workspace> {
                 // Menu
                 Padding(
                   padding: const EdgeInsets.all(16),
-                  
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
@@ -203,31 +203,32 @@ class _WorkspaceState extends State<Workspace> {
                         child: Column(
                           children: <Widget>[
                             ListTile(
-                        title: const Text('Boards'),
-                        textColor: Colors.white,
-                        onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/myboards'),
-                      ),
-                      ListTile(
-                        title: const Text('Members'),
-                        textColor: Colors.white,
-                        onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/members'),
-                      ),
-                      ListTile(
-                        title: const Text('Parameters'),
-                        textColor: Colors.white,
-                        onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/parameters'),
-                      ),
-
+                              title: const Text('Boards'),
+                              textColor: Colors.white,
+                              onTap:
+                                  () async =>
+                                      Navigator.pushNamed(context, '/myboards'),
+                            ),
+                            ListTile(
+                              title: const Text('Members'),
+                              textColor: Colors.white,
+                              onTap:
+                                  () async =>
+                                      Navigator.pushNamed(context, '/members'),
+                            ),
+                            ListTile(
+                              title: const Text('Parameters'),
+                              textColor: Colors.white,
+                              onTap:
+                                  () async => Navigator.pushNamed(
+                                    context,
+                                    '/parameters',
+                                  ),
+                            ),
                           ],
                         ),
                       ),
-                      
+
                       // Section des Boards
                       Row(
                         children: <Widget>[
@@ -244,7 +245,7 @@ class _WorkspaceState extends State<Workspace> {
 
                       // Liste des boards
                       SizedBox(
-                        height:  MediaQuery.of(context).size.height * 0.4,
+                        height: MediaQuery.of(context).size.height * 0.4,
                         child: ListView.builder(
                           itemCount: allBoards.length,
                           itemBuilder: (BuildContext context, int index) {
@@ -276,9 +277,8 @@ class _WorkspaceState extends State<Workspace> {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
-            child:  const Board(boardId: '67b31302370bb706da4fa2cd'),
+            child: Board(boardId: boardId),
           ),
-         
         ],
       ),
     );
