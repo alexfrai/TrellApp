@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
@@ -28,26 +29,33 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   Future<void> _getCardsInList() async {
-    setState(() => isLoading = true);
+      setState(() => isLoading = true);
 
-    try {
-      final http.Response response = await http.get(
-        Uri.parse(
-          'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken',
-        ),
-      );
+  try {
+    final http.Response response = await http.get(
+      Uri.parse(
+        'https://api.trello.com/1/lists/${widget.id}/cards?members=true&key=$apiKey&token=$apiToken',
+      ),
+    );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          cards = data.map((card) => <String, String>{'id': card['id'], 'name': card['name']}).toList();
-        });
-      }
-    } catch (error) {
-      // print('Erreur lors du chargement des cartes: $error');
-    } finally {
-      setState(() => isLoading = false);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      setState(() {
+        cards = data.map((card) {
+          List<dynamic> members = card['members'] ?? [];
+          return {
+            'id': card['id'],
+            'name': card['name'],
+            'members': members,
+          };
+        }).toList();
+      });
     }
+  } catch (error) {
+    // print('Erreur lors du chargement des cartes: $error');
+  } finally {
+    setState(() => isLoading = false);
+  }
   }
 
   void _updateCard(String cardId, String newName) {
@@ -71,6 +79,16 @@ class _CardsScreenState extends State<CardsScreen> {
     });
   }
 
+  Future<void> _createNewCard() async {
+    final newCard = await showDialog(
+      context: context,
+      builder: (BuildContext context) => CardsNew(id: widget.id),
+    );
+    if (newCard != null) {
+      _onCardCreated(newCard);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -88,17 +106,11 @@ class _CardsScreenState extends State<CardsScreen> {
                 list: {'id': widget.id, 'name': 'Nom de la liste'},
                 cards: cards,
                 refreshLists: _getCardsInList,
-                boardId: widget.boardId, // Passez boardId ici
+                boardId: widget.boardId,
               ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final newCard = await showDialog(
-            context: context,
-            builder: (BuildContext context) => CardsNew(id: widget.id),
-          );
-          if (newCard != null) _onCardCreated(newCard);
-        },
+        onPressed: _createNewCard,
         backgroundColor: const Color(0xFF9F2042),
         child: const Icon(Icons.add, color: Colors.white),
       ),

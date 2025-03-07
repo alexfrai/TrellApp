@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/services/get_member_card.dart'; // Importer le service
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 
@@ -7,20 +8,22 @@ class GetOneListWidget extends StatefulWidget {
     required this.list,
     required this.cards,
     required this.refreshLists,
-    required this.boardId, // Ajoutez boardId ici
+    required this.boardId,
     super.key,
   });
 
   final Map<String, dynamic> list;
   final List<Map<String, dynamic>> cards;
   final VoidCallback refreshLists;
-  final String boardId; // Ajoutez boardId ici
+  final String boardId;
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
 }
 
 class _GetOneListWidgetState extends State<GetOneListWidget> {
+  final GetMemberCardService _memberService = GetMemberCardService();
+
   Future<void> _createNewCard() async {
     final newCard = await showDialog(
       context: context,
@@ -72,56 +75,87 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                 itemBuilder: (BuildContext context, int index) {
                   final Map<String, dynamic> card = widget.cards[index];
 
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF7B0D1E),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.white12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            blurRadius: 6,
-                            offset: const Offset(2, 4),
+                  return FutureBuilder<List<Map<String, dynamic>>>(
+                    future: _memberService.getMembersCard(card['id']),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return ListTile(
+                          title: Text(card['name']),
+                          leading: CircularProgressIndicator(),
+                        );
+                      } else if (snapshot.hasError) {
+                        return ListTile(
+                          title: Text(card['name']),
+                          leading: Icon(Icons.error),
+                        );
+                      } else {
+                        final members = snapshot.data ?? [];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF7B0D1E),
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: Colors.white12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 6,
+                                  offset: const Offset(2, 4),
+                                ),
+                              ],
+                            ),
+                            child: ListTile(
+                              leading: members.isNotEmpty
+                                  ? CircleAvatar(
+                                      backgroundColor: Colors.brown,
+                                      child: Text(
+                                        members[0]['username'][0].toUpperCase(),
+                                        style: const TextStyle(color: Colors.white),
+                                      ),
+                                    )
+                                  : Container(
+                                      width: 40,
+                                      height: 40,
+                                      color: Colors.transparent,
+                                    ), // Placeholder for empty avatar
+                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              title: Text(
+                                card['name'],
+                                style: const TextStyle(fontSize: 16, color: Colors.white),
+                              ),
+                              onTap: () async {
+                                await showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                    return CardsModal(
+                                      taskName: card['name'],
+                                      selectedCardId: card['id'],
+                                      handleClose: () => Navigator.pop(context),
+                                      onCardUpdated: (String cardId, String newName) {
+                                        setState(() {
+                                          final int cardIndex = widget.cards.indexWhere((c) => c['id'] == cardId);
+                                          if (cardIndex != -1) {
+                                            widget.cards[cardIndex]['name'] = newName;
+                                          }
+                                        });
+                                      },
+                                      onCardDeleted: (String cardId) {
+                                        setState(() {
+                                          widget.cards.removeWhere((c) => c['id'] == cardId);
+                                        });
+                                      },
+                                      listId: widget.list['id'],
+                                      boardId: widget.boardId,
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                           ),
-                        ],
-                      ),
-                      child: ListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        title: Text(
-                          card['name'],
-                          style: const TextStyle(fontSize: 16, color: Colors.white),
-                        ),
-                        onTap: () async {
-                          await showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return CardsModal(
-                                taskName: card['name'],
-                                selectedCardId: card['id'],
-                                handleClose: () => Navigator.pop(context),
-                                onCardUpdated: (String cardId, String newName) {
-                                  setState(() {
-                                    final int cardIndex = widget.cards.indexWhere((c) => c['id'] == cardId);
-                                    if (cardIndex != -1) {
-                                      widget.cards[cardIndex]['name'] = newName;
-                                    }
-                                  });
-                                },
-                                onCardDeleted: (String cardId) {
-                                  setState(() {
-                                    widget.cards.removeWhere((c) => c['id'] == cardId);
-                                  });
-                                },
-                                listId: widget.list['id'],
-                                boardId: widget.boardId, // Passez boardId ici
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
+                        );
+                      }
+                    },
                   );
                 },
               ),
