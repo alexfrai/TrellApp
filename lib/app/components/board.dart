@@ -1,5 +1,4 @@
-// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, discarded_futures
-
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -24,6 +23,34 @@ class _BoardState extends State<Board> {
   Map<String, dynamic>? currentBoard;
   String background = '';
   bool isFavorite = false;
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadBoard();
+  }
+
+  @override
+  void didUpdateWidget(covariant Board oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.boardId != widget.boardId) {
+      _loadBoard();
+    }
+  }
+
+  Future<void> _loadBoard() async {
+    setState(() {
+      isLoading = true;
+    });
+    final boardData = await fetchBoard();
+    setState(() {
+      currentBoard = boardData;
+      background = currentBoard?['prefs']['backgroundImage'] ?? '';
+      isFavorite = currentBoard?['starred'] ?? false;
+      isLoading = false;
+    });
+  }
 
   Future<Map<String, dynamic>?> fetchBoard() async {
     final String url =
@@ -33,11 +60,9 @@ class _BoardState extends State<Board> {
       if (response.statusCode == 200) {
         return json.decode(response.body);
       } else {
-        // print('Erreur HTTP: ${response.statusCode}');
         return null;
       }
     } catch (error) {
-      // print('Erreur dans fetchBoard : $error');
       return null;
     }
   }
@@ -48,103 +73,91 @@ class _BoardState extends State<Board> {
     } else {
       await addBoardToFavorites();
     }
+    setState(() {
+      isFavorite = !isFavorite;
+    });
   }
 
   Future<void> addBoardToFavorites() async {
     final String url =
         'https://api.trello.com/1/members/$userId/boardStars?idBoard=${widget.boardId}&pos=bottom&key=$apiKey&token=$apiToken';
     await http.post(Uri.parse(url));
-    setState(() {
-      isFavorite = true;
-    });
   }
 
   Future<void> removeBoardFromFavorites() async {
     final String url =
         'https://api.trello.com/1/members/$userId/boardStars/${widget.boardId}?key=$apiKey&token=$apiToken';
     await http.delete(Uri.parse(url));
-    setState(() {
-      isFavorite = false;
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, dynamic>?>(
-      future: fetchBoard(),
-      builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError || snapshot.data == null) {
-          return const Center(child: Text('Erreur lors du chargement du board'));
-        }
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (currentBoard == null) {
+      return const Center(child: Text('Erreur lors du chargement du board'));
+    }
 
-        currentBoard = snapshot.data;
-        background = currentBoard?['prefs']['backgroundImage'] ?? '';
-        isFavorite = currentBoard?['starred'] ?? false;
-
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            image: background.isNotEmpty
-                ? DecorationImage(
-                    image: NetworkImage(background),
-                    fit: BoxFit.cover,
-                  )
-                : null,
-          ),
-          child: Column(
-            children: <Widget>[
-              // Header
-              Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        image: background.isNotEmpty
+            ? DecorationImage(
+                image: NetworkImage(background),
+                fit: BoxFit.cover,
+              )
+            : null,
+      ),
+      child: Column(
+        children: <Widget>[
+          // Header
+          Padding(
+            padding: const EdgeInsets.all(10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Row(
                   children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text(
-                          currentBoard?['name'] ?? 'Board',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: handleFavorite,
-                          icon: Icon(
-                            isFavorite ? Icons.star : Icons.star_border,
-                            color: Colors.yellow,
-                          ),
-                        ),
-                      ],
+                    Text(
+                      currentBoard?['name'] ?? 'Board',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
                     ),
-                    Row(
-                      children: <Widget>[
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.visibility),
-                          label: const Text('Visibility'),
-                        ),
-                        const SizedBox(width: 10),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: const Icon(Icons.person_add_alt),
-                          label: const Text('Share'),
-                        ),
-                      ],
+                    IconButton(
+                      onPressed: handleFavorite,
+                      icon: Icon(
+                        isFavorite ? Icons.star : Icons.star_border,
+                        color: Colors.yellow,
+                      ),
                     ),
                   ],
                 ),
-              ),
-              // Body - Ici, tu peux afficher les listes et cartes
-              Expanded(
-                child: GetListWidget(boardId: widget.boardId),
-              ),
-            ],
+                Row(
+                  children: <Widget>[
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.visibility),
+                      label: const Text('Visibility'),
+                    ),
+                    const SizedBox(width: 10),
+                    ElevatedButton.icon(
+                      onPressed: () {},
+                      icon: const Icon(Icons.person_add_alt),
+                      label: const Text('Share'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-        );
-      },
+          // Body - Ici, tu peux afficher les listes et cartes
+          Expanded(
+            child: GetListWidget(boardId: widget.boardId),
+          ),
+        ],
+      ),
     );
   }
 }
