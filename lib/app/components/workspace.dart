@@ -25,8 +25,8 @@ class _WorkspaceState extends State<Workspace> {
 
   String boardId = 'XuEuw84e';
   String boardName = '';
-  Map<String, dynamic> boardData = <String, >{};
-  List<dynamic> allBoards = <>[];
+  Map<String, dynamic> boardData = {};
+  List<dynamic> allBoards = [];
   String curentWorkspace = '';
 
   bool isLoading = true;
@@ -153,9 +153,8 @@ class _WorkspaceState extends State<Workspace> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Row(
       appBar: AppBar(title: const Text('Accueil')),
-      body:
+      body: Row(
       // ✅ Le header prend uniquement sa hauteur naturelle
       //const Header(),
 
