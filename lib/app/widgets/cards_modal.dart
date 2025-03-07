@@ -1,22 +1,28 @@
-// ignore_for_file: deprecated_member_use
+// ignore_for_file: public_member_api_docs, always_specify_types, deprecated_member_use, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
+import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 
 class CardsModal extends StatefulWidget {
   const CardsModal({
     required this.taskName,
     required this.selectedCardId,
     required this.handleClose,
-    required this.fetchCards,
+    required this.onCardUpdated,
+    required this.onCardDeleted,
+    required this.listId, // ✅ Ajout du paramètre listId
     super.key,
   });
 
   final String taskName;
   final String? selectedCardId;
+  final String listId; // ✅ ID de la liste pour l'ajout de carte
   final VoidCallback handleClose;
-  final VoidCallback fetchCards;
+  final Function(String, String) onCardUpdated;
+  final Function(String) onCardDeleted;
+
 
   @override
   _CardsModalState createState() => _CardsModalState();
@@ -30,43 +36,47 @@ class _CardsModalState extends State<CardsModal> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.taskName; // Charger le nom actuel de la carte
+    _nameController.text = widget.taskName;
   }
 
-  /// 🔄 Mettre à jour le nom de la carte via l'API
   Future<void> _updateCardName() async {
     if (widget.selectedCardId == null || _nameController.text.isEmpty) return;
 
     setState(() => _isUpdating = true);
 
-    bool success = await UpdateService.updateCard(widget.selectedCardId!, _nameController.text);
+    final bool success = await UpdateService.updateCard(widget.selectedCardId!, _nameController.text);
 
     if (success) {
-      widget.fetchCards(); // 🔄 Rafraîchir l'affichage après mise à jour
-      widget.handleClose(); // ✅ Fermer la modale
-    } else {
-      // print('❌ Échec de la mise à jour');
+      widget.onCardUpdated(widget.selectedCardId!, _nameController.text);
+      widget.handleClose();
     }
 
     setState(() => _isUpdating = false);
   }
 
-  /// 🔥 Supprimer une carte via `DeleteService`
   Future<void> _deleteCard() async {
     if (widget.selectedCardId == null) return;
 
     setState(() => _isDeleting = true);
 
-    bool success = await DeleteService.deleteCard(widget.selectedCardId!);
+    final bool success = await DeleteService.deleteCard(widget.selectedCardId!);
 
     if (success) {
-      widget.fetchCards(); // ✅ Rafraîchir CardsScreen après suppression
-      widget.handleClose(); // ✅ Fermer la modale
-    } else {
-      // print('❌ Échec de la suppression');
+      widget.onCardDeleted(widget.selectedCardId!);
+      widget.handleClose();
     }
 
     setState(() => _isDeleting = false);
+  }
+
+  Future<void> _createNewCard() async {
+    final newCard = await showDialog(
+      context: context,
+      builder: (BuildContext context) => CardsNew(id: widget.listId),
+    );
+    if (newCard != null) {
+      widget.handleClose(); // Ferme le modal après création
+    }
   }
 
   @override
@@ -76,15 +86,15 @@ class _CardsModalState extends State<CardsModal> {
       elevation: 10,
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.7,
+        width: MediaQuery.of(context).size.width * 0.8,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: const Color(0xFF3D1308),
+          color: const Color(0xFF3D1308), // Fond bordeaux foncé
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withOpacity(0.25),
-              blurRadius: 12,
+              blurRadius: 10,
               spreadRadius: 3,
               offset: const Offset(0, 6),
             ),
@@ -93,7 +103,18 @@ class _CardsModalState extends State<CardsModal> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            // 🔄 Champ pour modifier le nom de la carte
+            // 🌟 Titre du modal
+            const Text(
+              'Gérer la Carte',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFF8E5EE),
+              ),
+            ),
+            const SizedBox(height: 16),
+
+            // 📝 Champ pour modifier le nom de la carte
             TextField(
               controller: _nameController,
               style: const TextStyle(color: Colors.white, fontSize: 18),
@@ -109,7 +130,7 @@ class _CardsModalState extends State<CardsModal> {
             ),
             const SizedBox(height: 16),
 
-            // 📜 Description
+            // 📜 Description placeholder
             const Text(
               'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '
               'Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget.',
@@ -118,7 +139,7 @@ class _CardsModalState extends State<CardsModal> {
             ),
             const SizedBox(height: 16),
 
-            // Boutons actions
+            // 🎛️ Boutons actions : Modifier, Supprimer, Ajouter une carte
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: <Widget>[
@@ -128,13 +149,8 @@ class _CardsModalState extends State<CardsModal> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   child: _isUpdating
                       ? const CircularProgressIndicator(color: Colors.white)
@@ -150,17 +166,25 @@ class _CardsModalState extends State<CardsModal> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.redAccent,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
                     child: const Text('Supprimer'),
                   ),
               ],
+            ),
+            const SizedBox(height: 16),
+
+            // ➕ Bouton Ajouter une carte
+            ElevatedButton(
+              onPressed: _createNewCard,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9F2042), // Rouge Framboise
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Ajouter une nouvelle carte'),
             ),
           ],
         ),

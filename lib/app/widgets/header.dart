@@ -1,8 +1,9 @@
 // ignore_for_file: library_private_types_in_public_api, public_member_api_docs
 
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/services/workspace_service.dart';
 
-/// header
+/// Header
 class Header extends StatefulWidget {
   const Header({super.key});
 
@@ -17,30 +18,27 @@ class _HeaderState extends State<Header> {
   List<String> favoriteBoards = <String>[];
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
-    await fetchData();
+    fetchData();
   }
 
   Future<void> fetchData() async {
     try {
-      final List<String> fetchedWorkspaces = await GetAllWorkspaces(userId);
-      final List<String> fetchedFavoriteBoards = await GetBoardFromFavorite(
-        userId,
-      );
-
+      final List<dynamic>? fetchedWorkspaces = await WorkspaceService.getAllWorkspaces(userId);
+      
       setState(() {
-        workspaces = fetchedWorkspaces;
-        favoriteBoards = fetchedFavoriteBoards;
+        workspaces = fetchedWorkspaces?.map((workspace) => workspace['name'].toString()).toList() ?? <String>[];
       });
     } catch (e) {
-      // print('Erreur lors du chargement des données : $e');
+      //print('❌ Erreur lors du chargement des données : $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      height: 100,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: Colors.grey[800],
       child: Row(
@@ -85,13 +83,12 @@ class _HeaderState extends State<Header> {
     return DropdownButton<String>(
       dropdownColor: Colors.grey[900],
       hint: Text(label, style: const TextStyle(color: Colors.white)),
-      items:
-          options.map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value, style: const TextStyle(color: Colors.white)),
-            );
-          }).toList(),
+      items: options.map((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value, style: const TextStyle(color: Colors.white)),
+        );
+      }).toList(),
       onChanged: (String? value) {
         // Gérer la sélection
       },

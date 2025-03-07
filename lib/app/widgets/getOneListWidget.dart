@@ -1,130 +1,155 @@
+// ignore_for_file: public_member_api_docs, deprecated_member_use, always_specify_types
+
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
-import 'package:flutter_trell_app/app/widgets/list_modal.dart'; // Ajoute l'import de ton list_modal.dart
-import 'package:http/http.dart' as http;
-
-/// API KEYS
-final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
-final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class GetOneListWidget extends StatefulWidget {
-  final Map<String, dynamic> list;
-  final List<Map<String, dynamic>> cards;
-  final Function() refreshLists; // Ajout d'une fonction de rafraîchissement
-
   const GetOneListWidget({
-    super.key,
     required this.list,
     required this.cards,
     required this.refreshLists,
+    super.key,
   });
+
+  final Map<String, dynamic> list;
+  final List<Map<String, dynamic>> cards;
+  final VoidCallback refreshLists;
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
 }
 
 class _GetOneListWidgetState extends State<GetOneListWidget> {
-  bool _isLoading = false;
-
-  /// 🔥 Supprimer une carte depuis l'API Trello
-  Future<void> _deleteCard(String cardId) async {
-    setState(() => _isLoading = true);
-
-    final String url =
-        'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
-
-    try {
-      final http.Response response = await http.delete(Uri.parse(url));
-
-      if (response.statusCode == 200) {
-        widget.refreshLists(); // 🔄 Rafraîchir après suppression
-      } else {
-        throw Exception('❌ Erreur API: ${response.statusCode}');
-      }
-    } catch (error) {
-      print('❌ Erreur lors de la suppression : $error');
-    } finally {
-      setState(() => _isLoading = false);
+  Future<void> _createNewCard() async {
+    final newCard = await showDialog(
+      context: context,
+      builder: (BuildContext context) => CardsNew(id: widget.list['id']),
+    );
+    if (newCard != null) {
+      setState(() {
+        widget.cards.add(newCard);
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-      child: ExpansionTile(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              widget.list['name'],
-              style: const TextStyle(fontWeight: FontWeight.bold),
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert),
-              onPressed: () async {
-                // Ouvre le menu déroulant
-                await showDialog(
-                  context: context,
-                  builder: (BuildContext context) => ListModal(
-                    listId: widget.list['id'], // Passe l'ID de la liste
-                  ),
-                );
-              },
-            ),
-          ],
-        ),
-        subtitle: Text("ID: ${widget.list['id']}"),
-        children: <Widget>[
-          // 📌 Bouton pour ajouter une carte
-          TextButton.icon(
-            onPressed: () async {
-              final newCard = await showDialog(
-                context: context,
-                builder: (BuildContext context) => CardsNew(id: widget.list['id']),
-              );
-              if (newCard != null) widget.refreshLists();
-            },
-            icon: const Icon(Icons.add),
-            label: const Text("Ajouter une carte"),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16), // ✅ Ajout de marges extérieures
+      padding: const EdgeInsets.all(12), // ✅ Ajout de padding interne
+      decoration: BoxDecoration(
+        color: const Color(0xFF3D1308), // ✅ Fond bordeaux foncé pour la liste
+        borderRadius: BorderRadius.circular(12), // ✅ Coins arrondis
+        border: Border.all(color: Colors.white24, width: 2), // ✅ Bordure fine blanche
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.3), // ✅ Ombre pour effet 3D
+            blurRadius: 6,
+            offset: const Offset(2, 4),
           ),
-
-          // 📌 Liste des cartes
-          ...widget.cards.map((card) {
-            return ListTile(
-              title: Text(
-                card['name'],
-                style: const TextStyle(fontSize: 16),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 📌 Titre de la liste avec un padding
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+            child: Text(
+              widget.list['name'],
+              style: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-              onTap: () async {
-                await showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    return CardsModal(
-                      taskName: card['name'],
-                      selectedCardId: card['id'],
-                      handleClose: () {
-                        Navigator.of(context).pop();
-                      },
-                      fetchCards: widget.refreshLists,
-                    );
-                  },
-                );
-              },
-              trailing: IconButton(
-                icon: const Icon(Icons.delete, color: Colors.redAccent),
-                onPressed: () => _deleteCard(card['id']),
-              ),
-            );
-          }).toList(),
-
-          if (widget.cards.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text("Aucune carte dans cette liste"),
             ),
+          ),
+          const SizedBox(height: 8),
+
+          // 📜 Affichage des cartes avec espacement et style
+          if (widget.cards.isNotEmpty) Expanded(
+                  child: ListView.builder(
+                    itemCount: widget.cards.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final Map<String, dynamic> card = widget.cards[index];
+
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF7B0D1E), // ✅ Rouge foncé pour les cartes
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Colors.white12), // ✅ Bordure légère
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.2),
+                                blurRadius: 6,
+                                offset: const Offset(2, 4),
+                              ),
+                            ],
+                          ),
+                          child: ListTile(
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            title: Text(
+                              card['name'],
+                              style: const TextStyle(fontSize: 16, color: Colors.white),
+                            ),
+                            onTap: () async {
+                              await showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return CardsModal(
+                                    taskName: card['name'],
+                                    selectedCardId: card['id'],
+                                    handleClose: () => Navigator.pop(context),
+                                    onCardUpdated: (String cardId, String newName) {
+                                      setState(() {
+                                        final int cardIndex = widget.cards.indexWhere((c) => c['id'] == cardId);
+                                        if (cardIndex != -1) {
+                                          widget.cards[cardIndex]['name'] = newName;
+                                        }
+                                      });
+                                    },
+                                    onCardDeleted: (String cardId) {
+                                      setState(() {
+                                        widget.cards.removeWhere((c) => c['id'] == cardId);
+                                      });
+                                    },
+                                    listId: widget.list['id'],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ) else const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    'Aucune carte dans cette liste',
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                ),
+
+          const SizedBox(height: 10),
+
+          // ➕ Bouton Ajouter une carte avec plus de padding
+          Center(
+            child: ElevatedButton(
+              onPressed: _createNewCard,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF9F2042), // ✅ Rouge Framboise
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              child: const Text('Ajouter une carte'),
+            ),
+          ),
+          const SizedBox(height: 10),
         ],
       ),
     );
