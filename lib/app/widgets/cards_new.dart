@@ -40,7 +40,7 @@ class _CardsNewState extends State<CardsNew> {
         Navigator.pop(context, {
           'id': newCard['id'],
           'name': newCard['name'],
-        }); // ✅ Retourne la nouvelle carte
+        }); 
       }
     }
 

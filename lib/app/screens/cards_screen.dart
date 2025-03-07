@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs
-
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -8,15 +6,13 @@ import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 import 'package:http/http.dart' as http;
 
-/// API KEY
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
-
-/// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class CardsScreen extends StatefulWidget {
-  const CardsScreen({required this.id, super.key});
+  const CardsScreen({required this.id, required this.boardId, super.key});
   final String id;
+  final String boardId;
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -33,29 +29,33 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   Future<void> _getCardsInList() async {
-    setState(() => isLoading = true);
+      setState(() => isLoading = true);
 
-    try {
-      final http.Response response = await http.get(
-        Uri.parse(
-          'https://api.trello.com/1/lists/${widget.id}/cards?key=$apiKey&token=$apiToken',
-        ),
-      );
+  try {
+    final http.Response response = await http.get(
+      Uri.parse(
+        'https://api.trello.com/1/lists/${widget.id}/cards?members=true&key=$apiKey&token=$apiToken',
+      ),
+    );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        setState(() {
-          cards =
-              data
-                  .map((card) => <String, String>{'id': card['id'], 'name': card['name']})
-                  .toList();
-        });
-      }
-    } catch (error) {
-      // print('Erreur lors du chargement des cartes: $error');
-    } finally {
-      setState(() => isLoading = false);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      setState(() {
+        cards = data.map((card) {
+          List<dynamic> members = card['members'] ?? [];
+          return {
+            'id': card['id'],
+            'name': card['name'],
+            'members': members,
+          };
+        }).toList();
+      });
     }
+  } catch (error) {
+    // print('Erreur lors du chargement des cartes: $error');
+  } finally {
+    setState(() => isLoading = false);
+  }
   }
 
   void _updateCard(String cardId, String newName) {
@@ -79,36 +79,39 @@ class _CardsScreenState extends State<CardsScreen> {
     });
   }
 
+  Future<void> _createNewCard() async {
+    final newCard = await showDialog(
+      context: context,
+      builder: (BuildContext context) => CardsNew(id: widget.id),
+    );
+    if (newCard != null) {
+      _onCardCreated(newCard);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF211103), // 🍫 Fond chocolat foncé
+      backgroundColor: const Color(0xFF211103),
       appBar: AppBar(
         title: const Text('Cartes Trello'),
-        backgroundColor: const Color(0xFF3D1308), // Rouge foncé
+        backgroundColor: const Color(0xFF3D1308),
         elevation: 4,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
-        child:
-            isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : GetOneListWidget(
-                  list: <String, dynamic>{'id': widget.id, 'name': 'Nom de la liste'},
-                  cards: cards,
-                  refreshLists:
-                      _getCardsInList, // ✅ Gardé pour d'autres cas, mais pas utilisé à chaque ajout
-                ),
+        child: isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : GetOneListWidget(
+                list: {'id': widget.id, 'name': 'Nom de la liste'},
+                cards: cards,
+                refreshLists: _getCardsInList,
+                boardId: widget.boardId,
+              ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final newCard = await showDialog(
-            context: context,
-            builder: (BuildContext context) => CardsNew(id: widget.id),
-          );
-          if (newCard != null) _onCardCreated(newCard);
-        },
-        backgroundColor: const Color(0xFF9F2042), // Rouge Framboise
+        onPressed: _createNewCard,
+        backgroundColor: const Color(0xFF9F2042),
         child: const Icon(Icons.add, color: Colors.white),
       ),
     );

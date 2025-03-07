@@ -1,5 +1,3 @@
-// ignore_for_file: always_specify_types
-
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/components/workspace.dart';
@@ -10,10 +8,8 @@ import 'package:flutter_trell_app/app/widgets/header.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  /// 📌 Assure l'initialisation avant tout
   try {
     await dotenv.load();
-    // print('✅ Fichier .env chargé avec succès !');
   } catch (e) {
     // print('❌ Erreur lors du chargement du fichier .env : $e');
   }
@@ -21,9 +17,7 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-///Main
 class MyApp extends StatelessWidget {
-  ///Constructor
   const MyApp({super.key});
 
   @override
@@ -34,21 +28,20 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: <String, WidgetBuilder>{
         '/': (BuildContext context) => const HomeScreen(),
-        '/cards':
-            (BuildContext context) =>
-                const CardsScreen(id: '67bc36eac821fc127236093a'),
-        '/getlist':
-            (BuildContext context) =>
-                const GetListWidget(boardId: '67b31302370bb706da4fa2cd'),
+        '/cards': (BuildContext context) => const CardsScreen(
+              id: '67bc36eac821fc127236093a',
+              boardId: '67b31302370bb706da4fa2cd', 
+            ),
+        '/getlist': (BuildContext context) => const GetListWidget(
+              boardId: '67b31302370bb706da4fa2cd',
+            ),
         '/workspace': (BuildContext context) => const Workspace(),
       },
     );
   }
 }
 
-///
 class HomeScreen extends StatelessWidget {
-  ///
   const HomeScreen({super.key});
 
   @override
@@ -57,14 +50,10 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Accueil')),
       body: Column(
         children: <Widget>[
-          // ✅ Le header prend uniquement sa hauteur naturelle
           const Header(),
-
-          // ✅ La partie principale prend toute la hauteur restante
           Expanded(
             child: Row(
               children: <Widget>[
-                // ✅ Colonne de gauche (Menu)
                 Expanded(
                   flex: 3,
                   child: ColoredBox(
@@ -107,8 +96,6 @@ class HomeScreen extends StatelessWidget {
                           child: const Text('Parameters'),
                         ),
                         const SizedBox(height: 20),
-
-                        // ✅ Section des Boards
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: <Widget>[
@@ -129,8 +116,6 @@ class HomeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-
-                // ✅ Colonne de droite (Zone principale)
                 Expanded(
                   flex: 7,
                   child: ColoredBox(

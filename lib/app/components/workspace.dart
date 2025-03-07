@@ -25,7 +25,7 @@ class _WorkspaceState extends State<Workspace> {
 
   String boardId = 'XuEuw84e';
   String boardName = '';
-  Map<String, dynamic> boardData = {};
+  Map<String, dynamic> boardData = <String, dynamic>{};
   List<dynamic> allBoards = [];
   String curentWorkspace = '';
 
