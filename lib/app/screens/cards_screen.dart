@@ -47,7 +47,7 @@ class _CardsScreenState extends State<CardsScreen> {
         setState(() {
           cards =
               data
-                  .map((card) => <String, >{'id': card['id'], 'name': card['name']})
+                  .map((card) => <String, String>{'id': card['id'], 'name': card['name']})
                   .toList();
         });
       }
