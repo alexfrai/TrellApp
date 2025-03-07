@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, always_specify_types
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';

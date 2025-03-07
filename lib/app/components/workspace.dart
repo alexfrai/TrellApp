@@ -25,8 +25,8 @@ class _WorkspaceState extends State<Workspace> {
 
   String boardId = 'XuEuw84e';
   String boardName = '';
-  Map<String, dynamic> boardData = {};
-  List<dynamic> allBoards = [];
+  Map<String, dynamic> boardData = <String, >{};
+  List<dynamic> allBoards = <>[];
   String curentWorkspace = '';
 
   bool isLoading = true;
@@ -45,6 +45,7 @@ class _WorkspaceState extends State<Workspace> {
 
   Future<dynamic> fetchApi(String apiRequest, String method) async {
     try {
+
       final http.Response response =
           await (method == 'POST'
               ? http.post(Uri.parse(apiRequest))
@@ -71,6 +72,7 @@ class _WorkspaceState extends State<Workspace> {
 
   Future<void> createBoard() async {
     await fetchApi(
+
       'https://api.trello.com/1/boards/?name=$boardName&key=$apiKey&token=$apiToken',
       'POST',
     );
@@ -82,6 +84,7 @@ class _WorkspaceState extends State<Workspace> {
       'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken',
       'GET',
     );
+
     if (data != null) {
       setState(() {
         boardData = data;
@@ -90,6 +93,7 @@ class _WorkspaceState extends State<Workspace> {
   }
 
   Future<void> getCurentWorkspace() async {
+
     final dynamic data = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
       'GET',
@@ -102,6 +106,7 @@ class _WorkspaceState extends State<Workspace> {
   }
 
   Future<void> getAllBoards() async {
+
     final dynamic boards = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken',
       'GET',
@@ -148,11 +153,12 @@ class _WorkspaceState extends State<Workspace> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      body: Row(
       appBar: AppBar(title: const Text('Accueil')),
       body:
       // ✅ Le header prend uniquement sa hauteur naturelle
       //const Header(),
-      Row(
+
         children: <Widget>[
           // Sidebar
           Container(
