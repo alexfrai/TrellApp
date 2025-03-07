@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
+///Service Class
 class WorkspaceService {
   static final String? _apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'];
   static final String? _apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
@@ -19,7 +20,7 @@ class WorkspaceService {
         throw Exception('Erreur HTTP: ${response.statusCode} ${response.reasonPhrase}');
       }
     } catch (error) {
-      print('❌ Erreur dans getAllWorkspaces : $error');
+      //print('❌ Erreur dans getAllWorkspaces : $error');
       return null;
     }
   }

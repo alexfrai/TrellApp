@@ -21,40 +21,45 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
+///Main
 class MyApp extends StatelessWidget {
+  ///Constructor
   const MyApp({super.key});
-
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(primarySwatch: Colors.blue),
-      initialRoute: '/', 
-      routes: {
-        '/': (context) => const HomeScreen(),
-        '/cards': (context) => const CardsScreen(id: '67bc36eac821fc127236093a'),
-        '/getlist': (context) => const GetListWidget(boardId: '67b31302370bb706da4fa2cd'),
-        '/workspace' : (BuildContext context) => const Workspace(),
+      initialRoute: '/',
+      routes: <String, WidgetBuilder>{
+        '/': (BuildContext context) => const HomeScreen(),
+        '/cards':
+            (BuildContext context) =>
+                const CardsScreen(id: '67bc36eac821fc127236093a'),
+        '/getlist':
+            (BuildContext context) =>
+                const GetListWidget(boardId: '67b31302370bb706da4fa2cd'),
+        '/workspace': (BuildContext context) => const Workspace(),
       },
     );
   }
 }
 
+///
 class HomeScreen extends StatelessWidget {
+  ///
   const HomeScreen({super.key});
-
-  
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Accueil')),
       body: Column(
-        children: [
+        children: <Widget>[
           // ✅ Le header prend uniquement sa hauteur naturelle
           const Header(),
-        
+
           // ✅ La partie principale prend toute la hauteur restante
           Expanded(
             child: Row(
@@ -63,83 +68,67 @@ class HomeScreen extends StatelessWidget {
                 Expanded(
                   flex: 3,
                   child: ColoredBox(
-                        color: const Color.fromARGB(255, 62, 62, 62),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () {
-                                // print('🟢 Navigation vers CardsScreen...');
-                                Navigator.pushNamed(context, '/workspace');
-                              },
-                              child: const Text('Voir les cartes'),
-                            ),
-                            const SizedBox(height: 20),
-                            ElevatedButton(
-                              onPressed: () {
-                                // print('🟢 Navigation vers GetList...');
-                                Navigator.pushNamed(context, '/getlist');
-                              },
-                              child: const Text('Voir les listes'),
-                            ),
-                            const SizedBox(height: 30),
-                            TextButton(
-                              onPressed: () {
-                                // print('🟢 Navigation vers Tableaux...');
-                                Navigator.pushNamed(context, '/boards');
-                              },
-                              child: const Text('Boards'),
-                            ),
-                            const SizedBox(height: 10),
-                            TextButton(
-                              onPressed: () {
-                                // print('🟢 Navigation vers Membres...');
-                                Navigator.pushNamed(context, '/members');
-                              },
-                              child: const Text('Members'),
-                            ),
-                            const SizedBox(height: 10),
-                            TextButton(
-                              onPressed: () {
-                                // print('🟢 Navigation vers Paramètres...');
-                                Navigator.pushNamed(context, '/parameter');
-                              },
-                              child: const Text('Parameters'),
-                            ),
-                            const SizedBox(height: 20),
+                    color: const Color.fromARGB(255, 62, 62, 62),
+                    child: Column(
+                      children: <Widget>[
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await Navigator.pushNamed(context, '/workspace');
+                          },
+                          child: const Text('Voir les cartes'),
+                        ),
+                        const SizedBox(height: 20),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await Navigator.pushNamed(context, '/getlist');
+                          },
+                          child: const Text('Voir les listes'),
+                        ),
+                        const SizedBox(height: 30),
+                        TextButton(
+                          onPressed: () async {
+                            await Navigator.pushNamed(context, '/boards');
+                          },
+                          child: const Text('Boards'),
+                        ),
+                        const SizedBox(height: 10),
+                        TextButton(
+                          onPressed: () async {
+                            await Navigator.pushNamed(context, '/members');
+                          },
+                          child: const Text('Members'),
+                        ),
+                        const SizedBox(height: 10),
+                        TextButton(
+                          onPressed: () async {
+                            await Navigator.pushNamed(context, '/parameter');
+                          },
+                          child: const Text('Parameters'),
+                        ),
+                        const SizedBox(height: 20),
 
-                            // ✅ Section des Boards
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Text(
-                                  'Boards list',
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () {},
-                                  child: const Text(
-                                    '+',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                ),
-                              ],
+                        // ✅ Section des Boards
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Text(
+                              'Boards list',
+                              style: TextStyle(color: Colors.white),
                             ),
-                            const Column(
-                              children: [
-                                
-                              ],
+                            TextButton(
+                              onPressed: () {},
+                              child: const Text(
+                                '+',
+                                style: TextStyle(color: Colors.white),
+                              ),
                             ),
                           ],
                         ),
-                      ),
+                      ],
                     ),
-                  
-               
+                  ),
+                ),
 
                 // ✅ Colonne de droite (Zone principale)
                 Expanded(
@@ -147,35 +136,29 @@ class HomeScreen extends StatelessWidget {
                   child: ColoredBox(
                     color: const Color.fromARGB(255, 108, 108, 108),
                     child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 10),
-                          Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ElevatedButton.icon(
-                                onPressed: () {
-                                  // print('🟢 Like button pressed');
-                                },
-                                icon: const Icon(Icons.thumb_up),
-                                label: const Text('Like'),
-                              ),
-                              const SizedBox(width: 10),
-                              ElevatedButton(
-                                onPressed: () {
-                                  // print('🟢 Next button pressed');
-                                },
-                                child: const Text('Next'),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        const SizedBox(height: 10),
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            ElevatedButton.icon(
+                              onPressed: () {},
+                              icon: const Icon(Icons.thumb_up),
+                              label: const Text('Like'),
+                            ),
+                            const SizedBox(width: 10),
+                            ElevatedButton(
+                              onPressed: () {},
+                              child: const Text('Next'),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-              
+                ),
               ],
-
             ),
           ),
         ],

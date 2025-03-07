@@ -2,15 +2,17 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/components/board.dart';
 import 'package:http/http.dart' as http;
-
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? '';
 /// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 
+///Class
 class Workspace extends StatefulWidget {
+  ///Constructor
   const Workspace({super.key});
 
   @override
@@ -43,10 +45,11 @@ class _WorkspaceState extends State<Workspace> {
 
   Future<dynamic> fetchApi(String apiRequest, String method) async {
     try {
-      print(apiRequest);
-      final http.Response response = await (method == 'POST'
-          ? http.post(Uri.parse(apiRequest))
-          : http.get(Uri.parse(apiRequest)));
+
+      final http.Response response =
+          await (method == 'POST'
+              ? http.post(Uri.parse(apiRequest))
+              : http.get(Uri.parse(apiRequest)));
 
       if (response.statusCode != 200) {
         throw Exception('Erreur HTTP: ${response.statusCode}');
@@ -61,7 +64,7 @@ class _WorkspaceState extends State<Workspace> {
 
   Future<void> changeBoard(Map<String, dynamic> data) async {
     setState(() {
-      boardId = data['shortLink'];
+      boardId = data['id'];
       boardData = data;
     });
     debugPrint('Board sélectionné: $boardId');
@@ -69,16 +72,19 @@ class _WorkspaceState extends State<Workspace> {
 
   Future<void> createBoard() async {
     await fetchApi(
-        'https://api.trello.com/1/boards/?name=$boardName&key=$apiKey&token=$apiToken',
-        'POST',);
-        print(apiKey);
-    getAllBoards();
+
+      'https://api.trello.com/1/boards/?name=$boardName&key=$apiKey&token=$apiToken',
+      'POST',
+    );
+    await getAllBoards();
   }
 
   Future<void> getBoard() async {
-    final data = await fetchApi(
-        'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken',
-        'GET',);
+    final dynamic data = await fetchApi(
+      'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken',
+      'GET',
+    );
+
     if (data != null) {
       setState(() {
         boardData = data;
@@ -87,9 +93,11 @@ class _WorkspaceState extends State<Workspace> {
   }
 
   Future<void> getCurentWorkspace() async {
-    final data = await fetchApi(
-        'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
-        'GET',);
+
+    final dynamic data = await fetchApi(
+      'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
+      'GET',
+    );
     if (data != null) {
       setState(() {
         curentWorkspace = data['displayName'];
@@ -98,9 +106,11 @@ class _WorkspaceState extends State<Workspace> {
   }
 
   Future<void> getAllBoards() async {
-    final boards = await fetchApi(
-        'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken',
-        'GET',);
+
+    final dynamic boards = await fetchApi(
+      'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken',
+      'GET',
+    );
     if (boards != null) {
       setState(() {
         allBoards = boards;
@@ -108,14 +118,13 @@ class _WorkspaceState extends State<Workspace> {
     }
   }
 
-  void showCreateBoardDialog() {
-    showDialog(
+  Future<void> showCreateBoardDialog() async {
+    await showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('Créer un nouveau board'),
           content: Column(
-
             children: <Widget>[
               TextField(
                 decoration: const InputDecoration(labelText: 'Nom du board'),
@@ -145,6 +154,11 @@ class _WorkspaceState extends State<Workspace> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
+      appBar: AppBar(title: const Text('Accueil')),
+      body:
+      // ✅ Le header prend uniquement sa hauteur naturelle
+      //const Header(),
+
         children: <Widget>[
           // Sidebar
           Container(
@@ -157,19 +171,26 @@ class _WorkspaceState extends State<Workspace> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide()),
+                    border: Border(
+                      bottom: BorderSide(
+                        color: Color.fromARGB(255, 38, 38, 38),
+                      ),
+                    ),
                   ),
                   child: Row(
                     children: <Widget>[
                       CircleAvatar(
-                        child: Text(curentWorkspace.isNotEmpty
-                            ? curentWorkspace[0]
-                            : '?',),
+                        child: Text(
+                          curentWorkspace.isNotEmpty ? curentWorkspace[0] : '?',
+                        ),
                       ),
                       const SizedBox(width: 10),
                       Text(
                         curentWorkspace,
-                        style: const TextStyle(color: Colors.white, fontSize: 18),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
                       ),
                     ],
                   ),
@@ -181,27 +202,44 @@ class _WorkspaceState extends State<Workspace> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      ListTile(
-                        title: const Text('Boards'),
-                        textColor: Colors.white,
-                        onTap: () => Navigator.pushNamed(context, '/myboards'),
-                      ),
-                      ListTile(
-                        title: const Text('Members'),
-                        textColor: Colors.white,
-                        onTap: () => Navigator.pushNamed(context, '/members'),
-                      ),
-                      ListTile(
-                        title: const Text('Parameters'),
-                        textColor: Colors.white,
-                        onTap: () => Navigator.pushNamed(context, '/parameters'),
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.3,
+                        child: Column(
+                          children: <Widget>[
+                            ListTile(
+                              title: const Text('Boards'),
+                              textColor: Colors.white,
+                              onTap:
+                                  () async =>
+                                      Navigator.pushNamed(context, '/myboards'),
+                            ),
+                            ListTile(
+                              title: const Text('Members'),
+                              textColor: Colors.white,
+                              onTap:
+                                  () async =>
+                                      Navigator.pushNamed(context, '/members'),
+                            ),
+                            ListTile(
+                              title: const Text('Parameters'),
+                              textColor: Colors.white,
+                              onTap:
+                                  () async => Navigator.pushNamed(
+                                    context,
+                                    '/parameters',
+                                  ),
+                            ),
+                          ],
+                        ),
                       ),
 
                       // Section des Boards
                       Row(
                         children: <Widget>[
-                          const Text('Vos Boards',
-                              style: TextStyle(color: Colors.white),),
+                          const Text(
+                            'Vos Boards',
+                            style: TextStyle(color: Colors.white),
+                          ),
                           IconButton(
                             onPressed: showCreateBoardDialog,
                             icon: const Icon(Icons.add, color: Colors.white),
@@ -211,23 +249,26 @@ class _WorkspaceState extends State<Workspace> {
 
                       // Liste des boards
                       SizedBox(
-                        height: 300,
+                        height: MediaQuery.of(context).size.height * 0.4,
                         child: ListView.builder(
                           itemCount: allBoards.length,
                           itemBuilder: (BuildContext context, int index) {
                             final dynamic board = allBoards[index];
                             return ListTile(
                               leading: CircleAvatar(
-                                backgroundImage: board['prefs']
-                                            ['backgroundImage'] !=
-                                        null
-                                    ? NetworkImage(board['prefs']['backgroundImage'])
-                                    : null,
+                                backgroundImage:
+                                    board['prefs']['backgroundImage'] != null
+                                        ? NetworkImage(
+                                          board['prefs']['backgroundImage'],
+                                        )
+                                        : null,
                                 backgroundColor: Colors.grey,
                               ),
-                              title: Text(board['name'],
-                                  style: const TextStyle(color: Colors.white),),
-                              onTap: () => changeBoard(board),
+                              title: Text(
+                                board['name'],
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              onTap: () async => changeBoard(board),
                             );
                           },
                         ),
@@ -237,6 +278,10 @@ class _WorkspaceState extends State<Workspace> {
                 ),
               ],
             ),
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Board(boardId: boardId),
           ),
         ],
       ),

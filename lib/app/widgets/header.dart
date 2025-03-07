@@ -31,7 +31,7 @@ class _HeaderState extends State<Header> {
         workspaces = fetchedWorkspaces?.map((workspace) => workspace['name'].toString()).toList() ?? <String>[];
       });
     } catch (e) {
-      print('❌ Erreur lors du chargement des données : $e');
+      //print('❌ Erreur lors du chargement des données : $e');
     }
   }
 
