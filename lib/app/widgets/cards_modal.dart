@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, always_specify_types, deprecated_member_use, library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
@@ -42,7 +44,7 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isUpdating = true);
 
-    bool success = await UpdateService.updateCard(widget.selectedCardId!, _nameController.text);
+    final bool success = await UpdateService.updateCard(widget.selectedCardId!, _nameController.text);
 
     if (success) {
       widget.onCardUpdated(widget.selectedCardId!, _nameController.text);
@@ -57,7 +59,7 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isDeleting = true);
 
-    bool success = await DeleteService.deleteCard(widget.selectedCardId!);
+    final bool success = await DeleteService.deleteCard(widget.selectedCardId!);
 
     if (success) {
       widget.onCardDeleted(widget.selectedCardId!);

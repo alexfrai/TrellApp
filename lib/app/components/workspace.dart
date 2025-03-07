@@ -23,8 +23,8 @@ class _WorkspaceState extends State<Workspace> {
 
   String boardId = 'XuEuw84e';
   String boardName = '';
-  Map<String, dynamic> boardData = {};
-  List<dynamic> allBoards = [];
+  Map<String, dynamic> boardData = <String, >{};
+  List<dynamic> allBoards = <>[];
   String curentWorkspace = '';
 
   bool isLoading = true;
@@ -44,7 +44,7 @@ class _WorkspaceState extends State<Workspace> {
   Future<dynamic> fetchApi(String apiRequest, String method) async {
     try {
       print(apiRequest);
-      final response = await (method == 'POST'
+      final http.Response response = await (method == 'POST'
           ? http.post(Uri.parse(apiRequest))
           : http.get(Uri.parse(apiRequest)));
 
@@ -70,15 +70,15 @@ class _WorkspaceState extends State<Workspace> {
   Future<void> createBoard() async {
     await fetchApi(
         'https://api.trello.com/1/boards/?name=$boardName&key=$apiKey&token=$apiToken',
-        'POST');
+        'POST',);
         print(apiKey);
     getAllBoards();
   }
 
   Future<void> getBoard() async {
-    var data = await fetchApi(
+    final data = await fetchApi(
         'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken',
-        'GET');
+        'GET',);
     if (data != null) {
       setState(() {
         boardData = data;
@@ -87,9 +87,9 @@ class _WorkspaceState extends State<Workspace> {
   }
 
   Future<void> getCurentWorkspace() async {
-    var data = await fetchApi(
+    final data = await fetchApi(
         'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
-        'GET');
+        'GET',);
     if (data != null) {
       setState(() {
         curentWorkspace = data['displayName'];
@@ -98,9 +98,9 @@ class _WorkspaceState extends State<Workspace> {
   }
 
   Future<void> getAllBoards() async {
-    var boards = await fetchApi(
+    final boards = await fetchApi(
         'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken',
-        'GET');
+        'GET',);
     if (boards != null) {
       setState(() {
         allBoards = boards;
@@ -116,14 +116,14 @@ class _WorkspaceState extends State<Workspace> {
           title: const Text('Créer un nouveau board'),
           content: Column(
 
-            children: [
+            children: <Widget>[
               TextField(
                 decoration: const InputDecoration(labelText: 'Nom du board'),
-                onChanged: (value) => boardName = value,
+                onChanged: (String value) => boardName = value,
               ),
             ],
           ),
-          actions: [
+          actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
               child: const Text('Annuler'),
@@ -145,26 +145,26 @@ class _WorkspaceState extends State<Workspace> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Row(
-        children: [
+        children: <Widget>[
           // Sidebar
           Container(
             width: MediaQuery.of(context).size.width * 0.2,
             color: Colors.grey[800],
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+              children: <Widget>[
                 // Header de l'espace de travail
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.black)),
+                    border: Border(bottom: BorderSide()),
                   ),
                   child: Row(
-                    children: [
+                    children: <Widget>[
                       CircleAvatar(
                         child: Text(curentWorkspace.isNotEmpty
                             ? curentWorkspace[0]
-                            : '?'),
+                            : '?',),
                       ),
                       const SizedBox(width: 10),
                       Text(
@@ -180,7 +180,7 @@ class _WorkspaceState extends State<Workspace> {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                    children: <Widget>[
                       ListTile(
                         title: const Text('Boards'),
                         textColor: Colors.white,
@@ -199,9 +199,9 @@ class _WorkspaceState extends State<Workspace> {
 
                       // Section des Boards
                       Row(
-                        children: [
+                        children: <Widget>[
                           const Text('Vos Boards',
-                              style: TextStyle(color: Colors.white)),
+                              style: TextStyle(color: Colors.white),),
                           IconButton(
                             onPressed: showCreateBoardDialog,
                             icon: const Icon(Icons.add, color: Colors.white),
@@ -214,7 +214,7 @@ class _WorkspaceState extends State<Workspace> {
                         height: 300,
                         child: ListView.builder(
                           itemCount: allBoards.length,
-                          itemBuilder: (context, index) {
+                          itemBuilder: (BuildContext context, int index) {
                             final dynamic board = allBoards[index];
                             return ListTile(
                               leading: CircleAvatar(

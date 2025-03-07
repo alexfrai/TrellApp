@@ -28,7 +28,7 @@ class _HeaderState extends State<Header> {
       final List<dynamic>? fetchedWorkspaces = await WorkspaceService.getAllWorkspaces(userId);
       
       setState(() {
-        workspaces = fetchedWorkspaces?.map((workspace) => workspace["name"].toString()).toList() ?? [];
+        workspaces = fetchedWorkspaces?.map((workspace) => workspace['name'].toString()).toList() ?? <String>[];
       });
     } catch (e) {
       print('❌ Erreur lors du chargement des données : $e');

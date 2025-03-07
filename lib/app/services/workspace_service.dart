@@ -11,7 +11,7 @@ class WorkspaceService {
     final String url = 'https://api.trello.com/1/members/$userId/organizations?key=$_apiKey&token=$_apiToken';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         return jsonDecode(response.body); // Convertit la réponse en liste JSON

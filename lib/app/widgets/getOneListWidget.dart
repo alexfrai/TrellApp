@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, deprecated_member_use, always_specify_types
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
@@ -78,7 +80,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                           decoration: BoxDecoration(
                             color: const Color(0xFF7B0D1E), // ✅ Rouge foncé pour les cartes
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white12, width: 1), // ✅ Bordure légère
+                            border: Border.all(color: Colors.white12), // ✅ Bordure légère
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.2),

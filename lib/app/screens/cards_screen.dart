@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -6,7 +8,10 @@ import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 import 'package:http/http.dart' as http;
 
+/// API KEY
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
+
+/// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class CardsScreen extends StatefulWidget {
@@ -18,7 +23,7 @@ class CardsScreen extends StatefulWidget {
 }
 
 class _CardsScreenState extends State<CardsScreen> {
-  List<Map<String, dynamic>> cards = [];
+  List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
   bool isLoading = true;
 
   @override
@@ -42,7 +47,7 @@ class _CardsScreenState extends State<CardsScreen> {
         setState(() {
           cards =
               data
-                  .map((card) => {'id': card['id'], 'name': card['name']})
+                  .map((card) => <String, >{'id': card['id'], 'name': card['name']})
                   .toList();
         });
       }
@@ -55,7 +60,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
   void _updateCard(String cardId, String newName) {
     setState(() {
-      final int index = cards.indexWhere((card) => card['id'] == cardId);
+      final int index = cards.indexWhere((Map<String, dynamic> card) => card['id'] == cardId);
       if (index != -1) {
         cards[index]['name'] = newName;
       }
@@ -64,7 +69,7 @@ class _CardsScreenState extends State<CardsScreen> {
 
   void _deleteCard(String cardId) {
     setState(() {
-      cards.removeWhere((card) => card['id'] == cardId);
+      cards.removeWhere((Map<String, dynamic> card) => card['id'] == cardId);
     });
   }
 
@@ -89,7 +94,7 @@ class _CardsScreenState extends State<CardsScreen> {
             isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : GetOneListWidget(
-                  list: {'id': widget.id, 'name': 'Nom de la liste'},
+                  list: <String, dynamic>{'id': widget.id, 'name': 'Nom de la liste'},
                   cards: cards,
                   refreshLists:
                       _getCardsInList, // ✅ Gardé pour d'autres cas, mais pas utilisé à chaque ajout

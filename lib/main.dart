@@ -1,9 +1,11 @@
+// ignore_for_file: always_specify_types
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/components/workspace.dart';
 import 'package:flutter_trell_app/app/screens/cards_screen.dart';
 import 'package:flutter_trell_app/app/screens/getList_screen.dart';
-import 'app/widgets/header.dart';
-import 'app/components/workspace.dart';
+import 'package:flutter_trell_app/app/widgets/header.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,14 +62,14 @@ class HomeScreen extends StatelessWidget {
                 // ✅ Colonne de gauche (Menu)
                 Expanded(
                   flex: 3,
-                  child: Container(
+                  child: ColoredBox(
                         color: const Color.fromARGB(255, 62, 62, 62),
                         child: Column(
                           children: [
                             const SizedBox(height: 20),
                             ElevatedButton(
                               onPressed: () {
-                                print('🟢 Navigation vers CardsScreen...');
+                                // print('🟢 Navigation vers CardsScreen...');
                                 Navigator.pushNamed(context, '/workspace');
                               },
                               child: const Text('Voir les cartes'),
@@ -75,7 +77,7 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 20),
                             ElevatedButton(
                               onPressed: () {
-                                print('🟢 Navigation vers GetList...');
+                                // print('🟢 Navigation vers GetList...');
                                 Navigator.pushNamed(context, '/getlist');
                               },
                               child: const Text('Voir les listes'),
@@ -83,7 +85,7 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 30),
                             TextButton(
                               onPressed: () {
-                                print('🟢 Navigation vers Tableaux...');
+                                // print('🟢 Navigation vers Tableaux...');
                                 Navigator.pushNamed(context, '/boards');
                               },
                               child: const Text('Boards'),
@@ -91,7 +93,7 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 10),
                             TextButton(
                               onPressed: () {
-                                print('🟢 Navigation vers Membres...');
+                                // print('🟢 Navigation vers Membres...');
                                 Navigator.pushNamed(context, '/members');
                               },
                               child: const Text('Members'),
@@ -99,7 +101,7 @@ class HomeScreen extends StatelessWidget {
                             const SizedBox(height: 10),
                             TextButton(
                               onPressed: () {
-                                print('🟢 Navigation vers Paramètres...');
+                                // print('🟢 Navigation vers Paramètres...');
                                 Navigator.pushNamed(context, '/parameter');
                               },
                               child: const Text('Parameters'),
@@ -127,7 +129,7 @@ class HomeScreen extends StatelessWidget {
                                 ),
                               ],
                             ),
-                            Column(
+                            const Column(
                               children: [
                                 
                               ],
@@ -142,7 +144,7 @@ class HomeScreen extends StatelessWidget {
                 // ✅ Colonne de droite (Zone principale)
                 Expanded(
                   flex: 7,
-                  child: Container(
+                  child: ColoredBox(
                     color: const Color.fromARGB(255, 108, 108, 108),
                     child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -153,7 +155,7 @@ class HomeScreen extends StatelessWidget {
                             children: [
                               ElevatedButton.icon(
                                 onPressed: () {
-                                  print('🟢 Like button pressed');
+                                  // print('🟢 Like button pressed');
                                 },
                                 icon: const Icon(Icons.thumb_up),
                                 label: const Text('Like'),
@@ -161,7 +163,7 @@ class HomeScreen extends StatelessWidget {
                               const SizedBox(width: 10),
                               ElevatedButton(
                                 onPressed: () {
-                                  print('🟢 Next button pressed');
+                                  // print('🟢 Next button pressed');
                                 },
                                 child: const Text('Next'),
                               ),
