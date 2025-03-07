@@ -1,3 +1,5 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_member_card.dart'; // Importer le service
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
@@ -19,6 +21,19 @@ class GetOneListWidget extends StatefulWidget {
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
+}
+
+List<Color> memberColors = [
+  Colors.red,
+  Colors.blue,
+  Colors.green,
+  Colors.orange,
+  Colors.purple,
+  Colors.yellow,
+];
+
+Color getMemberColor(int index) {
+  return memberColors[index % memberColors.length];
 }
 
 class _GetOneListWidgetState extends State<GetOneListWidget> {
@@ -91,7 +106,10 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                       } else {
                         final members = snapshot.data ?? [];
                         return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 8,
+                          ),
                           child: DecoratedBox(
                             decoration: BoxDecoration(
                               color: const Color(0xFF7B0D1E),
@@ -107,22 +125,33 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                             ),
                             child: ListTile(
                               leading: members.isNotEmpty
-                                  ? CircleAvatar(
-                                      backgroundColor: Colors.brown,
-                                      child: Text(
-                                        members[0]['username'][0].toUpperCase(),
-                                        style: const TextStyle(color: Colors.white),
-                                      ),
+                                  ? Wrap(
+                                      spacing: 4.0,
+                                      children: List.generate(members.length, (memberIndex) {
+                                        return CircleAvatar(
+                                          backgroundColor: getMemberColor(memberIndex),
+                                          child: Text(
+                                            members[memberIndex]['username'][0].toUpperCase(),
+                                            style: const TextStyle(color: Colors.white),
+                                          ),
+                                        );
+                                      }),
                                     )
                                   : Container(
                                       width: 40,
                                       height: 40,
                                       color: Colors.transparent,
                                     ), // Placeholder for empty avatar
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               title: Text(
                                 card['name'],
-                                style: const TextStyle(fontSize: 16, color: Colors.white),
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
                               ),
                               onTap: () async {
                                 await showDialog(
@@ -175,8 +204,13 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF9F2042),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('Ajouter une carte'),
             ),
