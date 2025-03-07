@@ -1,4 +1,4 @@
-// ignore_for_file: library_private_types_in_public_api
+// ignore_for_file: library_private_types_in_public_api, public_member_api_docs, deprecated_member_use, always_specify_types
 
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_member_card.dart'; // Importer le service
@@ -96,12 +96,12 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return ListTile(
                           title: Text(card['name']),
-                          leading: CircularProgressIndicator(),
+                          leading: const CircularProgressIndicator(),
                         );
                       } else if (snapshot.hasError) {
                         return ListTile(
                           title: Text(card['name']),
-                          leading: Icon(Icons.error),
+                          leading: const Icon(Icons.error),
                         );
                       } else {
                         final members = snapshot.data ?? [];
@@ -126,7 +126,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                             child: ListTile(
                               leading: members.isNotEmpty
                                   ? Wrap(
-                                      spacing: 4.0,
+                                      spacing: 4,
                                       children: List.generate(members.length, (memberIndex) {
                                         return CircleAvatar(
                                           backgroundColor: getMemberColor(memberIndex),

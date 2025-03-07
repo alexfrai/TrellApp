@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, deprecated_member_use
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/create_member_card.dart';
 import 'package:flutter_trell_app/app/services/delete_service.dart';
@@ -122,7 +124,9 @@ class _CardsModalState extends State<CardsModal> {
       elevation: 10,
       backgroundColor: Colors.transparent,
       child: Container(
-        width: MediaQuery.of(context).size.width * 0.8,
+        width: MediaQuery.of(context).size.width * 0.5,
+        height: MediaQuery.of(context).size.height * 0.5,
+
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: const Color(0xFF3D1308),
@@ -136,52 +140,59 @@ class _CardsModalState extends State<CardsModal> {
             ),
           ],
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            const Text(
-              'Gérer la Carte',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFF8E5EE),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const Text(
+                    'Gérer la Carte',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFFF8E5EE),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _nameController,
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    decoration: InputDecoration(
+                      labelText: 'Nom de la carte',
+                      labelStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: const Color(0xFF9F2042).withOpacity(0.2),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButton<String>(
+                    hint: const Text('Sélectionner un membre'),
+                    value: _selectedMemberId,
+                    items: _members.map((Map<String, dynamic> member) {
+                      return DropdownMenuItem<String>(
+                        value: member['id'],
+                        child: Text(member['fullName'], style: const TextStyle(color: Colors.white)),
+                      );
+                    }).toList(),
+                    onChanged: (String? value) {
+                      setState(() {
+                        _selectedMemberId = value;
+                      });
+                    },
+                    dropdownColor: const Color(0xFF3D1308),
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _nameController,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-              decoration: InputDecoration(
-                labelText: 'Nom de la carte',
-                labelStyle: const TextStyle(color: Colors.white70),
-                filled: true,
-                fillColor: const Color(0xFF9F2042).withOpacity(0.2),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            DropdownButton<String>(
-              hint: const Text('Sélectionner un membre'),
-              value: _selectedMemberId,
-              items: _members.map((member) {
-                return DropdownMenuItem<String>(
-                  value: member['id'],
-                  child: Text(member['fullName'], style: const TextStyle(color: Colors.white)),
-                );
-              }).toList(),
-              onChanged: (value) {
-                setState(() {
-                  _selectedMemberId = value;
-                });
-              },
-              dropdownColor: const Color(0xFF3D1308),
-              style: const TextStyle(color: Colors.white),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            const SizedBox(width: 16),
+            Column(
               children: <Widget>[
                 ElevatedButton(
                   onPressed: _isUpdating ? null : _updateCardName,
@@ -200,6 +211,7 @@ class _CardsModalState extends State<CardsModal> {
                       ? const CircularProgressIndicator(color: Colors.white)
                       : const Text('Enregistrer'),
                 ),
+                const SizedBox(height: 10),
                 if (_isDeleting)
                   const CircularProgressIndicator(color: Colors.white)
                 else
@@ -218,41 +230,25 @@ class _CardsModalState extends State<CardsModal> {
                     ),
                     child: const Text('Supprimer'),
                   ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _isAssigning ? null : _assignMemberToCard,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.greenAccent,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: _isAssigning
+                      ? const CircularProgressIndicator(color: Colors.black)
+                      : const Text('Assigner un membre'),
+                ),
               ],
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _createNewCard,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9F2042),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Ajouter une nouvelle carte'),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _isAssigning ? null : _assignMemberToCard,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: _isAssigning
-                  ? const CircularProgressIndicator(color: Colors.black)
-                  : const Text('Assigner un membre'),
             ),
           ],
         ),
