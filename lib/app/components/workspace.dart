@@ -23,7 +23,7 @@ class _WorkspaceState extends State<Workspace> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
-  String boardId = 'XuEuw84e';
+  String boardId = '6756c8816b281ad931249861';
   String boardName = '';
   Map<String, dynamic> boardData = {};
   List<dynamic> allBoards = [];

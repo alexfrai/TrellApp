@@ -1,5 +1,3 @@
-// ignore_for_file: always_specify_types
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_all_cards.dart';
@@ -7,7 +5,6 @@ import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
-///Affiche une liste
 class GetListWidget extends StatefulWidget {
   const GetListWidget({required this.boardId, super.key});
 
@@ -113,34 +110,31 @@ class GetListWidgetState extends State<GetListWidget> {
 
               final cards = dataSnapshot.data!['cards'];
 
-              return Column(
-                children: <Widget>[
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: lists.map<Widget>((list) {
-                          final List<Map<String, dynamic>> listCards = cards
-                              .where((Map<String, dynamic> card) => card['listId'] == list['id'])
-                              .toList();
-                          return SizedBox(
-                            width: 300,
-                            child: GetOneListWidget(
-                              list: list,
-                              cards: listCards,
-                              refreshLists: _loadData,
-                            ),
-                          );
-                        }).toList(),
-                      ),
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...lists.map<Widget>((list) {
+                      final List<Map<String, dynamic>> listCards = cards
+                          .where((Map<String, dynamic> card) => card['listId'] == list['id'])
+                          .toList();
+                      return SizedBox(
+                        width: 300,
+                        child: GetOneListWidget(
+                          list: list,
+                          cards: listCards,
+                          refreshLists: _loadData,
+                        ),
+                      );
+                    }).toList(),
+                    // Add the create list button at the end
+                    SizedBox(
+                      width: 300,
+                      child: Createlistbutton(BOARD_ID: widget.boardId),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Createlistbutton(BOARD_ID: widget.boardId),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           );

@@ -1,9 +1,8 @@
-// ignore_for_file: public_member_api_docs, deprecated_member_use, always_specify_types
-
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 
+// Définition du widget GetOneListWidget qui affiche une liste de cartes
 class GetOneListWidget extends StatefulWidget {
   const GetOneListWidget({
     required this.list,
@@ -12,15 +11,17 @@ class GetOneListWidget extends StatefulWidget {
     super.key,
   });
 
-  final Map<String, dynamic> list;
-  final List<Map<String, dynamic>> cards;
-  final VoidCallback refreshLists;
+  // Propriétés du widget
+  final Map<String, dynamic> list; // Informations sur la liste
+  final List<Map<String, dynamic>> cards; // Liste des cartes
+  final VoidCallback refreshLists; // Callback pour rafraîchir les listes
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
 }
 
 class _GetOneListWidgetState extends State<GetOneListWidget> {
+  // Méthode pour créer une nouvelle carte
   Future<void> _createNewCard() async {
     final newCard = await showDialog(
       context: context,
@@ -28,7 +29,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
     );
     if (newCard != null) {
       setState(() {
-        widget.cards.add(newCard);
+        widget.cards.add(newCard); // Ajoute la nouvelle carte à la liste
       });
     }
   }
@@ -36,24 +37,25 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16), // ✅ Ajout de marges extérieures
-      padding: const EdgeInsets.all(12), // ✅ Ajout de padding interne
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D1308), // ✅ Fond bordeaux foncé pour la liste
-        borderRadius: BorderRadius.circular(12), // ✅ Coins arrondis
-        border: Border.all(color: Colors.white24, width: 2), // ✅ Bordure fine blanche
+        color: const Color(0xFF3D1308), // Couleur de fond
+        borderRadius: BorderRadius.circular(12), // Coins arrondis
+        border: Border.all(color: Colors.white24, width: 2), // Bordure
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3), // ✅ Ombre pour effet 3D
+            color: Colors.black.withOpacity(0.3), // Ombre pour effet 3D
             blurRadius: 6,
             offset: const Offset(2, 4),
           ),
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, // Permet à la colonne de prendre uniquement l'espace nécessaire
+        crossAxisAlignment: CrossAxisAlignment.start, // Alignement des enfants à gauche
         children: [
-          // 📌 Titre de la liste avec un padding
+          // Affichage du nom de la liste
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: Text(
@@ -65,91 +67,91 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               ),
             ),
           ),
-          const SizedBox(height: 8),
-
-          // 📜 Affichage des cartes avec espacement et style
-          if (widget.cards.isNotEmpty) Expanded(
-                  child: ListView.builder(
-                    itemCount: widget.cards.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      final Map<String, dynamic> card = widget.cards[index];
-
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF7B0D1E), // ✅ Rouge foncé pour les cartes
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white12), // ✅ Bordure légère
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                blurRadius: 6,
-                                offset: const Offset(2, 4),
-                              ),
-                            ],
+          const SizedBox(height: 8), // Espace entre le titre et les cartes
+          // Affichage des cartes si elles existent
+          if (widget.cards.isNotEmpty)
+            Flexible(
+              child: ListView.builder(
+                shrinkWrap: true, // Permet à la ListView de prendre uniquement l'espace nécessaire
+                itemCount: widget.cards.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final Map<String, dynamic> card = widget.cards[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF7B0D1E), // Couleur de fond des cartes
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 6,
+                            offset: const Offset(2, 4),
                           ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                            title: Text(
-                              card['name'],
-                              style: const TextStyle(fontSize: 16, color: Colors.white),
-                            ),
-                            onTap: () async {
-                              await showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CardsModal(
-                                    taskName: card['name'],
-                                    selectedCardId: card['id'],
-                                    handleClose: () => Navigator.pop(context),
-                                    onCardUpdated: (String cardId, String newName) {
-                                      setState(() {
-                                        final int cardIndex = widget.cards.indexWhere((c) => c['id'] == cardId);
-                                        if (cardIndex != -1) {
-                                          widget.cards[cardIndex]['name'] = newName;
-                                        }
-                                      });
-                                    },
-                                    onCardDeleted: (String cardId) {
-                                      setState(() {
-                                        widget.cards.removeWhere((c) => c['id'] == cardId);
-                                      });
-                                    },
-                                    listId: widget.list['id'],
-                                  );
+                        ],
+                      ),
+                      child: ListTile(
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        title: Text(
+                          card['name'],
+                          style: const TextStyle(fontSize: 16, color: Colors.white),
+                        ),
+                        onTap: () async {
+                          await showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return CardsModal(
+                                taskName: card['name'],
+                                selectedCardId: card['id'],
+                                handleClose: () => Navigator.pop(context),
+                                onCardUpdated: (String cardId, String newName) {
+                                  setState(() {
+                                    final int cardIndex = widget.cards.indexWhere((c) => c['id'] == cardId);
+                                    if (cardIndex != -1) {
+                                      widget.cards[cardIndex]['name'] = newName;
+                                    }
+                                  });
                                 },
+                                onCardDeleted: (String cardId) {
+                                  setState(() {
+                                    widget.cards.removeWhere((c) => c['id'] == cardId);
+                                  });
+                                },
+                                listId: widget.list['id'],
                               );
                             },
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ) else const Padding(
-                  padding: EdgeInsets.all(8),
-                  child: Text(
-                    'Aucune carte dans cette liste',
-                    style: TextStyle(color: Colors.white54, fontSize: 14),
-                  ),
-                ),
-
-          const SizedBox(height: 10),
-
-          // ➕ Bouton Ajouter une carte avec plus de padding
+                          );
+                        },
+                      ),
+                    ),
+                  );
+                },
+              ),
+            )
+          else
+            const Padding(
+              padding: EdgeInsets.all(8),
+              child: Text(
+                'Aucune carte dans cette liste',
+                style: TextStyle(color: Colors.white54, fontSize: 14),
+              ),
+            ),
+          const SizedBox(height: 10), // Espace avant le bouton
+          // Bouton pour ajouter une nouvelle carte
           Center(
             child: ElevatedButton(
               onPressed: _createNewCard,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9F2042), // ✅ Rouge Framboise
+                backgroundColor: const Color(0xFF9F2042),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
-              child: const Text('Ajouter une carte'),
+              child: const Text('Add card'),
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 10), // Espace après le bouton
         ],
       ),
     );
