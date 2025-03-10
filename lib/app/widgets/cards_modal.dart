@@ -33,7 +33,7 @@ class CardsModal extends StatefulWidget {
 
 class _CardsModalState extends State<CardsModal> {
   final TextEditingController _nameController = TextEditingController();
-  List<Map<String, dynamic>> _members = [];
+  List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
   String? _selectedMemberId;
   bool _isUpdating = false;
   bool _isDeleting = false;
@@ -47,8 +47,8 @@ class _CardsModalState extends State<CardsModal> {
   }
 
   Future<void> _loadMembers() async {
-    final service = GetMemberService();
-    final members = await service.getAllMembers(widget.boardId);
+    final GetMemberService service = GetMemberService();
+    final List<Map<String, dynamic>> members = await service.getAllMembers(widget.boardId);
     setState(() {
       _members = members;
     });
@@ -102,7 +102,7 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isAssigning = true);
 
-    final service = CreateMemberCard();
+    final CreateMemberCard service = CreateMemberCard();
     try {
       await service.assignMemberToCard(widget.selectedCardId!, _selectedMemberId!);
       ScaffoldMessenger.of(context).showSnackBar(
@@ -131,7 +131,7 @@ class _CardsModalState extends State<CardsModal> {
         decoration: BoxDecoration(
           color: const Color(0xFF3D1308),
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          boxShadow: <BoxShadow>[
             BoxShadow(
               color: Colors.black.withOpacity(0.25),
               blurRadius: 10,
@@ -142,7 +142,7 @@ class _CardsModalState extends State<CardsModal> {
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             Expanded(
               child: Column(
                 mainAxisSize: MainAxisSize.min,

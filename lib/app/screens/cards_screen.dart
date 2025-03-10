@@ -42,8 +42,8 @@ class _CardsScreenState extends State<CardsScreen> {
       final List<dynamic> data = json.decode(response.body);
       setState(() {
         cards = data.map((card) {
-          List<dynamic> members = card['members'] ?? [];
-          return {
+          final List<dynamic> members = card['members'] ?? [];
+          return <String, dynamic>{
             'id': card['id'],
             'name': card['name'],
             'members': members,
@@ -103,7 +103,7 @@ class _CardsScreenState extends State<CardsScreen> {
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : GetOneListWidget(
-                list: {'id': widget.id, 'name': 'Nom de la liste'},
+                list: <String, dynamic>{'id': widget.id, 'name': 'Nom de la liste'},
                 cards: cards,
                 refreshLists: _getCardsInList,
                 boardId: widget.boardId,

@@ -12,7 +12,7 @@ class GetMemberService {
         'https://api.trello.com/1/members/$memberId?key=$apiKey&token=$apiToken';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
@@ -32,15 +32,15 @@ class GetMemberService {
   Future<List<Map<String, dynamic>>> getAllMembers(String boardId) async {
     final String url =
         'https://api.trello.com/1/boards/$boardId/members?key=$apiKey&token=$apiToken';
-    final List<Map<String, dynamic>> members = [];
+    final List<Map<String, dynamic>> members = <Map<String, dynamic>>[];
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         for (final member in data) {
-          members.add({
+          members.add(<String, dynamic>{
             'id': member['id'],
             'fullName': member['fullName'],
             'username': member['username'],
