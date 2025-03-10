@@ -52,10 +52,10 @@ Future<List<Map<String, dynamic>>> getBoardFromFavorite(String memberId) async {
       return starredBoards;
     } else {
       print('Erreur lors de la récupération des boards: ${response.statusCode}');
-      return [];
+      return <Map<String, dynamic>>[];
     }
   } catch (error) {
     print('Erreur dans getBoardFromFavorite: $error');
-    return [];
+    return <Map<String, dynamic>>[];
   }
 }

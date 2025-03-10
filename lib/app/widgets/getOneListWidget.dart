@@ -1,4 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api, public_member_api_docs, deprecated_member_use, always_specify_types
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/services/get_member_card.dart'; // Importer le service
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 
@@ -8,20 +10,36 @@ class GetOneListWidget extends StatefulWidget {
     required this.list,
     required this.cards,
     required this.refreshLists,
+    required this.boardId,
     super.key,
   });
 
-  // Propriétés du widget
-  final Map<String, dynamic> list; // Informations sur la liste
-  final List<Map<String, dynamic>> cards; // Liste des cartes
-  final VoidCallback refreshLists; // Callback pour rafraîchir les listes
+  final Map<String, dynamic> list;
+  final List<Map<String, dynamic>> cards;
+  final VoidCallback refreshLists;
+  final String boardId;
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
 }
 
+List<Color> memberColors = [
+  Colors.red,
+  Colors.blue,
+  Colors.green,
+  Colors.orange,
+  Colors.purple,
+  Colors.yellow,
+];
+
+Color getMemberColor(int index) {
+  return memberColors[index % memberColors.length];
+}
+
 class _GetOneListWidgetState extends State<GetOneListWidget> {
   // Méthode pour créer une nouvelle carte
+  final GetMemberCardService _memberService = GetMemberCardService();
+
   Future<void> _createNewCard() async {
     final newCard = await showDialog(
       context: context,
@@ -55,7 +73,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
         mainAxisSize: MainAxisSize.min, // Permet à la colonne de prendre uniquement l'espace nécessaire
         crossAxisAlignment: CrossAxisAlignment.start, // Alignement des enfants à gauche
         children: [
-          // Affichage du nom de la liste
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: Text(
@@ -138,15 +155,19 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               ),
             ),
           const SizedBox(height: 10), // Espace avant le bouton
-          // Bouton pour ajouter une nouvelle carte
           Center(
             child: ElevatedButton(
               onPressed: _createNewCard,
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF9F2042),
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: const Text('Add card'),
             ),

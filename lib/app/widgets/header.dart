@@ -38,7 +38,7 @@ class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100,
+      //height: MediaQuery.of(context).size.height * 0.2,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: Colors.grey[800],
       child: Row(
