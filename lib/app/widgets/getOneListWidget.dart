@@ -85,6 +85,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
             ),
           ),
           const SizedBox(height: 8), // Espace entre le titre et les cartes
+          
           // Affichage des cartes si elles existent
           if (widget.cards.isNotEmpty)
             Flexible(
@@ -136,6 +137,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                   });
                                 },
                                 listId: widget.list['id'],
+                                boardId: widget.boardId, // ✅ Correction : Ajout de boardId ici !
                               );
                             },
                           );
@@ -155,6 +157,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               ),
             ),
           const SizedBox(height: 10), // Espace avant le bouton
+          
           Center(
             child: ElevatedButton(
               onPressed: _createNewCard,
