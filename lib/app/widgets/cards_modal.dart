@@ -6,26 +6,34 @@ import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/get_members.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
+import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
+
+
 
 class CardsModal extends StatefulWidget {
   const CardsModal({
     required this.taskName,
+    required this.descriptionName,
     required this.selectedCardId,
     required this.handleClose,
     required this.onCardUpdated,
     required this.onCardDeleted,
     required this.listId,
     required this.boardId,
+    required this.refreshLists,
     super.key,
   });
 
   final String taskName;
+  final String descriptionName;
   final String? selectedCardId;
   final String listId;
   final String boardId;
   final VoidCallback handleClose;
   final Function(String, String) onCardUpdated;
   final Function(String) onCardDeleted;
+  
+  final VoidCallback refreshLists;
 
   @override
   _CardsModalState createState() => _CardsModalState();
@@ -33,6 +41,8 @@ class CardsModal extends StatefulWidget {
 
 class _CardsModalState extends State<CardsModal> {
   final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
+
   List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
   String? _selectedMemberId;
   bool _isUpdating = false;
@@ -43,12 +53,18 @@ class _CardsModalState extends State<CardsModal> {
   void initState() {
     super.initState();
     _nameController.text = widget.taskName;
+    _descriptionController.text = widget.descriptionName;
     _loadMembers();
   }
 
   Future<void> _loadMembers() async {
     final GetMemberService service = GetMemberService();
-    final List<Map<String, dynamic>> members = await service.getAllMembers(widget.boardId);
+    final List<Map<String, dynamic>> members = await service.getAllMembers(
+      widget.boardId,
+    );
+
+    if (!mounted) return; // Vérifie que le widget est encore actif
+
     setState(() {
       _members = members;
     });
@@ -58,8 +74,7 @@ class _CardsModalState extends State<CardsModal> {
     if (widget.selectedCardId == null || _nameController.text.isEmpty) return;
 
     setState(() => _isUpdating = true);
-
-    final bool success = await UpdateService.updateCard(
+    final bool success = await UpdateService.updateCardDescription(
       widget.selectedCardId!,
       _nameController.text,
     );
@@ -71,6 +86,30 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isUpdating = false);
   }
+
+Future<void> _updateDescription() async {
+  if (widget.selectedCardId == null || _descriptionController.text.isEmpty) return;
+
+  setState(() => _isUpdating = true);
+
+  final bool success = await UpdateService.updateCardDescription(
+    widget.selectedCardId!,
+    _descriptionController.text,
+  );
+
+  if (!mounted) return;
+
+  if (success) {
+    widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
+    widget.handleClose();
+
+    // ✅ Rafraîchir les cartes après la mise à jour
+    widget.refreshLists();
+  }
+
+  setState(() => _isUpdating = false);
+}
+
 
   Future<void> _deleteCard() async {
     if (widget.selectedCardId == null) return;
@@ -104,14 +143,17 @@ class _CardsModalState extends State<CardsModal> {
 
     final CreateMemberCard service = CreateMemberCard();
     try {
-      await service.assignMemberToCard(widget.selectedCardId!, _selectedMemberId!);
+      await service.assignMemberToCard(
+        widget.selectedCardId!,
+        _selectedMemberId!,
+      );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('✅ Membre assigné avec succès !')),
       );
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('❌ Erreur : $error')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('❌ Erreur : $error')));
     }
 
     setState(() => _isAssigning = false);
@@ -126,7 +168,6 @@ class _CardsModalState extends State<CardsModal> {
       child: Container(
         width: MediaQuery.of(context).size.width * 0.5,
         height: MediaQuery.of(context).size.height * 0.5,
-
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: const Color(0xFF3D1308),
@@ -174,12 +215,16 @@ class _CardsModalState extends State<CardsModal> {
                   DropdownButton<String>(
                     hint: const Text('Sélectionner un membre'),
                     value: _selectedMemberId,
-                    items: _members.map((Map<String, dynamic> member) {
-                      return DropdownMenuItem<String>(
-                        value: member['id'],
-                        child: Text(member['fullName'], style: const TextStyle(color: Colors.white)),
-                      );
-                    }).toList(),
+                    items:
+                        _members.map((Map<String, dynamic> member) {
+                          return DropdownMenuItem<String>(
+                            value: member['id'],
+                            child: Text(
+                              member['fullName'],
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          );
+                        }).toList(),
                     onChanged: (String? value) {
                       setState(() {
                         _selectedMemberId = value;
@@ -187,6 +232,41 @@ class _CardsModalState extends State<CardsModal> {
                     },
                     dropdownColor: const Color(0xFF3D1308),
                     style: const TextStyle(color: Colors.white),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: _descriptionController,
+                    style: const TextStyle(color: Colors.white, fontSize: 18),
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      hintText: 'Description',
+                      hintStyle: const TextStyle(color: Colors.white70),
+                      filled: true,
+                      fillColor: const Color(0xFF9F2042).withOpacity(0.2),
+                    ),
+                    maxLines: 3,
+                  ),
+                  ElevatedButton(
+                    onPressed: _isUpdating ? null : _updateDescription,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blueAccent,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child:
+                        _isUpdating
+                            ? const CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                            : const Text('Submit'),
                   ),
                 ],
               ),
@@ -207,9 +287,10 @@ class _CardsModalState extends State<CardsModal> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: _isUpdating
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Enregistrer'),
+                  child:
+                      _isUpdating
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Enregistrer'),
                 ),
                 const SizedBox(height: 10),
                 if (_isDeleting)
@@ -244,9 +325,10 @@ class _CardsModalState extends State<CardsModal> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: _isAssigning
-                      ? const CircularProgressIndicator(color: Colors.black)
-                      : const Text('Assigner un membre'),
+                  child:
+                      _isAssigning
+                          ? const CircularProgressIndicator(color: Colors.black)
+                          : const Text('Assigner un membre'),
                 ),
               ],
             ),

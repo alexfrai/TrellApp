@@ -29,7 +29,7 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   Future<void> _getCardsInList() async {
-      setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
   try {
     final http.Response response = await http.get(
@@ -40,23 +40,28 @@ class _CardsScreenState extends State<CardsScreen> {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
+
+      // ✅ Vérifie si la description a été bien mise à jour
+      print("📌 Réponse API après mise à jour : ${jsonEncode(data)}");
+
       setState(() {
         cards = data.map((card) {
-          final List<dynamic> members = card['members'] ?? [];
           return <String, dynamic>{
             'id': card['id'],
             'name': card['name'],
-            'members': members,
+            'desc': card['desc'] ?? "", // ✅ Vérifie que la description est bien présente
           };
         }).toList();
       });
     }
   } catch (error) {
-    // print('Erreur lors du chargement des cartes: $error');
+    print('❌ Erreur lors du chargement des cartes: $error');
   } finally {
-    setState(() => isLoading = false);
+    if (mounted) {
+      setState(() => isLoading = false);
+    }
   }
-  }
+}
 
   void _updateCard(String cardId, String newName) {
     setState(() {

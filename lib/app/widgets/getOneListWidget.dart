@@ -1,9 +1,12 @@
 // ignore_for_file: library_private_types_in_public_api, public_member_api_docs, deprecated_member_use, always_specify_types
 
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_member_card.dart'; // Importer le service
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
+import 'package:http/http.dart' as http;
 
 class GetOneListWidget extends StatefulWidget {
   const GetOneListWidget({
@@ -48,6 +51,48 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
       setState(() {
         widget.cards.add(newCard);
       });
+    }
+  }
+
+  Future<void> _getCardsInList() async {
+    bool isLoading = false;
+
+    setState(() => isLoading = true);
+
+    try {
+      final http.Response response = await http.get(
+        Uri.parse(
+          'https://api.trello.com/1/lists/${widget.list['id']}/cards?members=true&key=$apiKey&token=$apiToken',
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+
+        // ✅ Vérifie les nouvelles cartes après mise à jour
+        // print("📌 Cartes récupérées après mise à jour : ${jsonEncode(data)}");
+
+        setState(() {
+          widget.cards.clear();
+          widget.cards.addAll(
+            data.map((card) {
+              return {
+                'id': card['id'],
+                'name': card['name'],
+                'desc':
+                    card['desc'] ??
+                    "", // ✅ Vérifie que la description est bien là
+              };
+            }),
+          );
+        });
+      }
+    } catch (error) {
+      // print('❌ Erreur lors du chargement des cartes: $error');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
 
@@ -124,24 +169,32 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                               ],
                             ),
                             child: ListTile(
-                              leading: members.isNotEmpty
-                                  ? Wrap(
-                                      spacing: 4,
-                                      children: List.generate(members.length, (memberIndex) {
-                                        return CircleAvatar(
-                                          backgroundColor: getMemberColor(memberIndex),
-                                          child: Text(
-                                            members[memberIndex]['username'][0].toUpperCase(),
-                                            style: const TextStyle(color: Colors.white),
-                                          ),
-                                        );
-                                      }),
-                                    )
-                                  : Container(
-                                      width: 40,
-                                      height: 40,
-                                      color: Colors.transparent,
-                                    ), // Placeholder for empty avatar
+                              leading:
+                                  members.isNotEmpty
+                                      ? Wrap(
+                                        spacing: 4,
+                                        children: List.generate(members.length, (
+                                          memberIndex,
+                                        ) {
+                                          return CircleAvatar(
+                                            backgroundColor: getMemberColor(
+                                              memberIndex,
+                                            ),
+                                            child: Text(
+                                              members[memberIndex]['username'][0]
+                                                  .toUpperCase(),
+                                              style: const TextStyle(
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      )
+                                      : Container(
+                                        width: 40,
+                                        height: 40,
+                                        color: Colors.transparent,
+                                      ), // Placeholder for empty avatar
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
                                 vertical: 8,
@@ -159,23 +212,38 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                   builder: (BuildContext context) {
                                     return CardsModal(
                                       taskName: card['name'],
+                                      descriptionName: card['desc'] ?? "",
                                       selectedCardId: card['id'],
                                       handleClose: () => Navigator.pop(context),
-                                      onCardUpdated: (String cardId, String newName) {
+                                      onCardUpdated: (
+                                        String cardId,
+                                        String newDesc,
+                                      ) {
                                         setState(() {
-                                          final int cardIndex = widget.cards.indexWhere((c) => c['id'] == cardId);
+                                          final int cardIndex = widget.cards
+                                              .indexWhere(
+                                                (c) => c['id'] == cardId,
+                                              );
                                           if (cardIndex != -1) {
-                                            widget.cards[cardIndex]['name'] = newName;
+                                            widget.cards[cardIndex]['desc'] =
+                                                newDesc;
                                           }
                                         });
+
+                                        // ✅ Rafraîchir les cartes après mise à jour
+                                        _getCardsInList();
                                       },
                                       onCardDeleted: (String cardId) {
                                         setState(() {
-                                          widget.cards.removeWhere((c) => c['id'] == cardId);
+                                          widget.cards.removeWhere(
+                                            (c) => c['id'] == cardId,
+                                          );
                                         });
                                       },
                                       listId: widget.list['id'],
                                       boardId: widget.boardId,
+                                      refreshLists:
+                                          _getCardsInList, // ✅ Ajout de refreshLists
                                     );
                                   },
                                 );
