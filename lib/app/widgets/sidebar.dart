@@ -161,6 +161,7 @@ Future<void> showCreateBoardDialog() async {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
                 // Header de l'espace de travail
+                
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: const BoxDecoration(
@@ -177,7 +178,6 @@ Future<void> showCreateBoardDialog() async {
                           curentWorkspace.isNotEmpty ? curentWorkspace[0] : '?',
                         ),
                       ),
-                      const SizedBox(width: 10),
                       Text(
                         curentWorkspace,
                         style: const TextStyle(
@@ -196,7 +196,7 @@ Future<void> showCreateBoardDialog() async {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
                       SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.3,
+                        height: MediaQuery.of(context).size.height * 0.20,
                         child: Column(
                           children: <Widget>[
                             ListTile(

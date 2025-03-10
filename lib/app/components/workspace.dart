@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/components/board.dart';
+import 'package:flutter_trell_app/app/widgets/header.dart';
 import 'package:flutter_trell_app/app/widgets/sidebar.dart';
 import 'package:http/http.dart' as http;
 
@@ -41,16 +42,26 @@ class _WorkspaceState extends State<Workspace> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Accueil')),
-      body: Row(
-      // ✅ Le header prend uniquement sa hauteur naturelle
-      //const Header(),
-
+      body: Column(
         children: <Widget>[
-          // Sidebar
-          const Sidebar(),
-          SizedBox(
-            width: MediaQuery.of(context).size.width * 0.8,
-            child: Board(boardId: boardId),
+          // Page header
+          const SizedBox(
+            height: 100, // Hauteur fixe pour éviter l'overflow
+            child: Header(),
+          ),
+          // Page Content
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                // Sidebar
+                const Sidebar(),
+
+                // Contenu principal
+                Expanded(
+                  child: Board(boardId: boardId),
+                ),
+              ],
+            ),
           ),
         ],
       ),
