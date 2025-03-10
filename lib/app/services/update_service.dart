@@ -1,32 +1,33 @@
-// ignore_for_file: public_member_api_docs
-
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class UpdateService {
-  static Future<bool> updateCard(String cardId, String newName) async {
+  /// 🔹 Met à jour UNIQUEMENT la description d'une carte
+  static Future<bool> updateCardDescription(String cardId, String description) async {
     final String url = 'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
 
     try {
       final http.Response response = await http.put(
         Uri.parse(url),
         headers: <String, String>{'Content-Type': 'application/json'},
-        body: jsonEncode(<String, String>{'name': newName}),
+        body: jsonEncode(<String, String>{'desc': description}), // ✅ Met à jour uniquement `desc`
       );
 
       if (response.statusCode == 200) {
-        return true; // Succès
+        print("✅ Description mise à jour avec succès !");
+        return true;
       } else {
-        throw Exception('❌ Erreur API: ${response.statusCode}');
+        print("❌ Erreur API: ${response.statusCode} - ${response.body}");
+        return false;
       }
     } catch (error) {
-      // print('❌ Erreur lors de la mise à jour : $error');
-      return false; // Échec
+      print("❌ Exception lors de la mise à jour de la description : $error");
+      return false;
     }
   }
 }

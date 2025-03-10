@@ -39,7 +39,7 @@ class GetListWidgetState extends State<GetListWidget> {
   Future<Map<String, dynamic>> _fetchData() async {
     final List<dynamic> lists = await ListService.getList(widget.boardId);
     final List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
-    return {'lists': lists, 'cards': cards};
+    return <String, dynamic>{'lists': lists, 'cards': cards};
   }
 
   Future<void> _fetchAndUpdateLists() async {
