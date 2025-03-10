@@ -82,7 +82,7 @@ class GetListWidgetState extends State<GetListWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Listes et Cartes Trello')),
+      backgroundColor: Colors.transparent,
       body: StreamBuilder<List<dynamic>>(
         stream: _listsStreamController.stream,
         builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
@@ -107,36 +107,31 @@ class GetListWidgetState extends State<GetListWidget> {
               }
 
               final cards = dataSnapshot.data!['cards'];
-
-              return Column(
-                children: <Widget>[
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: lists.map<Widget>((list) {
-                          final List<Map<String, dynamic>> listCards = cards
-                              .where((card) => card['listId'] == list['id'])
-                              .toList();
-                          return SizedBox(
-                            width: 300,
-                            child: GetOneListWidget(
-                              list: list,
-                              cards: listCards,
-                              refreshLists: _loadData,
-                              boardId: widget.boardId, // Passez boardId ici
-                            ),
-                          );
-                        }).toList(),
-                      ),
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...lists.map<Widget>((list) {
+                      final List<Map<String, dynamic>> listCards = cards
+                          .where((Map<String, dynamic> card) => card['listId'] == list['id'])
+                          .toList();
+                      return SizedBox(
+                        width: 300,
+                        child: GetOneListWidget(
+                          list: list,
+                          cards: listCards,
+                          refreshLists: _loadData,
+                        ),
+                      );
+                    }).toList(),
+                    // Add the create list button at the end
+                    SizedBox(
+                      width: 300,
+                      child: Createlistbutton(BOARD_ID: widget.boardId),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Createlistbutton(BOARD_ID: widget.boardId),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           );
