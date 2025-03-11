@@ -34,6 +34,7 @@ class _BoardState extends State<Board> {
   void didUpdateWidget(covariant Board oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.boardId != widget.boardId) {
+        debugPrint('Board dans board.dart: $widget.boardId');
       _loadBoard();
     }
   }

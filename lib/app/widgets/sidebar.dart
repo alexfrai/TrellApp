@@ -24,7 +24,7 @@ class _SidebarState extends State<Sidebar> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
-  String boardId = 'XuEuw84e';
+  String boardId = '';
   String boardName = '';
   Map<String, dynamic> boardData = {};
   List<dynamic> allBoards = [];
