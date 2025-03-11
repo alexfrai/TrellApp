@@ -27,8 +27,6 @@ class _WorkspaceState extends State<Workspace> {
 
   String boardId = '6756c8816b281ad931249861';
   String boardName = '';
-  String cardId ='';
-
   Map<String, dynamic> boardData = <String, dynamic>{};
   List<dynamic> allBoards = [];
   String curentWorkspace = '';
@@ -66,7 +64,7 @@ class _WorkspaceState extends State<Workspace> {
 
                 // Contenu principal
                 Expanded(
-                  child: Board(boardId: boardId, cardId: '',), // 🔥 boardId mis à jour dynamiquement
+                  child: Board(boardId: boardId), // 🔥 boardId mis à jour dynamiquement
                 ),
               ],
             ),
