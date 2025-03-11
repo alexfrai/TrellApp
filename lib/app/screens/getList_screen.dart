@@ -7,11 +7,13 @@ import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
 /// Affiche tout ce qui est en rapport avec les listes
 class GetListWidget extends StatefulWidget {
+  const GetListWidget({required this.boardId, required this.cardId, super.key});
   /// Paramètres de la fonction: boardID et key
   const GetListWidget({required this.boardId, super.key});
 
   /// boardId passé en paramètre
   final String boardId;
+  final String cardId;
 
   @override
   GetListWidgetState createState() => GetListWidgetState();
@@ -128,7 +130,8 @@ class GetListWidgetState extends State<GetListWidget> {
                           list: list,
                           cards: listCards,
                           refreshLists: _loadData,
-                          boardId: widget.boardId, // Passage du boardId
+                          boardId: widget.boardId,
+                          cardId: widget.cardId, // Passage du boardId
                         ),
                       );
                     }).toList(),

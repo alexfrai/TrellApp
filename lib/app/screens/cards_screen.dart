@@ -10,9 +10,10 @@ final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class CardsScreen extends StatefulWidget {
-  const CardsScreen({required this.id, required this.boardId, super.key});
+  const CardsScreen({required this.id, required this.boardId, required this.cardId, super.key});
   final String id;
   final String boardId;
+  final String cardId;
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -112,6 +113,7 @@ class _CardsScreenState extends State<CardsScreen> {
                 cards: cards,
                 refreshLists: _getCardsInList,
                 boardId: widget.boardId,
+                cardId: widget.cardId,
               ),
       ),
       floatingActionButton: FloatingActionButton(
