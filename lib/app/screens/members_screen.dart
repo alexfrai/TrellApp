@@ -14,6 +14,7 @@ class MembersScreen extends StatefulWidget {
   _MembersScreenState createState() => _MembersScreenState();
 }
 
+
 class _MembersScreenState extends State<MembersScreen> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
@@ -28,6 +29,12 @@ class _MembersScreenState extends State<MembersScreen> {
 
   Future<void> fetchData() async {
     await getAllMembers();
+  }
+  void updateBoardId(String newBoardId) {
+    setState(() {
+      // Tu peux stocker le boardId ici si nécessaire
+      debugPrint('Board changé: $newBoardId');
+    });
   }
 
   Future<dynamic> fetchApi(String apiRequest, String method) async {
@@ -76,7 +83,7 @@ class _MembersScreenState extends State<MembersScreen> {
           Expanded(
             child: Row(
               children: <Widget>[
-                const Sidebar(),
+              Sidebar(onBoardChanged: updateBoardId),
                 //Contenu de la page members
                 Expanded(
                   child: Padding(
