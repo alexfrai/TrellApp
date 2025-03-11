@@ -45,23 +45,22 @@ class ListService {
   /// Request API Create list
   /// @var String Board_ID, @var String name
   static Future<dynamic> createList(String name, String boardId) async {
-    try {
-      final Uri url = Uri.parse(
-        //Uri.encodeComponent sert pour les caractères spéciaux comme /, %, $ ...
-        '$baseUrl/lists?name=${Uri.encodeComponent(name)}&idBoard=${Uri.encodeComponent(boardId)}&key=$apikey&token=$apitoken',
-      );
-      // Type of request: POST
-      final http.Response response = await http.post(url);
+  try {
+    final Uri url = Uri.parse(
+      '$baseUrl/lists?name=${Uri.encodeComponent(name)}&idBoard=${Uri.encodeComponent(boardId)}&key=$apikey&token=$apitoken',
+    );
+    final http.Response response = await http.post(url);
 
-      // Check for success
-      if (response.statusCode != 200) {
-        throw Exception('Erreur ${response.statusCode}: ${response.body}');
-      }
-      return jsonDecode(response.body);
-    } catch (error) {
-      rethrow; // Rethrow the error so that it can be caught in the UI
+    if (response.statusCode != 200) {
+      print("board Id: $boardId"); // Affiche le boardId après une requête réussie
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
     }
+    return jsonDecode(response.body);
+  } catch (error) {
+    rethrow;
   }
+}
+
   ///Change le nom d'une liste
   ///@var String idist, @var String newname
   static Future<dynamic> updateListName(String idlist, String newname) async {  //A utilisé dans GetOneList

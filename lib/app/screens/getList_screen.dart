@@ -5,9 +5,13 @@ import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
+/// Affiche tout ce qui est en rapport avec les listes
 class GetListWidget extends StatefulWidget {
   const GetListWidget({required this.boardId, required this.cardId, super.key});
+  /// Paramètres de la fonction: boardID et key
+  const GetListWidget({required this.boardId, super.key});
 
+  /// boardId passé en paramètre
   final String boardId;
   final String cardId;
 
@@ -17,7 +21,8 @@ class GetListWidget extends StatefulWidget {
 
 class GetListWidgetState extends State<GetListWidget> {
   late Future<Map<String, dynamic>> _dataFuture;
-  final StreamController<List<dynamic>> _listsStreamController = StreamController.broadcast();
+  final StreamController<List<dynamic>> _listsStreamController =
+      StreamController.broadcast();
   List<dynamic> _currentLists = [];
 
   @override
@@ -67,7 +72,8 @@ class GetListWidgetState extends State<GetListWidget> {
   bool _listsHaveChanged(List<dynamic> newLists) {
     if (_currentLists.length != newLists.length) return true;
     for (int i = 0; i < _currentLists.length; i++) {
-      if (_currentLists[i]['id'] != newLists[i]['id'] || _currentLists[i]['name'] != newLists[i]['name']) {
+      if (_currentLists[i]['id'] != newLists[i]['id'] ||
+          _currentLists[i]['name'] != newLists[i]['name']) {
         return true;
       }
     }
@@ -83,7 +89,7 @@ class GetListWidgetState extends State<GetListWidget> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Listes et Cartes Trello')),
+      backgroundColor: Colors.transparent,
       body: StreamBuilder<List<dynamic>>(
         stream: _listsStreamController.stream,
         builder: (BuildContext context, AsyncSnapshot<List> snapshot) {
@@ -109,36 +115,33 @@ class GetListWidgetState extends State<GetListWidget> {
 
               final cards = dataSnapshot.data!['cards'];
 
-              return Column(
-                children: <Widget>[
-                  Expanded(
-                    child: SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: lists.map<Widget>((list) {
-                          final List<Map<String, dynamic>> listCards = cards
-                              .where((card) => card['listId'] == list['id'])
-                              .toList();
-                          return SizedBox(
-                            width: 300,
-                            child: GetOneListWidget(
-                              list: list,
-                              cards: listCards,
-                              refreshLists: _loadData,
-                              boardId: widget.boardId,
-                              cardId: widget.cardId, // Passez boardId ici
-                            ),
-                          );
-                        }).toList(),
-                      ),
+              return SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ...lists.map<Widget>((list) {
+                      final List<Map<String, dynamic>> listCards = cards
+                          .where((Map<String, dynamic> card) => card['listId'] == list['id'])
+                          .toList();
+                      return SizedBox(
+                        width: 300,
+                        child: GetOneListWidget(
+                          list: list,
+                          cards: listCards,
+                          refreshLists: _loadData,
+                          boardId: widget.boardId,
+                          cardId: widget.cardId, // Passage du boardId
+                        ),
+                      );
+                    }).toList(),
+                    // Bouton de création de liste
+                    SizedBox(
+                      width: 300,
+                      child: Createlistbutton(BOARD_ID: widget.boardId),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Createlistbutton(BOARD_ID: widget.boardId),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           );

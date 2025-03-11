@@ -116,6 +116,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
         ],
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min, // Allow the column to take only the space it needs
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
