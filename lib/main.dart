@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/components/workspace.dart';
 import 'package:flutter_trell_app/app/screens/cards_screen.dart';
-import 'package:flutter_trell_app/app/screens/getList_screen.dart';
+import 'package:flutter_trell_app/app/screens/getlists_screen.dart';
 import 'package:flutter_trell_app/app/screens/members_screen.dart';
 import 'package:flutter_trell_app/app/widgets/header.dart';
 

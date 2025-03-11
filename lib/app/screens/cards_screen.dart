@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
-import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
+import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 import 'package:http/http.dart' as http;
 
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';

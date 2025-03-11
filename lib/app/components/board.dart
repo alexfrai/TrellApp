@@ -4,7 +4,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_trell_app/app/screens/getList_screen.dart';
+import 'package:flutter_trell_app/app/screens/getlists_screen.dart';
 import 'package:http/http.dart' as http;
 
 class Board extends StatefulWidget {
