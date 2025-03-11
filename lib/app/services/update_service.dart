@@ -30,4 +30,27 @@ class UpdateService {
       return false;
     }
   }
+
+  static Future<bool> updateCardName(String cardId, String name) async {
+    final String url = 'https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$apiToken';
+
+    try {
+      final http.Response response = await http.put(
+        Uri.parse(url),
+        headers: <String, String>{'Content-Type': 'application/json'},
+        body: jsonEncode(<String, String>{'name': name}), // ✅ Met à jour uniquement `desc`
+      );
+
+      if (response.statusCode == 200) {
+        print("✅ Description mise à jour avec succès !");
+        return true;
+      } else {
+        print("❌ Erreur API: ${response.statusCode} - ${response.body}");
+        return false;
+      }
+    } catch (error) {
+      print("❌ Exception lors de la mise à jour de la description : $error");
+      return false;
+    }
+  }
 }

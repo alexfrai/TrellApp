@@ -9,7 +9,7 @@ class GetListWidget extends StatefulWidget {
   /// Paramètres de la fonction: boardID et key
   const GetListWidget({required this.boardId, super.key});
 
-  /// boardId passé en paramètre
+
   final String boardId;
 
   @override
