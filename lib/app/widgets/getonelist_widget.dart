@@ -1,5 +1,6 @@
 // ignore_for_file: library_private_types_in_public_api, public_member_api_docs, deprecated_member_use, always_specify_types
 
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_member_card.dart'; 
@@ -44,7 +45,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
   @override
   void initState() {
     super.initState();
-    _getCardsInList();
+    unawaited(_getCardsInList());
   }
 
   Future<void> _createNewCard() async {
@@ -53,7 +54,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
       builder: (BuildContext context) => CardsNew(id: widget.list['id']),
     );
     if (newCard != null) {
-      _getCardsInList(); // 🔄 Rafraîchit les cartes après ajout
+      unawaited(_getCardsInList()); // 🔄 Rafraîchit les cartes après ajout
     }
   }
 
@@ -75,7 +76,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
             return {
               'id': card['id'],
               'name': card['name'],
-              'desc': card['desc'] ?? "",
+              'desc': card['desc'] ?? '',
             };
           }).toList();
         });
@@ -135,8 +136,10 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
               ),
             )
           else
-            Expanded(
+            Flexible(
               child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
                 itemCount: cards.length,
                 itemBuilder: (BuildContext context, int index) {
                   final Map<String, dynamic> card = cards[index];
@@ -179,7 +182,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                       );
                                     }),
                                   )
-                                : const SizedBox(width: 40, height: 40), 
+                                : const SizedBox(width: 40, height: 40),
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 16,
                               vertical: 8,
@@ -213,13 +216,12 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                     },
                                     listId: widget.list['id'],
                                     boardId: widget.boardId,
-                                    cardId: card['id'], // ✅ Ajout du paramètre manquant
-                                    refreshLists: widget.refreshLists, // ✅ Ajout du paramètre manquant
+                                    cardId: card['id'],
+                                    refreshLists: widget.refreshLists,
                                   );
                                 },
                               );
                             },
-
                           ),
                         ),
                       );
@@ -228,6 +230,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                 },
               ),
             ),
+
           const SizedBox(height: 10),
           Center(
             child: ElevatedButton(
