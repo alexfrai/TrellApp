@@ -1,19 +1,16 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_trell_app/app/services/get_all_cards.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
 /// Affiche tout ce qui est en rapport avec les listes
 class GetListWidget extends StatefulWidget {
-  const GetListWidget({required this.boardId, required this.cardId, super.key});
   /// Paramètres de la fonction: boardID et key
   const GetListWidget({required this.boardId, super.key});
 
   /// boardId passé en paramètre
   final String boardId;
-  final String cardId;
 
   @override
   GetListWidgetState createState() => GetListWidgetState();
@@ -40,8 +37,7 @@ class GetListWidgetState extends State<GetListWidget> {
 
   Future<Map<String, dynamic>> _fetchData() async {
     final List<dynamic> lists = await ListService.getList(widget.boardId);
-    final List<Map<String, dynamic>> cards = await CardService.getAllCards(lists);
-    return <String, dynamic>{'lists': lists, 'cards': cards};
+    return {'lists': lists};
   }
 
   Future<void> _fetchAndUpdateLists() async {
@@ -113,25 +109,18 @@ class GetListWidgetState extends State<GetListWidget> {
                 return const Center(child: Text('Aucune liste trouvée'));
               }
 
-              final cards = dataSnapshot.data!['cards'];
-
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     ...lists.map<Widget>((list) {
-                      final List<Map<String, dynamic>> listCards = cards
-                          .where((Map<String, dynamic> card) => card['listId'] == list['id'])
-                          .toList();
                       return SizedBox(
                         width: 300,
                         child: GetOneListWidget(
                           list: list,
-                          cards: listCards,
                           refreshLists: _loadData,
-                          boardId: widget.boardId,
-                          cardId: widget.cardId, // Passage du boardId
+                          boardId: widget.boardId, // Passage du boardId
                         ),
                       );
                     }).toList(),

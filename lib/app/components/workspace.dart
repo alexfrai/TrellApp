@@ -72,7 +72,7 @@ class _WorkspaceState extends State<Workspace> {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
-            child: Board(boardId: boardId, cardId: cardId,),
+            child: Board(boardId: boardId),
           ),
         ],
       ),

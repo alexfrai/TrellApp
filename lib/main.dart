@@ -34,11 +34,9 @@ class MyApp extends StatelessWidget {
         '/cards': (BuildContext context) => const CardsScreen(
               id: '67bc36eac821fc127236093a',
               boardId: '67b31302370bb706da4fa2cd', 
-              cardId: 'mKJWg6W_CLHoiO',
             ),
         '/getlist': (BuildContext context) => const GetListWidget(
               boardId: '67b31302370bb706da4fa2cd',
-              cardId: 'mKJWg6W_CLHoiO',
             ),
         '/workspace': (BuildContext context) => const Workspace(),
         '/members': (BuildContext content) => const MembersScreen(),

@@ -8,9 +8,8 @@ import 'package:flutter_trell_app/app/screens/getList_screen.dart';
 import 'package:http/http.dart' as http;
 
 class Board extends StatefulWidget {
-  const Board({required this.boardId, required this.cardId, super.key});
+  const Board({required this.boardId, super.key});
   final String boardId;
-  final String cardId;
 
   @override
   _BoardState createState() => _BoardState();
@@ -39,6 +38,14 @@ class _BoardState extends State<Board> {
     } catch (error) {
       // print('Erreur dans fetchBoard : $error');
       return null;
+    }
+  }
+  
+  @override
+  void didUpdateWidget(Board oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.boardId != widget.boardId) {
+      setState(() {}); // Force le rebuild avec le nouveau boardId
     }
   }
 
@@ -139,7 +146,7 @@ class _BoardState extends State<Board> {
               ),
               // Body - Ici, tu peux afficher les listes et cartes
               Expanded(
-                child: GetListWidget(boardId: widget.boardId, cardId: widget.cardId,),
+                child: GetListWidget(boardId: widget.boardId),
               ),
             ],
           ),
