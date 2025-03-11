@@ -10,9 +10,10 @@ final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
 class CardsScreen extends StatefulWidget {
-  const CardsScreen({required this.id, required this.boardId, super.key});
+  const CardsScreen({required this.id, required this.boardId, required this.cardId, super.key});
   final String id;
   final String boardId;
+  final String cardId;
 
   @override
   _CardsScreenState createState() => _CardsScreenState();
@@ -29,7 +30,7 @@ class _CardsScreenState extends State<CardsScreen> {
   }
 
   Future<void> _getCardsInList() async {
-      setState(() => isLoading = true);
+  setState(() => isLoading = true);
 
   try {
     final http.Response response = await http.get(
@@ -40,23 +41,28 @@ class _CardsScreenState extends State<CardsScreen> {
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
+
+      // ✅ Vérifie si la description a été bien mise à jour
+      print("📌 Réponse API après mise à jour : ${jsonEncode(data)}");
+
       setState(() {
         cards = data.map((card) {
-          List<dynamic> members = card['members'] ?? [];
-          return {
+          return <String, dynamic>{
             'id': card['id'],
             'name': card['name'],
-            'members': members,
+            'desc': card['desc'] ?? "", // ✅ Vérifie que la description est bien présente
           };
         }).toList();
       });
     }
   } catch (error) {
-    // print('Erreur lors du chargement des cartes: $error');
+    print('❌ Erreur lors du chargement des cartes: $error');
   } finally {
-    setState(() => isLoading = false);
+    if (mounted) {
+      setState(() => isLoading = false);
+    }
   }
-  }
+}
 
   void _updateCard(String cardId, String newName) {
     setState(() {
@@ -103,10 +109,11 @@ class _CardsScreenState extends State<CardsScreen> {
         child: isLoading
             ? const Center(child: CircularProgressIndicator())
             : GetOneListWidget(
-                list: {'id': widget.id, 'name': 'Nom de la liste'},
+                list: <String, dynamic>{'id': widget.id, 'name': 'Nom de la liste'},
                 cards: cards,
                 refreshLists: _getCardsInList,
                 boardId: widget.boardId,
+                cardId: widget.cardId,
               ),
       ),
       floatingActionButton: FloatingActionButton(

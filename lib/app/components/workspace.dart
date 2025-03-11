@@ -25,8 +25,9 @@ class _WorkspaceState extends State<Workspace> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
-  String boardId = 'XuEuw84e';
+  String boardId = '6756c8816b281ad931249861';
   String boardName = '';
+
   Map<String, dynamic> boardData = <String, dynamic>{};
   List<dynamic> allBoards = [];
   String curentWorkspace = '';
@@ -36,6 +37,12 @@ class _WorkspaceState extends State<Workspace> {
   @override
   void initState() {
     super.initState();
+  }
+
+  void updateBoardId(String newBoardId) {
+    setState(() {
+      boardId = newBoardId;
+    });
   }
 
   @override
@@ -53,15 +60,19 @@ class _WorkspaceState extends State<Workspace> {
           Expanded(
             child: Row(
               children: <Widget>[
-                // Sidebar
-                const Sidebar(),
+                // Sidebar avec callback
+                Sidebar(onBoardChanged: updateBoardId),
 
                 // Contenu principal
                 Expanded(
-                  child: Board(boardId: boardId),
+                  child: Board(boardId: boardId), // 🔥 boardId mis à jour dynamiquement
                 ),
               ],
             ),
+          ),
+          SizedBox(
+            width: MediaQuery.of(context).size.width * 0.8,
+            child: Board(boardId: boardId, cardId: cardId,),
           ),
         ],
       ),

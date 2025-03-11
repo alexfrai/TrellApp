@@ -12,10 +12,10 @@ class CreateMemberCard {
         'https://api.trello.com/1/cards/$cardId/members?key=$apiKey&token=$apiToken';
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final http.Response response = await http.get(Uri.parse(url));
 
       if (response.statusCode == 200) {
-        List<dynamic> members = json.decode(response.body);
+        final List<dynamic> members = json.decode(response.body);
         return members.any((member) => member['id'] == memberId);
       } else {
         print('❌ Erreur API (GET membres): ${response.statusCode}');
@@ -37,9 +37,9 @@ class CreateMemberCard {
         'https://api.trello.com/1/cards/$cardId/idMembers?key=$apiKey&token=$apiToken';
 
     try {
-      final response = await http.post(
+      final http.Response response = await http.post(
         Uri.parse(url),
-        body: {'value': memberId},
+        body: <String, String>{'value': memberId},
       );
 
       if (response.statusCode == 200) {
@@ -48,7 +48,7 @@ class CreateMemberCard {
         throw Exception('❌ Erreur API: ${response.statusCode} - ${response.body}');
       }
     } catch (error) {
-      print('❌ Erreur lors de l\'assignation du membre : $error');
+      print("❌ Erreur lors de l'assignation du membre : $error");
     }
   }
 }

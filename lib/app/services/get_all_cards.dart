@@ -28,6 +28,7 @@ class CardService {
               'listId': listId,
               'id': card['id'],
               'name': card['name'],
+              'desc': card['desc'],
             });
           }
         } else {

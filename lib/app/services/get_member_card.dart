@@ -14,17 +14,17 @@ class GetMemberCardService {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        return data.map((member) => {
+        return data.map((member) => <String, dynamic>{
           'id': member['id'],
           'username': member['username'],
-        }).toList();
+        },).toList();
       } else {
         print('Erreur API: ${response.statusCode}');
-        return [];
+        return <Map<String, dynamic>>[];
       }
     } catch (error) {
       print('Erreur lors de la récupération des membres: $error');
-      return [];
+      return <Map<String, dynamic>>[];
     }
   }
 }
