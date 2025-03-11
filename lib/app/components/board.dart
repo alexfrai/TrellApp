@@ -19,6 +19,7 @@ class _BoardState extends State<Board> {
   static final String? apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'];
   static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   String userId = '5e31418954e5fd1a91bd6ae5';
+  List<String> allMember = [];
 
   Map<String, dynamic>? currentBoard;
   String background = '';
@@ -72,6 +73,16 @@ class _BoardState extends State<Board> {
     await http.delete(Uri.parse(url));
     setState(() {
       isFavorite = false;
+    });
+  }
+
+Future<void> getAllMemberFromBoard(String boardId) async {
+    final String url =
+        'https://api.trello.com/1/boards/$boardId/members?key=$apiKey&token=$apiToken';
+    final dynamic response = await http.get(Uri.parse(url));
+
+    setState(() {
+      allMember = response;
     });
   }
 
@@ -138,6 +149,29 @@ class _BoardState extends State<Board> {
                           onPressed: () {},
                           icon: const Icon(Icons.person_add_alt),
                           label: const Text('Share'),
+                        ),
+                        SizedBox(width: 10,),
+                        ListView.builder(
+                          itemCount: allMember.length,
+                          itemBuilder: (BuildContext context, int index) {
+                            final dynamic board = allMember[index];
+                            return ListTile(
+                              leading: CircleAvatar(
+                                backgroundImage:
+                                    board['prefs']['backgroundImage'] != null
+                                        ? NetworkImage(
+                                          board['prefs']['backgroundImage'],
+                                        )
+                                        : null,
+                                backgroundColor: Colors.grey,
+                              ),
+                              title: Text(
+                                board['name'][0],
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                              onTap: () async => print('User pressed'),
+                            );
+                          },
                         ),
                       ],
                     ),
