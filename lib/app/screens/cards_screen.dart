@@ -55,7 +55,7 @@ class _CardsScreenState extends State<CardsScreen> {
       });
     }
   } catch (error) {
-    print('❌ Erreur lors du chargement des cartes: $error');
+    throw Exception('❌ Erreur lors du chargement des cartes: $error');
   } finally {
     if (mounted) {
       setState(() => isLoading = false);

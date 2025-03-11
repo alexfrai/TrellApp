@@ -52,7 +52,6 @@ class ListService {
     final http.Response response = await http.post(url);
 
     if (response.statusCode != 200) {
-      print("board Id: $boardId"); // Affiche le boardId après une requête réussie
       throw Exception('Erreur ${response.statusCode}: ${response.body}');
     }
     return jsonDecode(response.body);

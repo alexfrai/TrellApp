@@ -32,10 +32,10 @@ Future<void> removeBoardFromFavorite(String userId, String boardStarId) async {
     if (response.statusCode == 200) {
       print('Board successfully unstarred');
     } else {
-      print('Erreur lors de la suppression des favoris: ${response.statusCode}');
+      throw Exception('Erreur lors de la suppression des favoris: ${response.statusCode}');
     }
   } catch (error) {
-    print('Erreur dans removeBoardFromFavorite: $error');
+    throw Exception('Erreur dans removeBoardFromFavorite: $error');
   }
 }
 
@@ -51,11 +51,9 @@ Future<List<Map<String, dynamic>>> getBoardFromFavorite(String memberId) async {
       print('Starred (favorite) boards: $starredBoards');
       return starredBoards;
     } else {
-      print('Erreur lors de la récupération des boards: ${response.statusCode}');
-      return <Map<String, dynamic>>[];
+      throw Exception('Erreur lors de la récupération des boards: ${response.statusCode}');
     }
   } catch (error) {
-    print('Erreur dans getBoardFromFavorite: $error');
-    return <Map<String, dynamic>>[];
+    throw Exception('Erreur dans getBoardFromFavorite: $error');
   }
 }
