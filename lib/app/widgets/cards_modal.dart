@@ -48,7 +48,7 @@ class _CardsModalState extends State<CardsModal> {
   bool _isUpdating = false;
   bool _isDeleting = false;
   bool _isAssigning = false;
-  bool _isCreating = false; // ✅ Indicateur de chargement
+  bool _isCreating = false; 
 
   @override
   void initState() {
@@ -75,7 +75,7 @@ class _CardsModalState extends State<CardsModal> {
     if (widget.selectedCardId == null || _nameController.text.isEmpty) return;
 
     setState(() => _isUpdating = true);
-    final bool success = await UpdateService.updateCardDescription(
+    final bool success = await UpdateService.updateCardName(
       widget.selectedCardId!,
       _nameController.text,
     );
