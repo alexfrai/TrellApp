@@ -5,9 +5,12 @@ import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
+/// Affiche tout ce qui est en rapport avec les listes
 class GetListWidget extends StatefulWidget {
+  /// Paramètres de la fonction: boardID et key
   const GetListWidget({required this.boardId, super.key});
 
+  /// boardId passé en paramètre
   final String boardId;
 
   @override
@@ -16,7 +19,8 @@ class GetListWidget extends StatefulWidget {
 
 class GetListWidgetState extends State<GetListWidget> {
   late Future<Map<String, dynamic>> _dataFuture;
-  final StreamController<List<dynamic>> _listsStreamController = StreamController.broadcast();
+  final StreamController<List<dynamic>> _listsStreamController =
+      StreamController.broadcast();
   List<dynamic> _currentLists = [];
 
   @override
@@ -66,7 +70,8 @@ class GetListWidgetState extends State<GetListWidget> {
   bool _listsHaveChanged(List<dynamic> newLists) {
     if (_currentLists.length != newLists.length) return true;
     for (int i = 0; i < _currentLists.length; i++) {
-      if (_currentLists[i]['id'] != newLists[i]['id'] || _currentLists[i]['name'] != newLists[i]['name']) {
+      if (_currentLists[i]['id'] != newLists[i]['id'] ||
+          _currentLists[i]['name'] != newLists[i]['name']) {
         return true;
       }
     }
@@ -107,6 +112,7 @@ class GetListWidgetState extends State<GetListWidget> {
               }
 
               final cards = dataSnapshot.data!['cards'];
+
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
@@ -122,10 +128,11 @@ class GetListWidgetState extends State<GetListWidget> {
                           list: list,
                           cards: listCards,
                           refreshLists: _loadData,
+                          boardId: widget.boardId, // Passage du boardId
                         ),
                       );
                     }).toList(),
-                    // Add the create list button at the end
+                    // Bouton de création de liste
                     SizedBox(
                       width: 300,
                       child: Createlistbutton(BOARD_ID: widget.boardId),

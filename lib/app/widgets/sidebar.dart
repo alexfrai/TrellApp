@@ -11,9 +11,9 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 
 ///Class
 class Sidebar extends StatefulWidget {
-  ///Constructor
-  const Sidebar({ super.key });
+  final Function(String) onBoardChanged; // Ajoute un callback
 
+  const Sidebar({required this.onBoardChanged, super.key});
 
   @override
   _SidebarState createState() => _SidebarState();
@@ -24,7 +24,7 @@ class _SidebarState extends State<Sidebar> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
-  String boardId = 'XuEuw84e';
+  String boardId = '6756c8816b281ad931249861';
   String boardName = '';
   Map<String, dynamic> boardData = {};
   List<dynamic> allBoards = [];
@@ -63,13 +63,16 @@ Future<void> fetchData() async {
     }
   }
 
-  Future<void> changeBoard(Map<String, dynamic> data) async {
+    Future<void> changeBoard(Map<String, dynamic> data) async {
     setState(() {
       boardId = data['id'];
       boardData = data;
     });
+
+    widget.onBoardChanged(boardId); // 🔥 Informe `Workspace` du changement !
     debugPrint('Board sélectionné: $boardId');
   }
+
 
   Future<void> createBoard() async {
     await fetchApi(

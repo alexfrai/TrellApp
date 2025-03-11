@@ -38,6 +38,12 @@ class _WorkspaceState extends State<Workspace> {
     super.initState();
   }
 
+  void updateBoardId(String newBoardId) {
+    setState(() {
+      boardId = newBoardId;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -53,16 +59,17 @@ class _WorkspaceState extends State<Workspace> {
           Expanded(
             child: Row(
               children: <Widget>[
-                // Sidebar
-                const Sidebar(),
+                // Sidebar avec callback
+                Sidebar(onBoardChanged: updateBoardId),
 
                 // Contenu principal
                 Expanded(
-                  child: Board(boardId: boardId),
+                  child: Board(boardId: boardId), // 🔥 boardId mis à jour dynamiquement
                 ),
               ],
             ),
           ),
+
         ],
       ),
     );
