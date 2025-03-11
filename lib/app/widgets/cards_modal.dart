@@ -1,14 +1,12 @@
 // ignore_for_file: public_member_api_docs, library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/services/checklist_service.dart';
 import 'package:flutter_trell_app/app/services/create_member_card.dart';
 import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/get_members.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
-import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
-
-
 
 class CardsModal extends StatefulWidget {
   const CardsModal({
@@ -20,6 +18,7 @@ class CardsModal extends StatefulWidget {
     required this.onCardDeleted,
     required this.listId,
     required this.boardId,
+    required this.cardId,
     required this.refreshLists,
     super.key,
   });
@@ -29,10 +28,11 @@ class CardsModal extends StatefulWidget {
   final String? selectedCardId;
   final String listId;
   final String boardId;
+  final String cardId;
   final VoidCallback handleClose;
   final Function(String, String) onCardUpdated;
   final Function(String) onCardDeleted;
-  
+
   final VoidCallback refreshLists;
 
   @override
@@ -48,6 +48,7 @@ class _CardsModalState extends State<CardsModal> {
   bool _isUpdating = false;
   bool _isDeleting = false;
   bool _isAssigning = false;
+  bool _isCreating = false; // ✅ Indicateur de chargement
 
   @override
   void initState() {
@@ -87,29 +88,29 @@ class _CardsModalState extends State<CardsModal> {
     setState(() => _isUpdating = false);
   }
 
-Future<void> _updateDescription() async {
-  if (widget.selectedCardId == null || _descriptionController.text.isEmpty) return;
+  Future<void> _updateDescription() async {
+    if (widget.selectedCardId == null || _descriptionController.text.isEmpty)
+      return;
 
-  setState(() => _isUpdating = true);
+    setState(() => _isUpdating = true);
 
-  final bool success = await UpdateService.updateCardDescription(
-    widget.selectedCardId!,
-    _descriptionController.text,
-  );
+    final bool success = await UpdateService.updateCardDescription(
+      widget.selectedCardId!,
+      _descriptionController.text,
+    );
 
-  if (!mounted) return;
+    if (!mounted) return;
 
-  if (success) {
-    widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
-    widget.handleClose();
+    if (success) {
+      widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
+      widget.handleClose();
 
-    // ✅ Rafraîchir les cartes après la mise à jour
-    widget.refreshLists();
+      // ✅ Rafraîchir les cartes après la mise à jour
+      widget.refreshLists();
+    }
+
+    setState(() => _isUpdating = false);
   }
-
-  setState(() => _isUpdating = false);
-}
-
 
   Future<void> _deleteCard() async {
     if (widget.selectedCardId == null) return;
@@ -157,6 +158,36 @@ Future<void> _updateDescription() async {
     }
 
     setState(() => _isAssigning = false);
+  }
+
+  Future<void> _createChecklist() async {
+    if (widget.selectedCardId == null) {
+      print("❌ Erreur : Aucune carte sélectionnée !");
+      return;
+    }
+
+    setState(() {
+      _isCreating = true;
+    });
+
+    final success = await ChecklistService().createChecklist(
+      widget.selectedCardId!,
+      "Checklist",
+    );
+
+    if (!mounted) return;
+
+    if (success) {
+      print("✅ Checklist créée avec succès !");
+      widget.handleClose(); // ✅ Fermer la modale
+      widget.refreshLists(); // ✅ Rafraîchir les listes
+    } else {
+      print("❌ Erreur lors de la création de la checklist");
+    }
+
+    setState(() {
+      _isCreating = false;
+    });
   }
 
   @override
@@ -329,6 +360,26 @@ Future<void> _updateDescription() async {
                       _isAssigning
                           ? const CircularProgressIndicator(color: Colors.black)
                           : const Text('Assigner un membre'),
+                ),
+
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _isCreating ? null : _createChecklist,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.greenAccent,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child:
+                      _isCreating
+                          ? const CircularProgressIndicator(color: Colors.black)
+                          : const Text('Créer Checklist'),
                 ),
               ],
             ),

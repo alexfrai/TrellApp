@@ -6,9 +6,10 @@ import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getOneListWidget.dart';
 
 class GetListWidget extends StatefulWidget {
-  const GetListWidget({required this.boardId, super.key});
+  const GetListWidget({required this.boardId, required this.cardId, super.key});
 
   final String boardId;
+  final String cardId;
 
   @override
   GetListWidgetState createState() => GetListWidgetState();
@@ -125,7 +126,8 @@ class GetListWidgetState extends State<GetListWidget> {
                               list: list,
                               cards: listCards,
                               refreshLists: _loadData,
-                              boardId: widget.boardId, // Passez boardId ici
+                              boardId: widget.boardId,
+                              cardId: widget.cardId, // Passez boardId ici
                             ),
                           );
                         }).toList(),

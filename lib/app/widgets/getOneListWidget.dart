@@ -14,6 +14,7 @@ class GetOneListWidget extends StatefulWidget {
     required this.cards,
     required this.refreshLists,
     required this.boardId,
+    required this.cardId,
     super.key,
   });
 
@@ -21,6 +22,7 @@ class GetOneListWidget extends StatefulWidget {
   final List<Map<String, dynamic>> cards;
   final VoidCallback refreshLists;
   final String boardId;
+  final String cardId;
 
   @override
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
@@ -242,6 +244,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                       },
                                       listId: widget.list['id'],
                                       boardId: widget.boardId,
+                                      cardId: widget.cardId,
                                       refreshLists:
                                           _getCardsInList, // ✅ Ajout de refreshLists
                                     );

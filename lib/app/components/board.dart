@@ -8,8 +8,9 @@ import 'package:flutter_trell_app/app/screens/getList_screen.dart';
 import 'package:http/http.dart' as http;
 
 class Board extends StatefulWidget {
-  const Board({required this.boardId, super.key});
+  const Board({required this.boardId, required this.cardId, super.key});
   final String boardId;
+  final String cardId;
 
   @override
   _BoardState createState() => _BoardState();
@@ -138,7 +139,7 @@ class _BoardState extends State<Board> {
               ),
               // Body - Ici, tu peux afficher les listes et cartes
               Expanded(
-                child: GetListWidget(boardId: widget.boardId),
+                child: GetListWidget(boardId: widget.boardId, cardId: widget.cardId,),
               ),
             ],
           ),

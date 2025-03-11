@@ -24,7 +24,9 @@ class _WorkspaceState extends State<Workspace> {
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
   String boardId = 'XuEuw84e';
+  String cardId = '';
   String boardName = '';
+
   Map<String, dynamic> boardData = <String, dynamic>{};
   List<dynamic> allBoards = [];
   String curentWorkspace = '';
@@ -280,7 +282,7 @@ class _WorkspaceState extends State<Workspace> {
           ),
           SizedBox(
             width: MediaQuery.of(context).size.width * 0.8,
-            child: Board(boardId: boardId),
+            child: Board(boardId: boardId, cardId: cardId,),
           ),
         ],
       ),
