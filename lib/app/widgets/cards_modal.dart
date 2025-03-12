@@ -7,6 +7,7 @@ import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/get_members.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
+import 'package:flutter_trell_app/app/widgets/checklist.dart';
 
 class CardsModal extends StatefulWidget {
   const CardsModal({
@@ -32,7 +33,6 @@ class CardsModal extends StatefulWidget {
   final VoidCallback handleClose;
   final Function(String, String) onCardUpdated;
   final Function(String) onCardDeleted;
-
   final VoidCallback refreshLists;
 
   @override
@@ -42,20 +42,40 @@ class CardsModal extends StatefulWidget {
 class _CardsModalState extends State<CardsModal> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  late ChecklistManager _checklistManager;
 
   List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
   String? _selectedMemberId;
   bool _isUpdating = false;
   bool _isDeleting = false;
   bool _isAssigning = false;
-  bool _isCreating = false; 
+  bool _isCreating = false;
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.taskName;
     _descriptionController.text = widget.descriptionName;
-    _loadMembers();
+
+    _checklistManager = ChecklistManager(
+      cardId: widget.selectedCardId ?? '',
+      refreshLists: widget.refreshLists,
+      handleClose: widget.handleClose,
+    );
+
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _loadMembers();
+    await _loadChecklists();
+    if (mounted) {
+      setState(() {}); // Rafraîchir l'affichage après le chargement
+    }
+  }
+
+  Future<void> _loadChecklists() async {
+    await _checklistManager.fetchChecklists();
   }
 
   Future<void> _loadMembers() async {
@@ -64,7 +84,7 @@ class _CardsModalState extends State<CardsModal> {
       widget.boardId,
     );
 
-    if (!mounted) return; // Vérifie que le widget est encore actif
+    if (!mounted) return;
 
     setState(() {
       _members = members;
@@ -104,9 +124,7 @@ class _CardsModalState extends State<CardsModal> {
     if (success) {
       widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
       widget.handleClose();
-
-      // ✅ Rafraîchir les cartes après la mise à jour
-      widget.refreshLists();
+      widget.refreshLists(); // ✅ Rafraîchir les cartes après la mise à jour
     }
 
     setState(() => _isUpdating = false);
@@ -125,16 +143,6 @@ class _CardsModalState extends State<CardsModal> {
     }
 
     setState(() => _isDeleting = false);
-  }
-
-  Future<void> _createNewCard() async {
-    final newCard = await showDialog(
-      context: context,
-      builder: (BuildContext context) => CardsNew(id: widget.listId),
-    );
-    if (newCard != null) {
-      widget.handleClose();
-    }
   }
 
   Future<void> _assignMemberToCard() async {
@@ -160,36 +168,6 @@ class _CardsModalState extends State<CardsModal> {
     setState(() => _isAssigning = false);
   }
 
-  Future<void> _createChecklist() async {
-    if (widget.selectedCardId == null) {
-      print("❌ Erreur : Aucune carte sélectionnée !");
-      return;
-    }
-
-    setState(() {
-      _isCreating = true;
-    });
-
-    final success = await ChecklistService().createChecklist(
-      widget.selectedCardId!,
-      "Checklist",
-    );
-
-    if (!mounted) return;
-
-    if (success) {
-      print("✅ Checklist créée avec succès !");
-      widget.handleClose(); // ✅ Fermer la modale
-      widget.refreshLists(); // ✅ Rafraîchir les listes
-    } else {
-      print("❌ Erreur lors de la création de la checklist");
-    }
-
-    setState(() {
-      _isCreating = false;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -198,7 +176,7 @@ class _CardsModalState extends State<CardsModal> {
       backgroundColor: Colors.transparent,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.5,
-        height: MediaQuery.of(context).size.height * 0.5,
+        height: MediaQuery.of(context).size.height * 0.7,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: const Color(0xFF3D1308),
@@ -212,99 +190,90 @@ class _CardsModalState extends State<CardsModal> {
             ),
           ],
         ),
-        child: Row(
+        child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const Text(
-                    'Gérer la Carte',
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFF8E5EE),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _nameController,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                    decoration: InputDecoration(
-                      labelText: 'Nom de la carte',
-                      labelStyle: const TextStyle(color: Colors.white70),
-                      filled: true,
-                      fillColor: const Color(0xFF9F2042).withOpacity(0.2),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButton<String>(
-                    hint: const Text('Sélectionner un membre'),
-                    value: _selectedMemberId,
-                    items:
-                        _members.map((Map<String, dynamic> member) {
-                          return DropdownMenuItem<String>(
-                            value: member['id'],
-                            child: Text(
-                              member['fullName'],
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                          );
-                        }).toList(),
-                    onChanged: (String? value) {
-                      setState(() {
-                        _selectedMemberId = value;
-                      });
-                    },
-                    dropdownColor: const Color(0xFF3D1308),
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    controller: _descriptionController,
-                    style: const TextStyle(color: Colors.white, fontSize: 18),
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      hintText: 'Description',
-                      hintStyle: const TextStyle(color: Colors.white70),
-                      filled: true,
-                      fillColor: const Color(0xFF9F2042).withOpacity(0.2),
-                    ),
-                    maxLines: 3,
-                  ),
-                  ElevatedButton(
-                    onPressed: _isUpdating ? null : _updateDescription,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blueAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child:
-                        _isUpdating
-                            ? const CircularProgressIndicator(
-                              color: Colors.white,
-                            )
-                            : const Text('Submit'),
-                  ),
-                ],
+            // ✅ Titre de la modale
+            const Text(
+              'Gérer la Carte',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFF8E5EE),
               ),
             ),
-            const SizedBox(width: 16),
-            Column(
-              children: <Widget>[
+            const SizedBox(height: 12),
+
+            // ✅ Champ pour le nom de la carte
+            TextField(
+              controller: _nameController,
+              style: const TextStyle(color: Colors.white, fontSize: 18),
+              decoration: InputDecoration(
+                labelText: 'Nom de la carte',
+                labelStyle: const TextStyle(color: Colors.white70),
+                filled: true,
+                fillColor: const Color(0xFF9F2042).withOpacity(0.2),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+
+            // ✅ Sélecteur de membres
+            DropdownButton<String>(
+              hint: const Text('Sélectionner un membre'),
+              value: _selectedMemberId,
+              items:
+                  _members.map((Map<String, dynamic> member) {
+                    return DropdownMenuItem<String>(
+                      value: member['id'],
+                      child: Text(
+                        member['fullName'],
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+              onChanged: (String? value) {
+                setState(() {
+                  _selectedMemberId = value;
+                });
+              },
+              dropdownColor: const Color(0xFF3D1308),
+              style: const TextStyle(color: Colors.white),
+            ),
+            const SizedBox(height: 12),
+
+            // ✅ Zone d'affichage des checklists avec FutureBuilder
+            Expanded(
+              child: FutureBuilder<void>(
+                future: _checklistManager.fetchChecklists(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return const Center(
+                      child: Text(
+                        "❌ Erreur lors du chargement des checklists.",
+                        style: TextStyle(color: Colors.white70),
+                      ),
+                    );
+                  } else {
+                    print(
+                      "🎯 Affichage des checklists : ${_checklistManager.checklistListWidget()}",
+                    );
+                    return _checklistManager.checklistListWidget();
+                  }
+                },
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            // ✅ Boutons d'action
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 ElevatedButton(
                   onPressed: _isUpdating ? null : _updateCardName,
                   style: ElevatedButton.styleFrom(
@@ -323,26 +292,24 @@ class _CardsModalState extends State<CardsModal> {
                           ? const CircularProgressIndicator(color: Colors.white)
                           : const Text('Enregistrer'),
                 ),
-                const SizedBox(height: 10),
-                if (_isDeleting)
-                  const CircularProgressIndicator(color: Colors.white)
-                else
-                  ElevatedButton(
-                    onPressed: _deleteCard,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.redAccent,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                ElevatedButton(
+                  onPressed: _isDeleting ? null : _deleteCard,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.redAccent,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 12,
                     ),
-                    child: const Text('Supprimer'),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
-                const SizedBox(height: 10),
+                  child:
+                      _isDeleting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Supprimer'),
+                ),
                 ElevatedButton(
                   onPressed: _isAssigning ? null : _assignMemberToCard,
                   style: ElevatedButton.styleFrom(
@@ -361,27 +328,30 @@ class _CardsModalState extends State<CardsModal> {
                           ? const CircularProgressIndicator(color: Colors.black)
                           : const Text('Assigner un membre'),
                 ),
-
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: _isCreating ? null : _createChecklist,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.greenAccent,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child:
-                      _isCreating
-                          ? const CircularProgressIndicator(color: Colors.black)
-                          : const Text('Créer Checklist'),
-                ),
               ],
+            ),
+
+            const SizedBox(height: 12),
+
+            // ✅ Bouton pour créer une nouvelle checklist et rafraîchir l'affichage
+            ElevatedButton(
+              onPressed: () async {
+                await _checklistManager.createChecklist(context, () {
+                  setState(() {}); // Met à jour l'UI après création
+                });
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.greenAccent,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('Créer Checklist'),
             ),
           ],
         ),
