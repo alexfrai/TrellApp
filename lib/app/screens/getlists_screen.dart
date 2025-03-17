@@ -1,8 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
-import 'package:flutter_trell_app/app/widgets/createListButton.dart';
 import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
+import 'package:flutter_trell_app/app/widgets/button_create_list.dart';
 
 /// Affiche tout ce qui est en rapport avec les listes
 class GetListWidget extends StatefulWidget {
@@ -136,7 +137,7 @@ class GetListWidgetState extends State<GetListWidget> {
                     // Bouton de création de liste
                     SizedBox(
                       width: 300,
-                      child: Createlistbutton(BOARD_ID: widget.boardId),
+                      child: Createlistbutton(boardId: widget.boardId),
                     ),
                   ],
                 ),

@@ -2,11 +2,16 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
 
+/// bouton pour creer les list
 class Createlistbutton extends StatefulWidget {
-  const Createlistbutton({required this.BOARD_ID, super.key});
-  final String BOARD_ID;
+  ///parametre d'entré
+  const Createlistbutton({required this.boardId, super.key});
+  ///BoardID
+  ///pour l id du board
+  final String boardId;
 
   @override
+  // ignore: library_private_types_in_public_api
   _CreatelistbuttonState createState() => _CreatelistbuttonState();
 }
 
@@ -26,16 +31,19 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
       _isLoading = true;
     });
     try {
-      final response = await ListService.createList(_controller.text, widget.BOARD_ID);
+      // ignore: always_specify_types
+      final response = await ListService.createList(_controller.text, widget.boardId);
       final String listId = response['id'];
       unawaited(ListService.updateListPos(listId, 'bottom'));
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Liste créée avec succès!')),
+        const SnackBar(content: Text('Create list was succes!')),
       );
       _controller.clear();
     } catch (error) {
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $error')),
+        SnackBar(content: Text('Error: $error')),
       );
     } finally {
       setState(() {
@@ -53,8 +61,9 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
         color: const Color(0xFF3D1308),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white24, width: 2),
-        boxShadow: [
+        boxShadow: <BoxShadow>[
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(2, 4),
@@ -64,13 +73,13 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
       child: Column(
         mainAxisSize: MainAxisSize.min, // Allow the column to take only the space it needs
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: TextField(
               controller: _controller,
               decoration: const InputDecoration(
-                labelText: 'Nom de la liste',
+                labelText: 'Name od list',
                 border: InputBorder.none,
                 labelStyle: TextStyle(color: Colors.white),
               ),
@@ -88,7 +97,7 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
             ),
             child: _isLoading
                 ? const CircularProgressIndicator(color: Colors.white)
-                : const Text('Créer la liste'),
+                : const Text('Create List'),
           ),
         ],
       ),
