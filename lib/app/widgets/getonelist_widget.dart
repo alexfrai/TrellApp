@@ -1,4 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api, public_member_api_docs, deprecated_member_use, always_specify_types
 
 import 'dart:async';
 import 'dart:convert';
@@ -8,23 +7,28 @@ import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 import 'package:http/http.dart' as http;
 
+///getonelist
 class GetOneListWidget extends StatefulWidget {
+  ///valeures d'entrée
   const GetOneListWidget({
     required this.list,
     required this.refreshLists,
     required this.boardId,
     super.key,
   });
-
+  ///liste des list
   final Map<String, dynamic> list;
+  ///callback de la list
   final VoidCallback refreshLists;
+  ///id du board 
   final String boardId;
 
   @override
+  // ignore: library_private_types_in_public_api
   _GetOneListWidgetState createState() => _GetOneListWidgetState();
 }
-
-List<Color> memberColors = [
+///liste de couleurs
+List<Color> memberColors = <Color>[
   Colors.red,
   Colors.blue,
   Colors.green,
@@ -33,13 +37,14 @@ List<Color> memberColors = [
   Colors.yellow,
 ];
 
+/// fonction pour prendre une couleur
 Color getMemberColor(int index) {
   return memberColors[index % memberColors.length];
 }
 
 class _GetOneListWidgetState extends State<GetOneListWidget> {
   final GetMemberCardService _memberService = GetMemberCardService();
-  List<Map<String, dynamic>> cards = [];
+  List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
   bool isLoading = false;
 
   @override
@@ -49,7 +54,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
   }
 
   Future<void> _createNewCard() async {
-    final newCard = await showDialog(
+    final Card newCard = await showDialog(
       context: context,
       builder: (BuildContext context) => CardsNew(id: widget.list['id']),
     );
@@ -72,8 +77,8 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
         final List<dynamic> data = json.decode(response.body);
 
         setState(() {
-          cards = data.map((card) {
-            return {
+          cards = data.map((dynamic card) {
+            return <String, dynamic>{
               'id': card['id'],
               'name': card['name'],
               'desc': card['desc'] ?? '',
@@ -101,8 +106,9 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
         color: const Color(0xFF3D1308),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white24, width: 2),
-        boxShadow: [
+        boxShadow: <BoxShadow>[
           BoxShadow(
+            // ignore: deprecated_member_use
             color: Colors.black.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(2, 4),
@@ -112,7 +118,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
+        children: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: Text(
@@ -139,7 +145,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
                 itemCount: cards.length,
                 itemBuilder: (BuildContext context, int index) {
                   final Map<String, dynamic> card = cards[index];
@@ -147,8 +152,8 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                   return FutureBuilder<List<Map<String, dynamic>>>(
                     // ignore: discarded_futures
                     future: _memberService.getMembersCard(card['id']),
-                    builder: (context, snapshot) {
-                      final members = snapshot.data ?? [];
+                    builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                      final List<Map<String, dynamic>> members = snapshot.data ?? <Map<String, dynamic>>[];
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(
@@ -160,8 +165,9 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                             color: const Color(0xFF7B0D1E),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(color: Colors.white12),
-                            boxShadow: [
+                            boxShadow: <BoxShadow>[
                               BoxShadow(
+                                // ignore: deprecated_member_use
                                 color: Colors.black.withOpacity(0.2),
                                 blurRadius: 6,
                                 offset: const Offset(2, 4),
@@ -172,11 +178,11 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                             leading: members.isNotEmpty
                                 ? Wrap(
                                     spacing: 4,
-                                    children: List.generate(members.length, (memberIndex) {
+                                    children: List.generate(members.length, (int memberIndex) {
                                       return CircleAvatar(
                                         backgroundColor: getMemberColor(memberIndex),
                                         child: Text(
-                                          members[memberIndex]['username'][0].toUpperCase(),
+                                            members[memberIndex]['username'][0].toUpperCase(),
                                           style: const TextStyle(color: Colors.white),
                                         ),
                                       );
@@ -202,7 +208,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                     handleClose: () => Navigator.pop(context),
                                     onCardUpdated: (String cardId, String newDesc) {
                                       setState(() {
-                                        final int cardIndex = cards.indexWhere((c) => c['id'] == cardId);
+                                        final int cardIndex = cards.indexWhere((Map<String, dynamic> c) => c['id'] == cardId);
                                         if (cardIndex != -1) {
                                           cards[cardIndex]['desc'] = newDesc;
                                         }
@@ -211,7 +217,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                     },
                                     onCardDeleted: (String cardId) {
                                       setState(() {
-                                        cards.removeWhere((c) => c['id'] == cardId);
+                                        cards.removeWhere((Map<String, dynamic> c) => c['id'] == cardId);
                                       });
                                     },
                                     listId: widget.list['id'],
