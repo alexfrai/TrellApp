@@ -254,13 +254,13 @@ class _CardsModalState extends State<CardsModal> {
                   } else if (snapshot.hasError) {
                     return const Center(
                       child: Text(
-                        "❌ Erreur lors du chargement des checklists.",
+                        '❌ Erreur lors du chargement des checklists.',
                         style: TextStyle(color: Colors.white70),
                       ),
                     );
                   } else {
                     print(
-                      "🎯 Affichage des checklists : ${_checklistManager.checklistListWidget()}",
+                      '🎯 Affichage des checklists : ${_checklistManager.checklistListWidget()}',
                     );
                     return _checklistManager.checklistListWidget();
                   }
