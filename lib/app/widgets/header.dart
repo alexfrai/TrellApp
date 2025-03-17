@@ -16,8 +16,11 @@ class _HeaderState extends State<Header> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
   final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
+  //Board Data
   String boardName = '';
   String backgroundColor = 'blue';
+  String boardWorkspace = '';
+  String boardVisibility = 'org';
 
   List<String> workspaces = <String>[];
   List<String> favoriteBoards = <String>[];
@@ -41,7 +44,7 @@ class _HeaderState extends State<Header> {
   }
   Future<void> createBoard(String name) async {
     try {
-      await BoardService.createBoard(name , workspaceId , backgroundColor);
+      await BoardService.createBoard(name , workspaceId , backgroundColor , boardVisibility);
     } catch (e) {
       print('❌ Erreur lors du chargement des données : $e');
     }
@@ -106,7 +109,13 @@ class _HeaderState extends State<Header> {
       onChanged: (String? value) async {
         // Gérer la sélection
         print('dropdown changed');
-        if(action == 'openModal') await modal(context);
+
+        switch(action){
+          case 'openModal':
+            await modal(context);
+            break;
+          }
+
         //await createBoard(':)');
       },
     );
@@ -143,10 +152,11 @@ class _HeaderState extends State<Header> {
             children: <Widget>[
               Text('Background color'),
               Row(
+                spacing: 5,
                 children: <Widget>[
                   OutlinedButton(onPressed: (){backgroundColor = 'blue';}, style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.blue)) , child: Text('')),
                   OutlinedButton(onPressed: (){backgroundColor = 'red';}, style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.red)) , child: Text('')),
-                  OutlinedButton(onPressed: (){backgroundColor = 'yellow';}, style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.yellow)) , child: Text('')),
+                  OutlinedButton(onPressed: (){backgroundColor = 'pink';}, style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.pink)) , child: Text('')),
                   OutlinedButton(onPressed: (){backgroundColor = 'green';}, style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.green)) , child: Text('')),
                   OutlinedButton(onPressed: (){backgroundColor = 'orange';}, style: ButtonStyle(backgroundColor: WidgetStateProperty.all<Color>(Colors.orange)) , child: Text('')),
                 ],
