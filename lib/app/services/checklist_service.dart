@@ -51,4 +51,24 @@ class ChecklistService {
       return []; // Retourne une liste vide en cas d'erreur
     }
   }
+
+  Future<Map<String, dynamic>?> getChecklistDetails(String checklistId) async {
+  final String url =
+      'https://api.trello.com/1/checklists/$checklistId?key=$apiKey&token=$apiToken';
+  
+  try {
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      print("✅ Détails de la checklist $checklistId récupérés !");
+      return jsonDecode(response.body);
+    } else {
+      print("❌ Erreur API: ${response.statusCode}, ${response.body}");
+      return null;
+    }
+  } catch (error) {
+    print("❌ Erreur lors de la récupération de la checklist $checklistId : $error");
+    return null;
+  }
+}
 }
