@@ -5,6 +5,7 @@ import 'package:http/http.dart' as http;
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? '';
+
 /// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 
@@ -83,7 +84,6 @@ class _SidebarState extends State<Sidebar> {
       'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken',
       'GET',
     );
-
     if (data != null) {
       setState(() {
         boardData = data;
@@ -161,9 +161,7 @@ class _SidebarState extends State<Sidebar> {
             padding: const EdgeInsets.all(10),
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(
-                  color: Color.fromARGB(255, 38, 38, 38),
-                ),
+                bottom: BorderSide(color: Color.fromARGB(255, 38, 38, 38)),
               ),
             ),
             child: Row(
@@ -175,10 +173,7 @@ class _SidebarState extends State<Sidebar> {
                 ),
                 Text(
                   curentWorkspace,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
                 ),
               ],
             ),
@@ -197,44 +192,43 @@ class _SidebarState extends State<Sidebar> {
                       ListTile(
                         title: const Text('Boards'),
                         textColor: Colors.white,
-                        onTap: () async =>
-                            Navigator.pushNamed(context, '/myboards'),
+                        onTap:
+                            () async =>
+                                Navigator.pushNamed(context, '/myboards'),
                       ),
                       ListTile(
                         title: const Text('Members'),
                         textColor: Colors.white,
-                        onTap: () async =>
-                            Navigator.pushNamed(context, '/members'),
+                        onTap:
+                            () async =>
+                                Navigator.pushNamed(context, '/members'),
                       ),
                       ListTile(
                         title: const Text('Parameters'),
                         textColor: Colors.white,
-                        onTap: () async =>
-                            Navigator.pushNamed(context, '/parameters'),
+                        onTap:
+                            () async =>
+                                Navigator.pushNamed(context, '/parameters'),
                       ),
                     ],
                   ),
                 ),
 
                 // Section des Boards
-                
               ],
             ),
           ),
 
           Row(
-                  children: <Widget>[
-                    SizedBox(width: 10,),
-                    const Text(
-                      'Vos Boards',
-                      style: TextStyle(color: Colors.white),
-                    ),
-                    IconButton(
-                      onPressed: showCreateBoardDialog,
-                      icon: const Icon(Icons.add, color: Colors.white),
-                    ),
-                  ],
-                ),
+            children: <Widget>[
+              SizedBox(width: 10),
+              const Text('Vos Boards', style: TextStyle(color: Colors.white)),
+              IconButton(
+                onPressed: showCreateBoardDialog,
+                icon: const Icon(Icons.add, color: Colors.white),
+              ),
+            ],
+          ),
 
           // Liste des boards
           Expanded(
@@ -242,27 +236,37 @@ class _SidebarState extends State<Sidebar> {
               child: Padding(
                 padding: EdgeInsets.all(10),
                 child: ListView.builder(
-                itemCount: allBoards.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final dynamic board = allBoards[index];
-                  return ListTile(
-                    leading: CircleAvatar(
-                      backgroundImage: board['prefs']['backgroundImage'] != null
-                          ? NetworkImage(
-                              board['prefs']['backgroundImage'],
-                            )
-                          : null,
-                      backgroundColor: Colors.grey,
-                    ),
-                    title: Text(
-                      board['name'],
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                    onTap: () async => changeBoard(board),
-                  );
-                },
-              ),
+                  itemCount: allBoards.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final dynamic board = allBoards[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage:
+                            board['prefs']['backgroundImage'] != null
+                                ? NetworkImage(
+                                  board['prefs']['backgroundImage'],
+                                )
+                                : null,
+                        backgroundColor:
+                            board['prefs']['backgroundColor'] != null
+                                ? Color(
+                                  int.parse(
+                                    "0xFF" +
+                                        board['prefs']['backgroundColor']
+                                            .substring(1),
+                                  ),
+                                ) // Convertir HEX en `Color`
+                                : Colors.grey,
+                      ),
+                      title: Text(
+                        board['name'],
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      onTap: () async => changeBoard(board),
+                    );
+                  },
                 ),
+              ),
             ),
           ),
         ],
