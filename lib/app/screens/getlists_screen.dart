@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
-import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 import 'package:flutter_trell_app/app/widgets/button_create_list.dart';
+import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 
 /// Affiche tout ce qui est en rapport avec les listes
 class GetListWidget extends StatefulWidget {
