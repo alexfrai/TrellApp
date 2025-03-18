@@ -1,6 +1,7 @@
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
@@ -19,14 +20,14 @@ class UpdateService {
       );
 
       if (response.statusCode == 200) {
-        print("✅ Description mise à jour avec succès !");
+        // print("✅ Description mise à jour avec succès !");
         return true;
       } else {
-        print("❌ Erreur API: ${response.statusCode} - ${response.body}");
+        // print("❌ Erreur API: ${response.statusCode} - ${response.body}");
         return false;
       }
     } catch (error) {
-      print("❌ Exception lors de la mise à jour de la description : $error");
+      // print("❌ Exception lors de la mise à jour de la description : $error");
       return false;
     }
   }
@@ -42,14 +43,14 @@ class UpdateService {
       );
 
       if (response.statusCode == 200) {
-        print("✅ Description mise à jour avec succès !");
+        // print("✅ Description mise à jour avec succès !");
         return true;
       } else {
-        print("❌ Erreur API: ${response.statusCode} - ${response.body}");
+        // print("❌ Erreur API: ${response.statusCode} - ${response.body}");
         return false;
       }
     } catch (error) {
-      print("❌ Exception lors de la mise à jour de la description : $error");
+      // print("❌ Exception lors de la mise à jour de la description : $error");
       return false;
     }
   }

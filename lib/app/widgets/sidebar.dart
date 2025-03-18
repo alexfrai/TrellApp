@@ -67,7 +67,7 @@ class _SidebarState extends State<Sidebar> {
     });
 
     widget.onBoardChanged(boardId); // 🔥 Informe `Workspace` du changement !
-    debugPrint('Board sélectionné: $boardId');
+    // debugPrint('Board sélectionné: $boardId');
   }
 
   Future<void> createBoard() async {

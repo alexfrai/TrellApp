@@ -46,7 +46,7 @@ class GetMemberService {
             'username': member['username'],
           });
         }
-        print('✅ ${members.length} membres récupérés pour le board $boardId');
+        // print('✅ ${members.length} membres récupérés pour le board $boardId');
       } else {
         print('❌ Erreur API pour le board $boardId : ${response.statusCode}');
       }
