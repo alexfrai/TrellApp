@@ -70,7 +70,7 @@ Future<void> fetchData() async {
     });
 
     widget.onBoardChanged(boardId); // 🔥 Informe `Workspace` du changement !
-    debugPrint('Board sélectionné: $boardId');
+    // debugPrint('Board sélectionné: $boardId');
   }
 
 

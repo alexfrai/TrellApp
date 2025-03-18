@@ -20,16 +20,20 @@ class CardsModal extends StatefulWidget {
     required this.listId,
     required this.boardId,
     required this.cardId,
+    required this.checklistId,
     required this.refreshLists,
+    required this.checklistName,
     super.key,
   });
 
   final String taskName;
   final String descriptionName;
+  final String checklistName;
   final String? selectedCardId;
   final String listId;
   final String boardId;
   final String cardId;
+  final String checklistId;
   final VoidCallback handleClose;
   final Function(String, String) onCardUpdated;
   final Function(String) onCardDeleted;
@@ -42,6 +46,8 @@ class CardsModal extends StatefulWidget {
 class _CardsModalState extends State<CardsModal> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _checklistNameController =
+      TextEditingController();
   late ChecklistManager _checklistManager;
 
   List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
@@ -61,6 +67,7 @@ class _CardsModalState extends State<CardsModal> {
       cardId: widget.selectedCardId ?? '',
       refreshLists: widget.refreshLists,
       handleClose: widget.handleClose,
+      checklistId: '',
     );
 
     _loadData();
@@ -70,7 +77,7 @@ class _CardsModalState extends State<CardsModal> {
     await _loadMembers();
     await _loadChecklists();
     if (mounted) {
-      setState(() {}); // Rafraîchir l'affichage après le chargement
+      setState(() {});
     }
   }
 
@@ -259,15 +266,15 @@ class _CardsModalState extends State<CardsModal> {
                       ),
                     );
                   } else {
-                    print(
-                      '🎯 Affichage des checklists : ${_checklistManager.checklistListWidget()}',
-                    );
-                    return _checklistManager.checklistListWidget();
+                    return _checklistManager.checklistListWidget(context, () {
+                      setState(
+                        () {},
+                      ); // 🔄 Mettre à jour CardsModal après modification
+                    });
                   }
                 },
               ),
             ),
-
             const SizedBox(height: 12),
 
             // ✅ Boutons d'action
@@ -330,7 +337,6 @@ class _CardsModalState extends State<CardsModal> {
                 ),
               ],
             ),
-
             const SizedBox(height: 12),
 
             // ✅ Bouton pour créer une nouvelle checklist et rafraîchir l'affichage

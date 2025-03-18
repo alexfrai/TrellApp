@@ -28,7 +28,7 @@ class ChecklistService {
         );
       }
     } catch (error) {
-      print('❌ Erreur lors de la création de la checklist : $error');
+      // print('❌ Erreur lors de la création de la checklist : $error');
       return false; // Échec
     }
   }
@@ -47,28 +47,56 @@ class ChecklistService {
         );
       }
     } catch (error) {
-      print('❌ Erreur lors de la récupération des checklists : $error');
+      // print('❌ Erreur lors de la récupération des checklists : $error');
       return []; // Retourne une liste vide en cas d'erreur
     }
   }
 
   Future<Map<String, dynamic>?> getChecklistDetails(String checklistId) async {
-  final String url =
-      'https://api.trello.com/1/checklists/$checklistId?key=$apiKey&token=$apiToken';
-  
-  try {
-    final response = await http.get(Uri.parse(url));
+    final String url =
+        'https://api.trello.com/1/checklists/$checklistId?key=$apiKey&token=$apiToken';
 
-    if (response.statusCode == 200) {
-      print("✅ Détails de la checklist $checklistId récupérés !");
-      return jsonDecode(response.body);
-    } else {
-      print("❌ Erreur API: ${response.statusCode}, ${response.body}");
+    try {
+      final response = await http.put(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        // print("✅ Détails de la checklist $checklistId récupérés !");
+        return jsonDecode(response.body);
+      } else {
+        // print("❌ Erreur API: ${response.statusCode}, ${response.body}");
+        return null;
+      }
+    } catch (error) {
+      // print("❌ Erreur lors de la récupération de la checklist $checklistId : $error");
       return null;
     }
+  }
+
+    Future<bool> updateChecklist(String checklistId, String newName) async {
+  final String url =
+      'https://api.trello.com/1/checklists/$checklistId?key=$apiKey&token=$apiToken';
+
+  try {
+    final http.Response response = await http.put(
+      Uri.parse(url),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{
+        'name': newName, // 🔹 Paramètre conforme à l'API Trello
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // print("✅ Checklist mise à jour avec succès !");
+      return true;
+    } else {
+      // print("❌ Erreur API: ${response.statusCode} - ${response.body}");
+      return false;
+    }
   } catch (error) {
-    print("❌ Erreur lors de la récupération de la checklist $checklistId : $error");
-    return null;
+    // print("❌ Exception lors de la mise à jour de la checklist : $error");
+    return false;
   }
 }
 }

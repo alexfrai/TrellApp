@@ -139,7 +139,6 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
             Flexible(
               child: ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
                 itemCount: cards.length,
                 itemBuilder: (BuildContext context, int index) {
                   final Map<String, dynamic> card = cards[index];
@@ -217,7 +216,7 @@ class _GetOneListWidgetState extends State<GetOneListWidget> {
                                     listId: widget.list['id'],
                                     boardId: widget.boardId,
                                     cardId: card['id'],
-                                    refreshLists: widget.refreshLists,
+                                    refreshLists: widget.refreshLists, checklistId: '', checklistName: '',
                                   );
                                 },
                               );
