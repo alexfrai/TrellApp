@@ -62,23 +62,24 @@ class ListService {
 
   ///Change le nom d'une liste
   ///@var String idist, @var String newname
-  static Future<dynamic> updateListName(String idlist, String newname) async {  //A utilisé dans GetOneList
-    try {
-      final Uri url = Uri.parse(
-        '$baseUrl/lists?$idlist?name=${Uri.encodeComponent(newname)}&key=$apikey&token=$apitoken',
-      );
-      // Type of request: POST
-      final http.Response response = await http.post(url);
+  static Future<dynamic> updateListName(String idlist, String newname) async { 
+  try {
+    final Uri url = Uri.parse(
+      'https://api.trello.com/1/lists/$idlist?name=${Uri.encodeComponent(newname)}&key=$apikey&token=$apitoken',
+    );
+    // Type of request: PUT (UPDATE)
+    final http.Response response = await http.put(url);
 
-      // Check for success
-      if (response.statusCode != 200) {
-        throw Exception('Erreur ${response.statusCode}: ${response.body}');
-      }
-      return jsonDecode(response.body);
-    } catch (error) {
-      rethrow;
+    // Check for success
+    if (response.statusCode != 200) {
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
     }
+    return jsonDecode(response.body);
+  } catch (error) {
+    rethrow;
   }
+}
+
 
 ///Modifie la position d'une liste
 ///@var String idlist, @var String pos: [top / bottom / float number]

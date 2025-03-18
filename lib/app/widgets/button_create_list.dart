@@ -79,7 +79,7 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
             child: TextField(
               controller: _controller,
               decoration: const InputDecoration(
-                labelText: 'Name od list',
+                labelText: 'Name of list',
                 border: InputBorder.none,
                 labelStyle: TextStyle(color: Colors.white),
               ),
