@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -18,7 +17,6 @@ class Sidebar extends StatefulWidget {
   @override
   _SidebarState createState() => _SidebarState();
 }
- 
 
 class _SidebarState extends State<Sidebar> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
@@ -32,13 +30,13 @@ class _SidebarState extends State<Sidebar> {
 
   bool isLoading = true;
 
-   @override
+  @override
   void initState() {
     super.initState();
     fetchData();
   }
 
-Future<void> fetchData() async {
+  Future<void> fetchData() async {
     await getBoard();
     await getAllBoards();
     await getCurentWorkspace();
@@ -46,7 +44,6 @@ Future<void> fetchData() async {
 
   Future<dynamic> fetchApi(String apiRequest, String method) async {
     try {
-
       final http.Response response =
           await (method == 'POST'
               ? http.post(Uri.parse(apiRequest))
@@ -63,7 +60,7 @@ Future<void> fetchData() async {
     }
   }
 
-    Future<void> changeBoard(Map<String, dynamic> data) async {
+  Future<void> changeBoard(Map<String, dynamic> data) async {
     setState(() {
       boardId = data['id'];
       boardData = data;
@@ -73,10 +70,8 @@ Future<void> fetchData() async {
     debugPrint('Board sélectionné: $boardId');
   }
 
-
   Future<void> createBoard() async {
     await fetchApi(
-
       'https://api.trello.com/1/boards/?name=$boardName&key=$apiKey&token=$apiToken',
       'POST',
     );
@@ -97,7 +92,6 @@ Future<void> fetchData() async {
   }
 
   Future<void> getCurentWorkspace() async {
-
     final dynamic data = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
       'GET',
@@ -110,7 +104,6 @@ Future<void> fetchData() async {
   }
 
   Future<void> getAllBoards() async {
-
     final dynamic boards = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken',
       'GET',
@@ -122,7 +115,7 @@ Future<void> fetchData() async {
     }
   }
 
-Future<void> showCreateBoardDialog() async {
+  Future<void> showCreateBoardDialog() async {
     await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -154,126 +147,126 @@ Future<void> showCreateBoardDialog() async {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Container(
-            width: MediaQuery.of(context).size.width * 0.2,
-            color: Colors.grey[800],
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+      width: MediaQuery.of(context).size.width * 0.2,
+      color: Colors.grey[800],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // Header de l'espace de travail
+          Container(
+            height: MediaQuery.of(context).size.height * 0.1,
+            padding: const EdgeInsets.all(10),
+            decoration: const BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Color.fromARGB(255, 38, 38, 38),
+                ),
+              ),
+            ),
+            child: Row(
               children: <Widget>[
-                // Header de l'espace de travail
-                
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: const BoxDecoration(
-                    border: Border(
-                      bottom: BorderSide(
-                        color: Color.fromARGB(255, 38, 38, 38),
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    children: <Widget>[
-                      CircleAvatar(
-                        child: Text(
-                          curentWorkspace.isNotEmpty ? curentWorkspace[0] : '?',
-                        ),
-                      ),
-                      Text(
-                        curentWorkspace,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ],
+                CircleAvatar(
+                  child: Text(
+                    curentWorkspace.isNotEmpty ? curentWorkspace[0] : '?',
                   ),
                 ),
-
-                // Menu
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.20,
-                        child: Column(
-                          children: <Widget>[
-                            ListTile(
-                              title: const Text('Boards'),
-                              textColor: Colors.white,
-                              onTap:
-                                  () async =>
-                                      Navigator.pushNamed(context, '/myboards'),
-                            ),
-                            ListTile(
-                              title: const Text('Members'),
-                              textColor: Colors.white,
-                              onTap:
-                                  () async =>
-                                      Navigator.pushNamed(context, '/members'),
-                            ),
-                            ListTile(
-                              title: const Text('Parameters'),
-                              textColor: Colors.white,
-                              onTap:
-                                  () async => Navigator.pushNamed(
-                                    context,
-                                    '/parameters',
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Section des Boards
-                      Row(
-                        children: <Widget>[
-                          const Text(
-                            'Vos Boards',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          IconButton(
-                            onPressed: showCreateBoardDialog,
-                            icon: const Icon(Icons.add, color: Colors.white),
-                          ),
-                        ],
-                      ),
-
-                      // Liste des boards
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height * 0.4,
-                        child: ListView.builder(
-                          itemCount: allBoards.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            final dynamic board = allBoards[index];
-                            return ListTile(
-                              leading: CircleAvatar(
-                                backgroundImage:
-                                    board['prefs']['backgroundImage'] != null
-                                        ? NetworkImage(
-                                          board['prefs']['backgroundImage'],
-                                        )
-                                        : null,
-                                backgroundColor: Colors.grey,
-                              ),
-                              title: Text(
-                                board['name'],
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                              onTap: () async => changeBoard(board),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
+                Text(
+                  curentWorkspace,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
                   ),
                 ),
               ],
             ),
-          );
+          ),
+
+          // Menu
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  height: 150,
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: const Text('Boards'),
+                        textColor: Colors.white,
+                        onTap: () async =>
+                            Navigator.pushNamed(context, '/myboards'),
+                      ),
+                      ListTile(
+                        title: const Text('Members'),
+                        textColor: Colors.white,
+                        onTap: () async =>
+                            Navigator.pushNamed(context, '/members'),
+                      ),
+                      ListTile(
+                        title: const Text('Parameters'),
+                        textColor: Colors.white,
+                        onTap: () async =>
+                            Navigator.pushNamed(context, '/parameters'),
+                      ),
+                    ],
+                  ),
+                ),
+
+                // Section des Boards
+                
+              ],
+            ),
+          ),
+
+          Row(
+                  children: <Widget>[
+                    SizedBox(width: 10,),
+                    const Text(
+                      'Vos Boards',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    IconButton(
+                      onPressed: showCreateBoardDialog,
+                      icon: const Icon(Icons.add, color: Colors.white),
+                    ),
+                  ],
+                ),
+
+          // Liste des boards
+          Expanded(
+            child: SizedBox(
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: ListView.builder(
+                itemCount: allBoards.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final dynamic board = allBoards[index];
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundImage: board['prefs']['backgroundImage'] != null
+                          ? NetworkImage(
+                              board['prefs']['backgroundImage'],
+                            )
+                          : null,
+                      backgroundColor: Colors.grey,
+                    ),
+                    title: Text(
+                      board['name'],
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    onTap: () async => changeBoard(board),
+                  );
+                },
+              ),
+                ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
