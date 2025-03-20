@@ -6,6 +6,7 @@ import 'package:flutter_trell_app/app/services/get_member_card.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
+import 'package:flutter_trell_app/app/widgets/menulist/menulist_widget.dart'; // Import the modal widget
 import 'package:http/http.dart' as http;
 
 /// widget getoneliste
@@ -45,17 +46,23 @@ List<Color> memberColors = <Color>[
 Color getMemberColor(int index) {
   return memberColors[index % memberColors.length];
 }
+
 ///affiche une liste
 class GetOneListWidgetState extends State<GetOneListWidget> {
   final GetMemberCardService _memberService = GetMemberCardService();
+
   ///cartes
   List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
+
   /// état chargement
   bool isLoading = false;
+
   ///état éditage
   bool isEditingName = false;
+
   ///focus pour la souris
   late FocusNode focusNode;
+
   ///le nom de la list éditer
   late TextEditingController listNameController;
 
@@ -120,13 +127,14 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
         final List<dynamic> data = json.decode(response.body);
 
         setState(() {
-          cards = data.map((dynamic card) {
-            return <String, dynamic>{
-              'id': card['id'],
-              'name': card['name'],
-              'desc': card['desc'] ?? '',
-            };
-          }).toList();
+          cards =
+              data.map((dynamic card) {
+                return <String, dynamic>{
+                  'id': card['id'],
+                  'name': card['name'],
+                  'desc': card['desc'] ?? '',
+                };
+              }).toList();
         });
       } else {
         throw Exception('Erreur API: ${response.statusCode}');
@@ -139,6 +147,47 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
       }
     }
   }
+
+  void _showModal(BuildContext context, RenderBox button) {
+  final Offset position = button.localToGlobal(Offset.zero);
+  final double screenWidth = MediaQuery.of(context).size.width;
+  
+  late OverlayEntry overlayEntry;
+
+  overlayEntry = OverlayEntry(
+    builder: (BuildContext context) {
+      return Stack(
+        children: [
+          // Capture les clics pour fermer la modale
+          Positioned.fill(
+            child: GestureDetector(
+              onTap: () {
+                overlayEntry.remove();
+              },
+              behavior: HitTestBehavior.translucent, // Permet le scroll en arrière-plan
+            ),
+          ),
+          // Modale
+          ModalListWidget(
+            listId: widget.list['id'],
+            boardId: widget.boardId,
+            refreshLists: widget.refreshLists,
+            position: position,
+            screenWidth: screenWidth,
+            closeModal: () {
+              overlayEntry.remove();
+            },
+          ),
+        ],
+      );
+    },
+  );
+
+  Overlay.of(context).insert(overlayEntry);
+}
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -157,174 +206,229 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  isEditingName = true;
-                });
-              },
-              child: isEditingName
-                  ? TextField(
-                      controller: listNameController,
-                      autofocus: true,
-                      focusNode: focusNode,
-                      onSubmitted: (String newName) => unawaited(_updateListName(newName)),
-                      onEditingComplete: () {
-                        unawaited(_updateListName(listNameController.text));
-                      },
-                      decoration: const InputDecoration(
-                        border: InputBorder.none,
-                        fillColor: Colors.white24,
-                        filled: true,
-                      ),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                      ),
-                    )
-                  : Text(
-                      widget.list['name'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          if (isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (cards.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(8),
-              child: Text(
-                'Aucune carte dans cette liste',
-                style: TextStyle(color: Colors.white54, fontSize: 14),
-              ),
-            )
-          else
-            Flexible(
-              child: ListView.builder(
-                shrinkWrap: true,
-                itemCount: cards.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final Map<String, dynamic> card = cards[index];
-                  return FutureBuilder<List<Map<String, dynamic>>>(
-                    // ignore: discarded_futures
-                    future: _memberService.getMembersCard(card['id']),
-                    builder: (BuildContext context, AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
-                      final List<Map<String, dynamic>> members = snapshot.data ?? <Map<String, dynamic>>[];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 8,
-                        ),
-                        child: DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF7B0D1E),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white12),
-                            boxShadow: <BoxShadow>[
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.2),
-                                blurRadius: 6,
-                                offset: const Offset(2, 4),
-                              ),
-                            ],
-                          ),
-                          child: ListTile(
-                            leading: members.isNotEmpty
-                                ? Wrap(
-                                    spacing: 4,
-                                    children: List<Widget>.generate(members.length, (int memberIndex) {
-                                      return CircleAvatar(
-                                        backgroundColor: getMemberColor(memberIndex),
-                                        child: Text(
-                                          members[memberIndex]['username'][0].toUpperCase(),
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  )
-                                : const SizedBox(width: 40, height: 40),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            title: Text(
-                              card['name'],
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                            onTap: () async {
-                              await showDialog(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return CardsModal(
-                                    taskName: card['name'],
-                                    descriptionName: card['desc'] ?? '',
-                                    selectedCardId: card['id'],
-                                    handleClose: () => Navigator.pop(context),
-                                    onCardUpdated: (String cardId, String newDesc) {
-                                      setState(() {
-                                        final int cardIndex = cards.indexWhere((Map<String, dynamic> c) => c['id'] == cardId);
-                                        if (cardIndex != -1) {
-                                          cards[cardIndex]['desc'] = newDesc;
-                                        }
-                                      });
-                                      _getCardsInList();
-                                    },
-                                    onCardDeleted: (String cardId) {
-                                      setState(() {
-                                        cards.removeWhere((Map<String, dynamic> c) => c['id'] == cardId);
-                                      });
-                                    },
-                                    listId: widget.list['id'],
-                                    boardId: widget.boardId,
-                                    cardId: card['id'],
-                                    refreshLists: widget.refreshLists, checklistId: '', checklistName: '',
-                                  );
-                                },
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  vertical: 8,
+                  horizontal: 12,
+                ),
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      isEditingName = true;
+                    });
+                  },
+                  child:
+                      isEditingName
+                          ? TextField(
+                            controller: listNameController,
+                            autofocus: true,
+                            focusNode: focusNode,
+                            onSubmitted:
+                                (String newName) =>
+                                    unawaited(_updateListName(newName)),
+                            onEditingComplete: () {
+                              unawaited(
+                                _updateListName(listNameController.text),
                               );
                             },
+                            decoration: const InputDecoration(
+                              border: InputBorder.none,
+                              fillColor: Colors.white24,
+                              filled: true,
+                            ),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 18,
+                            ),
+                          )
+                          : Text(
+                            widget.list['name'],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (isLoading)
+                const Center(child: CircularProgressIndicator())
+              else if (cards.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(8),
+                  child: Text(
+                    'Aucune carte dans cette liste',
+                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: cards.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final Map<String, dynamic> card = cards[index];
+                      return FutureBuilder<List<Map<String, dynamic>>>(
+                        // ignore: discarded_futures
+                        future: _memberService.getMembersCard(card['id']),
+                        builder: (
+                          BuildContext context,
+                          AsyncSnapshot<List<Map<String, dynamic>>> snapshot,
+                        ) {
+                          final List<Map<String, dynamic>> members =
+                              snapshot.data ?? <Map<String, dynamic>>[];
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 6,
+                              horizontal: 8,
+                            ),
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF7B0D1E),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white12),
+                                boxShadow: <BoxShadow>[
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 6,
+                                    offset: const Offset(2, 4),
+                                  ),
+                                ],
+                              ),
+                              child: ListTile(
+                                leading:
+                                    members.isNotEmpty
+                                        ? Wrap(
+                                          spacing: 4,
+                                          children: List<
+                                            Widget
+                                          >.generate(members.length, (
+                                            int memberIndex,
+                                          ) {
+                                            return CircleAvatar(
+                                              backgroundColor: getMemberColor(
+                                                memberIndex,
+                                              ),
+                                              child: Text(
+                                                members[memberIndex]['username'][0]
+                                                    .toUpperCase(),
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            );
+                                          }),
+                                        )
+                                        : const SizedBox(width: 40, height: 40),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 8,
+                                ),
+                                title: Text(
+                                  card['name'],
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                onTap: () async {
+                                  await showDialog(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return CardsModal(
+                                        taskName: card['name'],
+                                        descriptionName: card['desc'] ?? '',
+                                        selectedCardId: card['id'],
+                                        handleClose:
+                                            () => Navigator.pop(context),
+                                        onCardUpdated: (
+                                          String cardId,
+                                          String newDesc,
+                                        ) {
+                                          setState(() {
+                                            final int cardIndex = cards
+                                                .indexWhere(
+                                                  (Map<String, dynamic> c) =>
+                                                      c['id'] == cardId,
+                                                );
+                                            if (cardIndex != -1) {
+                                              cards[cardIndex]['desc'] =
+                                                  newDesc;
+                                            }
+                                          });
+                                          _getCardsInList();
+                                        },
+                                        onCardDeleted: (String cardId) {
+                                          setState(() {
+                                            cards.removeWhere(
+                                              (Map<String, dynamic> c) =>
+                                                  c['id'] == cardId,
+                                            );
+                                          });
+                                        },
+                                        listId: widget.list['id'],
+                                        boardId: widget.boardId,
+                                        cardId: card['id'],
+                                        refreshLists: widget.refreshLists,
+                                        checklistId: '',
+                                        checklistName: '',
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          );
+                        },
                       );
                     },
-                  );
-                },
-              ),
-            ),
-          const SizedBox(height: 10),
-          Center(
-            child: ElevatedButton(
-              onPressed: _createNewCard,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF9F2042),
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+              const SizedBox(height: 10),
+              Center(
+                child: ElevatedButton(
+                  onPressed: _createNewCard,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF9F2042),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text('Ajouter une carte'),
                 ),
               ),
-              child: const Text('Ajouter une carte'),
-            ),
+              const SizedBox(height: 10),
+            ],
           ),
-          const SizedBox(height: 10),
+          Positioned(
+  top: 0,
+  right: 0,
+  child: Builder(
+    builder: (BuildContext context) {
+      return IconButton(
+        icon: const Icon(Icons.more_vert, color: Colors.white),
+        onPressed: () {
+          final RenderBox button = context.findRenderObject() as RenderBox;
+          _showModal(context, button);
+        },
+      );
+    },
+  ),
+),
+
+
         ],
       ),
     );
