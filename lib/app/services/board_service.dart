@@ -13,20 +13,57 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   /// Create a new Board
   static Future<bool> createBoard(String name , String workspaceId, [String backgroundColor = 'blue', String visibility = 'org']) async {
      final String url = 'https://api.trello.com/1/boards/?name=$name&idOrganization=$workspaceId&prefs_background=$backgroundColor&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
-    
+     print(url);
     try {
+
       final http.Response response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print(data);
         return true;
       } else {
-        throw Exception('Erreur lors de la crea du board : ${response.statusCode}');
+        throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
       }
     } catch (error) {
       throw Exception('Erreur dans createBoard: $error');
     }
   }
+  /// Create a new Board with a template
+  static Future<bool> createBoardWithTemplate(String name , String boardId ,[String workspaceId = '672b2d9a2083a0e3c28a3212']) async {
+     final String url = 'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&key=$apiKey&token=$apiToken';
+    try {
+
+      final http.Response response = await http.post(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print(data);
+        return true;
+      } else {
+        throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
+      }
+    } catch (error) {
+      throw Exception('Erreur dans createBoard: $error');
+    }
+  }
+
+/// Get a board id
+  static Future<bool> getBoardId(String name , String boardId) async {
+     final String url = 'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken';
+    try {
+
+      final http.Response response = await http.get(Uri.parse(url));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        print(data);
+        return true;
+      } else {
+        throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
+      }
+    } catch (error) {
+      throw Exception('Erreur dans createBoard: $error');
+    }
+  }
+
 
   ///Delete board
   static Future<bool> deleteBoard(String boardId) async {
