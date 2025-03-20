@@ -104,5 +104,49 @@ static Future<dynamic> updateListPos(String idlist, String newpos) async {
     rethrow;
   }
 }
+static Future<String?> getListName(String id) async {
+  try {
+    final Uri url = Uri.parse('$baseUrl/lists/$id?key=$apikey&token=$apitoken');
+
+    final response = await http.get(url); // Utilisation de GET avec HTTP
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur ${response.statusCode}: $response');
+    }
+
+    final data = jsonDecode(response.body); // Décoder la réponse JSON
+    return data['name']; // Récupérer le nom de la liste
+  } catch (error) {
+    print("❌ Erreur lors de la récupération du nom de la liste: $error");
+    return null; // Retourner null en cas d'erreur
+  }
+}
+
+
+static Future<void> ArchiveList(String id) async {
+  try {
+    final Uri url = Uri.parse(
+      '$baseUrl/lists/$id?key=$apikey&token=$apitoken',
+    );
+
+    final response = await http.put(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'closed': true}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Error ${response.statusCode}: ${response.body}');
+    }
+
+    // Attendre le résultat de getListName avant de l'afficher
+    final listName = await getListName(id);
+    print('List $listName archive success.');
+  } catch (error) {
+    print('❌ Error archiving list: $error');
+  }
+}
+
+
 
 }
