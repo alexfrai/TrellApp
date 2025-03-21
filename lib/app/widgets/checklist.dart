@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/services/checklist_service.dart';
+import 'package:flutter_trell_app/app/widgets/checkitem.dart';
 
 class ChecklistManager {
   ChecklistManager({
@@ -14,165 +15,96 @@ class ChecklistManager {
   final String checklistId;
   final VoidCallback refreshLists;
   final VoidCallback handleClose;
-  bool _isCreating = false;
-  List<dynamic> _checklists = [];
 
   final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
-  final String apiToken =
-      dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
+  final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 
-  /// 🔄 Récupère les checklists et met à jour `_checklists`
+  List<dynamic> _checklists = [];
+  final Map<String, bool> _expanded = {};
+
+  /// Récupère les checklists
   Future<void> fetchChecklists() async {
     if (cardId.isEmpty) return;
-
     try {
-      // print('🔄 Chargement des checklists pour la carte ID: $cardId');
       final checklistData = await ChecklistService().getChecklist(cardId);
-
       if (checklistData != null && checklistData['idChecklists'] != null) {
-        List<dynamic> checklistIds = checklistData['idChecklists'];
+        final ids = List<String>.from(checklistData['idChecklists']);
         _checklists.clear();
 
-        for (String checklistId in checklistIds) {
-          final checklistDetails = await ChecklistService().getChecklistDetails(
-            checklistId,
-          );
-          if (checklistDetails != null) {
-            _checklists.add(checklistDetails);
+        for (final id in ids) {
+          final details = await ChecklistService().getChecklistDetails(id);
+          if (details != null) {
+            _checklists.add(details);
+            _expanded[id] = false;
           }
         }
-      } else {
-        _checklists = [];
       }
-    } catch (error) {
-      // print("❌ Erreur lors du chargement des checklists : $error");
+    } catch (e) {
+      print("❌ Erreur chargement checklists : $e");
     }
   }
 
-  /// ✅ Crée une nouvelle checklist et met à jour l'affichage
-  Future<void> createChecklist(BuildContext context, Function updateUI) async {
-    if (cardId.isEmpty) {
-      // print("❌ Erreur : Aucune carte sélectionnée !");
-      return;
-    }
+  /// Créer une nouvelle checklist
+  Future<void> createChecklist(BuildContext context, VoidCallback refreshUI) async {
+    if (cardId.isEmpty) return;
 
-    _isCreating = true;
-
-    final bool success = await ChecklistService().createChecklist(
-      cardId,
-      'Checklist',
-    );
-
+    final success = await ChecklistService().createChecklist(cardId, 'Checklist');
     if (success) {
-      handleClose();
       refreshLists();
-      await fetchChecklists(); // Recharger les checklists après la création
-      updateUI(); // Met à jour l'UI avec setState
+      await fetchChecklists();
+      refreshUI();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('✅ Checklist créée avec succès !')),
+          const SnackBar(content: Text('✅ Checklist créée')),
         );
       }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Erreur lors de la création de la checklist'),
-          ),
+          const SnackBar(content: Text('❌ Erreur création checklist')),
         );
       }
     }
-
-    _isCreating = false;
   }
 
-  /// ✅ Met à jour une checklist
-  Future<void> updateChecklistName(
-    BuildContext context,
-    String checklistId,
-    String newName,
-    Function updateUI, // 🔄 Fonction pour mettre à jour l'UI
-  ) async {
-    if (checklistId.isEmpty || newName.isEmpty) return;
-
-    final bool success = await ChecklistService().updateChecklist(
-      checklistId,
-      newName,
-    );
-
+  /// Modifier une checklist
+  Future<void> updateChecklistName(BuildContext context, String checklistId, String newName, VoidCallback refreshUI) async {
+    final success = await ChecklistService().updateChecklist(checklistId, newName);
     if (success) {
-      await fetchChecklists(); // 🔄 Rafraîchir les checklists
-      updateUI(); // 🔄 Mettre à jour l'UI dans CardsModal
-
+      await fetchChecklists();
+      refreshUI();
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('✅ Checklist mise à jour avec succès !'),
-          ),
+          const SnackBar(content: Text("✅ Nom de checklist modifié")),
         );
       }
     } else {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('❌ Erreur lors de la mise à jour de la checklist.'),
-          ),
+          const SnackBar(content: Text("❌ Erreur de mise à jour")),
         );
       }
     }
   }
 
-  void showEditChecklistDialog(
-    BuildContext context,
-    String checklistId,
-    String currentName,
-    Function updateUI,
-  ) {
-    TextEditingController editChecklistController = TextEditingController(
-      text: currentName,
-    );
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Modifier la Checklist"),
-          content: TextField(
-            controller: editChecklistController,
-            decoration: const InputDecoration(labelText: "Nouveau nom"),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text("Annuler"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await updateChecklistName(
-                  context,
-                  checklistId,
-                  editChecklistController.text,
-                  () {
-                    Navigator.of(context).pop(); // Fermer la pop-up
-                    updateUI(); // 🔄 Rafraîchir l'affichage dans CardsModal
-                  },
-                );
-              },
-              child: const Text("Mettre à jour"),
-            ),
-          ],
+  /// Supprimer une checklist
+  Future<void> deleteChecklist(BuildContext context, String checklistId, VoidCallback refreshUI) async {
+    final success = await ChecklistService().deleteChecklist(checklistId);
+    if (success) {
+      await fetchChecklists();
+      refreshUI();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("✅ Checklist supprimée")),
         );
-      },
-    );
+      }
+    }
   }
 
-  /// 🎯 Affiche la liste des checklists sous forme de `ListView`
-  Widget checklistListWidget(BuildContext context, Function updateUI) {
+  /// Widget accordéon pour afficher les checklists et checkitems
+  Widget checklistListWidget(BuildContext context, VoidCallback refreshUI) {
     if (_checklists.isEmpty) {
-      return const Text(
-        'Aucune checklist disponible.',
-        style: TextStyle(color: Colors.white70),
-      );
+      return const Text("Aucune checklist", style: TextStyle(color: Colors.white70));
     }
 
     return ListView.builder(
@@ -181,30 +113,57 @@ class ChecklistManager {
       itemCount: _checklists.length,
       itemBuilder: (context, index) {
         final checklist = _checklists[index];
+        final String id = checklist['id'];
+        final String name = checklist['name'];
+        final List<dynamic> checkItems = checklist['checkItems'];
 
-        return GestureDetector(
-          onTap: () {
-            showEditChecklistDialog(
-              context,
-              checklist['id'],
-              checklist['name'],
-              updateUI,
-            );
-          },
-          child: Card(
-            color: Colors.white12,
-            margin: const EdgeInsets.symmetric(vertical: 5),
-            child: ListTile(
-              title: Text(
-                checklist['name'],
-                style: const TextStyle(color: Colors.white),
+        return ExpansionTile(
+          initiallyExpanded: _expanded[id] ?? false,
+          onExpansionChanged: (val) => _expanded[id] = val,
+          title: Text(name, style: const TextStyle(color: Colors.white)),
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.edit, color: Colors.orange),
+                onPressed: () {
+                  final controller = TextEditingController(text: name);
+                  showDialog(
+                    context: context,
+                    builder: (_) => AlertDialog(
+                      title: const Text("Modifier Checklist"),
+                      content: TextField(controller: controller),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text("Annuler"),
+                        ),
+                        ElevatedButton(
+                          onPressed: () async {
+                            await updateChecklistName(context, id, controller.text.trim(), refreshUI);
+                            Navigator.pop(context);
+                          },
+                          child: const Text("Valider"),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              subtitle: Text(
-                '${checklist['checkItems'].length} éléments',
-                style: const TextStyle(color: Colors.white70),
+              IconButton(
+                icon: const Icon(Icons.delete, color: Colors.redAccent),
+                onPressed: () async {
+                  await deleteChecklist(context, id, refreshUI);
+                },
               ),
-            ),
+            ],
           ),
+          children: [
+            CheckItemManager(
+              checklistId: id,
+              refreshUI: refreshUI,
+            ).checkItemListWidget(context),
+          ],
         );
       },
     );
