@@ -86,12 +86,15 @@ class _HeaderState extends State<Header> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              const Text(
-                "Trell'Wish",
+              TextButton(
+                onPressed: () async {
+                  await Navigator.pushNamed(context, '/');
+                },
+                child: Text("Trell'Wish",
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w900,//bold
-                  color: Colors.white,
+                  color: Colors.white,),
                 ),
               ),
               const SizedBox(width: 16),

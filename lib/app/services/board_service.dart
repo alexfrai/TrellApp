@@ -46,8 +46,27 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     }
   }
 
+ ///Get all data of a board 
+  static Future<Map<String, dynamic>> getBoard(String boardId) async {
+  final String url = 'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken';
+
+  try {
+    final http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> data = json.decode(response.body).cast<String, dynamic>();
+      return data;
+    } else {
+      throw Exception('❌ Erreur lors du chargement du board: ${response.statusCode} / ${response.body}');
+    }
+  } catch (error) {
+    throw Exception('❌ Erreur dans getBoard: $error');
+  }
+}
+
+
 /// Get a board id
-  static Future<bool> getBoardId(String name , String boardId) async {
+  static Future<List<dynamic>?> getBoardWithShortId(String boardId) async {
      final String url = 'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken';
     try {
 
@@ -55,7 +74,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         print(data);
-        return true;
+        return data;
       } else {
         throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
       }
@@ -81,6 +100,33 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       throw Exception('Erreur dans suppressBoard: $error');
     }
   }
+/// Get favorite board of a member (a mettre dans member_service ??)
+  static Future<List<Map<String, dynamic>>> getFavBoards(String memberId) async {
+  final String url = 'https://api.trello.com/1/members/$memberId/boardStars?key=$apiKey&token=$apiToken';
+
+  try {
+    final http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      print('📌 Favorite boards data: $data');
+
+      List<String> boardIds = data.map((item) => item['idBoard'].toString()).toList();
+
+      // Attente de toutes les requêtes
+      List<Map<String, dynamic>> boardData = await Future.wait(
+        boardIds.map((id) => getBoard(id)),
+      );
+
+      return boardData;
+    } else {
+      throw Exception('❌ Erreur lors du chargement des favoris: ${response.statusCode} / ${response.body}');
+    }
+  } catch (error) {
+    throw Exception('❌ Erreur dans getFavBoards: $error');
+  }
+}
+
 
 
   /// Ajouter un board aux favoris
