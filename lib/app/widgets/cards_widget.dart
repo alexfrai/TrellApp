@@ -140,7 +140,7 @@ class _CardsWidgetState extends State<CardsWidget> {
                                     listId: widget.listId,
                                     boardId: widget.boardId,
                                     cardId: widget.cardId,
-                                    refreshLists: widget.refreshLists,
+                                    refreshLists: widget.refreshLists, checklistId: '', checklistName: '',
                                   );
                                 },
                               );
