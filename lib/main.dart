@@ -19,6 +19,8 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static String currentPage = ''; // Variable accessible partout
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,8 +31,8 @@ class MyApp extends StatelessWidget {
         '/': (BuildContext context) => const HomeScreen(),
         '/getlist': (BuildContext context) =>
             const GetListWidget(boardId: '67b31302370bb706da4fa2cd'),
-        '/workspace': (BuildContext context) => const Workspace(),
-        '/members': (BuildContext content) => const MembersScreen(),
+        '/workspace': (BuildContext context) => Workspace(curentPage: currentPage),
+        '/members': (BuildContext content) => Workspace(curentPage: currentPage),
       },
     );
   }
@@ -109,6 +111,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 20),
                               ElevatedButton(
                                 onPressed: () async {
+                                  MyApp.currentPage = 'board';
                                   await Navigator.pushNamed(context, '/workspace');
                                 },
                                 child: const Text('Voir les cartes'),
@@ -130,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 10),
                               TextButton(
                                 onPressed: () async {
+                                  MyApp.currentPage = 'member';
                                   await Navigator.pushNamed(context, '/members');
                                 },
                                 child: const Text('Members'),
