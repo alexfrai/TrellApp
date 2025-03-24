@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, always_specify_types
+
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -121,10 +123,10 @@ static Future<List<double>> getAllListPositions(String boardId) async {
       final List<dynamic> lists = jsonDecode(response.body);
 
       // Extraire toutes les positions des listes
-      final List<double> positions = lists.map<double>((list) => (list["pos"] as num).toDouble()).toList();
+      final List<double> positions = lists.map<double>((list) => (list["pos"] as num).toDouble()).toList()
 
       // Trier les positions pour s'assurer qu'elles sont dans l'ordre
-      positions.sort();
+      ..sort();
 
       return positions;
     } catch (error) {
@@ -164,7 +166,7 @@ static Future<String?> getListName(String id) async {
   try {
     final Uri url = Uri.parse('$baseUrl/lists/$id?key=$apikey&token=$apitoken');
 
-    final response = await http.get(url); // Utilisation de GET avec HTTP
+    final http.Response response = await http.get(url); // Utilisation de GET avec HTTP
 
     if (response.statusCode != 200) {
       throw Exception('Erreur ${response.statusCode}: $response');
@@ -173,7 +175,7 @@ static Future<String?> getListName(String id) async {
     final data = jsonDecode(response.body); // Décoder la réponse JSON
     return data['name']; // Récupérer le nom de la liste
   } catch (error) {
-    print("❌ Erreur lors de la récupération du nom de la liste: $error");
+    // print("❌ Erreur lors de la récupération du nom de la liste: $error");
     return null; // Retourner null en cas d'erreur
   }
 }
@@ -197,9 +199,9 @@ static Future<void> ArchiveList(String id) async {
 
     // Attendre le résultat de getListName avant de l'afficher
     final listName = await getListName(id);
-    print('List $listName archive success.');
+    // print('List $listName archive success.');
   } catch (error) {
-    print('❌ Error archiving list: $error');
+    // print('❌ Error archiving list: $error');
   }
 }
 

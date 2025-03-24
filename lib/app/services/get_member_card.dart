@@ -1,7 +1,11 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// ignore_for_file: public_member_api_docs
 
+import 'dart:convert';
+
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:http/http.dart' as http;
+
+// ignore: public_member_api_docs
 class GetMemberCardService {
   final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
   final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
@@ -19,11 +23,11 @@ class GetMemberCardService {
           'username': member['username'],
         },).toList();
       } else {
-        print('Erreur API: ${response.statusCode}');
+        // print('Erreur API: ${response.statusCode}');
         return <Map<String, dynamic>>[];
       }
     } catch (error) {
-      print('Erreur lors de la récupération des membres: $error');
+      // print('Erreur lors de la récupération des membres: $error');
       return <Map<String, dynamic>>[];
     }
   }

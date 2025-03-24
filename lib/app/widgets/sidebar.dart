@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -253,7 +255,7 @@ class _SidebarState extends State<Sidebar> {
                             board['prefs']['backgroundColor'] != null
                                 ? Color(
                                   int.parse(
-                                    "0xFF" +
+                                    '0xFF' +
                                         board['prefs']['backgroundColor']
                                             .substring(1),
                                   ),

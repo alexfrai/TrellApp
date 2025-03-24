@@ -60,7 +60,7 @@ class _HeaderState extends State<Header> {
       try {
       await BoardService.createBoard(name , boardWorkspace , backgroundColor , boardVisibility);
     } catch (e) {
-      print('❌ Erreur lors du chargement des données : $e');
+      // print('❌ Erreur lors du chargement des données : $e');
     }
     }
     else{ // with template
@@ -68,7 +68,7 @@ class _HeaderState extends State<Header> {
       await BoardService.createBoardWithTemplate(name , templates['projectManagement']);
 
     } catch (e) {
-      print('❌ Erreur lors du chargement des données : $e');
+      // print('❌ Erreur lors du chargement des données : $e');
     }
     }
     
@@ -272,7 +272,7 @@ class _HeaderState extends State<Header> {
   children: templates.entries.map((entry) {
     return OutlinedButton(
       onPressed: () {
-        print('Template sélectionné : ${entry.value} (${entry.key})');
+        // print('Template sélectionné : ${entry.value} (${entry.key})');
         Navigator.of(context).pop();
         //createBoardFromTemplate(boardName, entry.key);
       },
