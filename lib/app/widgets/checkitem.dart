@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/checkitem_service.dart';
 
@@ -20,7 +22,7 @@ class CheckItemManager {
       _checkItems = await _checkItemService.getCheckItems(checklistId);
       refreshUI();
     } catch (error) {
-      print("❌ Erreur lors du chargement des checkitems : $error");
+      // print("❌ Erreur lors du chargement des checkitems : $error");
     }
   }
 
@@ -42,7 +44,7 @@ class CheckItemManager {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('❌ Erreur lors de l\'ajout du CheckItem')),
+        const SnackBar(content: Text("❌ Erreur lors de l'ajout du CheckItem")),
       );
     }
   }
@@ -83,12 +85,12 @@ class CheckItemManager {
             physics: const NeverScrollableScrollPhysics(),
             itemCount: _checkItems.length,
             itemBuilder: (context, index) {
-              final item = _checkItems[index];
+              final Map<String, dynamic> item = _checkItems[index];
 
               return CheckboxListTile(
                 title: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
+                  children: <Widget>[
                     Text(item['name'], style: const TextStyle(color: Colors.white)),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.redAccent),

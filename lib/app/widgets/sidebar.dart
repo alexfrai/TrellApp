@@ -1,6 +1,10 @@
+// ignore_for_file: prefer_interpolation_to_compose_strings
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/services/board_service.dart';
+import 'package:flutter_trell_app/main.dart';
 import 'package:http/http.dart' as http;
 
 /// API KEYS
@@ -12,8 +16,10 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 ///Class
 class Sidebar extends StatefulWidget {
   final Function(String) onBoardChanged; // Ajoute un callback
+  ///Page
+  String currentPage;
 
-  const Sidebar({required this.onBoardChanged, super.key});
+  Sidebar({required this.currentPage, required this.onBoardChanged, super.key});
 
   @override
   _SidebarState createState() => _SidebarState();
@@ -62,13 +68,18 @@ class _SidebarState extends State<Sidebar> {
   }
 
   Future<void> changeBoard(Map<String, dynamic> data) async {
+    if (MyApp.currentPage != 'board') {
+      MyApp.currentPage = 'board';
+      await Navigator.pushNamed(context, '/workspace');
+    }
+    print('change board into ');
     setState(() {
       boardId = data['id'];
       boardData = data;
     });
 
     widget.onBoardChanged(boardId); // 🔥 Informe `Workspace` du changement !
-    // debugPrint('Board sélectionné: $boardId');
+    debugPrint('Board sélectionné: $boardId');
   }
 
   Future<void> createBoard() async {
@@ -77,6 +88,10 @@ class _SidebarState extends State<Sidebar> {
       'POST',
     );
     await getAllBoards();
+  }
+
+  Future<void> deleteBoard(String boardId) async {
+    await BoardService.deleteBoard(boardId);
   }
 
   Future<void> getBoard() async {
@@ -110,6 +125,8 @@ class _SidebarState extends State<Sidebar> {
     );
     if (boards != null) {
       setState(() {
+        // final int boardLenght = boards.length;
+        //print('all board $boardLenght');
         allBoards = boards;
       });
     }
@@ -142,6 +159,44 @@ class _SidebarState extends State<Sidebar> {
               child: const Text('Créer'),
             ),
           ],
+        );
+      },
+    );
+  }
+
+  Future<void> modalDeleteBoard(String boardToDelete, String boardName) async {
+    await showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SizedBox(
+          height: 200,
+
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Text('Are you sure you want to delete $boardName?'),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    ElevatedButton(
+                      child: const Text('YES'),
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        print(boardToDelete);
+                        await deleteBoard(boardToDelete);
+                      },
+                    ),
+                    ElevatedButton(
+                      child: const Text('No'),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -193,15 +248,19 @@ class _SidebarState extends State<Sidebar> {
                         title: const Text('Boards'),
                         textColor: Colors.white,
                         onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/myboards'),
+                            () async => {
+                              MyApp.currentPage = '',
+                              Navigator.pushNamed(context, '/myboards'),
+                            },
                       ),
                       ListTile(
                         title: const Text('Members'),
                         textColor: Colors.white,
                         onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/members'),
+                            () async => {
+                              MyApp.currentPage = 'member',
+                              Navigator.pushNamed(context, '/members'),
+                            },
                       ),
                       ListTile(
                         title: const Text('Parameters'),
@@ -251,7 +310,7 @@ class _SidebarState extends State<Sidebar> {
                             board['prefs']['backgroundColor'] != null
                                 ? Color(
                                   int.parse(
-                                    "0xFF" +
+                                    '0xFF' +
                                         board['prefs']['backgroundColor']
                                             .substring(1),
                                   ),
@@ -262,6 +321,13 @@ class _SidebarState extends State<Sidebar> {
                         board['name'],
                         style: const TextStyle(color: Colors.white),
                       ),
+                      trailing: TextButton(
+                        onPressed: () {
+                          modalDeleteBoard(board['id'], board['name']);
+                        },
+                        child: Icon(Icons.delete, color: Colors.red),
+                      ),
+                      hoverColor: Colors.amber,
                       onTap: () async => changeBoard(board),
                     );
                   },

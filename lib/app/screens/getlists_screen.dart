@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, always_specify_types
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
@@ -49,8 +51,8 @@ class GetListWidgetState extends State<GetListWidget> {
   }
 
   @override
-  void dispose() {
-    _listsStreamController.close();
+  Future<void> dispose() async {
+    await _listsStreamController.close();
     super.dispose();
   }
 
@@ -84,7 +86,7 @@ class GetListWidgetState extends State<GetListWidget> {
                       boardId: widget.boardId,
                     ),
                   );
-                }).toList(),
+                }),
                 SizedBox(
                   width: 300,
                   child: Createlistbutton(boardId: widget.boardId),

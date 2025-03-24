@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs
+
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -16,14 +18,14 @@ class GetMemberService {
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> data = json.decode(response.body);
-        print('✅ Membre trouvé : ${data['fullName']}');
+        // print('✅ Membre trouvé : ${data['fullName']}');
         return data;
       } else {
-        print('❌ Erreur API pour le membre $memberId : ${response.statusCode}');
+        // print('❌ Erreur API pour le membre $memberId : ${response.statusCode}');
         return null;
       }
     } catch (e) {
-      print('❌ Erreur lors de la récupération du membre $memberId: $e');
+      // print('❌ Erreur lors de la récupération du membre $memberId: $e');
       return null;
     }
   }
@@ -48,10 +50,10 @@ class GetMemberService {
         }
         // print('✅ ${members.length} membres récupérés pour le board $boardId');
       } else {
-        print('❌ Erreur API pour le board $boardId : ${response.statusCode}');
+        // print('❌ Erreur API pour le board $boardId : ${response.statusCode}');
       }
     } catch (e) {
-      print('❌ Erreur lors de la récupération des membres du board $boardId: $e');
+      // print('❌ Erreur lors de la récupération des membres du board $boardId: $e');
     }
 
     return members;

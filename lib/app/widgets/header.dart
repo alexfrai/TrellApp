@@ -23,7 +23,7 @@ class _HeaderState extends State<Header> {
   String boardWorkspace = '';
   String boardVisibility = 'org';
   String colorSelected = '';
-  bool isTemplate = true;
+  bool isTemplate = false;
 
   List<String> colorsToSelect = <String>['blue','red', 'pink' , 'green' , 'orange'];
 
@@ -45,7 +45,7 @@ class _HeaderState extends State<Header> {
 
   Future<void> fetchData() async {
     try {
-      final List<dynamic>? fetchedWorkspaces = await WorkspaceService.getAllWorkspaces(userId);
+      final List<dynamic>? fetchedWorkspaces = await WorkspaceService.getAllWorkspaces();
       
       //print(fetchedWorkspaces);
       setState(() {
@@ -60,7 +60,7 @@ class _HeaderState extends State<Header> {
       try {
       await BoardService.createBoard(name , boardWorkspace , backgroundColor , boardVisibility);
     } catch (e) {
-      print('❌ Erreur lors du chargement des données : $e');
+      // print('❌ Erreur lors du chargement des données : $e');
     }
     }
     else{ // with template
@@ -68,7 +68,7 @@ class _HeaderState extends State<Header> {
       await BoardService.createBoardWithTemplate(name , templates['projectManagement']);
 
     } catch (e) {
-      print('❌ Erreur lors du chargement des données : $e');
+      // print('❌ Erreur lors du chargement des données : $e');
     }
     }
     
@@ -100,7 +100,7 @@ class _HeaderState extends State<Header> {
               const SizedBox(width: 16),
               _buildDropdown('Workspace', workspaces),
               _buildDropdown('Favorite', favoriteBoards),
-              _buildDropdown('Template', <String>['q', 'zzzs']),
+              _buildDropdown('Template', templates.keys.toList()),
               _buildDropdown('Create', <String>[
                 'Create a board',
                 'Create from a template',
@@ -129,6 +129,8 @@ class _HeaderState extends State<Header> {
       builder: (BuildContext context , StateSetter stepState){
         return DropdownButton<String>(
       dropdownColor: Colors.grey[900],
+      elevation: -100,
+      menuWidth: 200,
       value: options.contains(dropdownValue) ? dropdownValue : null,
       hint: Text(dropdownValue, style: const TextStyle(color: Colors.white)),
       items: options.map((String value) {
@@ -145,7 +147,10 @@ class _HeaderState extends State<Header> {
         switch(action){
           case 'openModal':
             if(value == 'Create a board') await modalBoard(context);
-            else await modalTemplate(context);
+            else {
+              isTemplate = true;
+              await modalTemplate(context);
+              }
             break;
           case 'selectWorkspace' : 
           setState(() {
@@ -267,7 +272,7 @@ class _HeaderState extends State<Header> {
   children: templates.entries.map((entry) {
     return OutlinedButton(
       onPressed: () {
-        print('Template sélectionné : ${entry.value} (${entry.key})');
+        // print('Template sélectionné : ${entry.value} (${entry.key})');
         Navigator.of(context).pop();
         //createBoardFromTemplate(boardName, entry.key);
       },

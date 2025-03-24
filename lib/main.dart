@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,6 +19,8 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
+  static String currentPage = ''; // Variable accessible partout
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,8 +31,8 @@ class MyApp extends StatelessWidget {
         '/': (BuildContext context) => const HomeScreen(),
         '/getlist': (BuildContext context) =>
             const GetListWidget(boardId: '67b31302370bb706da4fa2cd'),
-        '/workspace': (BuildContext context) => const Workspace(),
-        '/members': (BuildContext content) => const MembersScreen(),
+        '/workspace': (BuildContext context) => Workspace(curentPage: currentPage),
+        '/members': (BuildContext content) => Workspace(curentPage: currentPage),
       },
     );
   }
@@ -58,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchData() async {
     try {
       final List<dynamic>? fetchedWorkspaces =
-          await WorkspaceService.getAllWorkspaces(userId);
+          await WorkspaceService.getAllWorkspaces();
 
       setState(() {
         workspaces = fetchedWorkspaces
@@ -68,19 +70,20 @@ class _HomeScreenState extends State<HomeScreen> {
         print(workspaces);
       });
     } catch (e) {
-      print('❌ Erreur lors du chargement des workspaces : $e');
+
+      // print('❌ Erreur lors du chargement des workspaces : $e');
     }
 
     try {
   final List<Map<String, dynamic>> fetchedFavBoards =
-      await BoardService.getFavBoards(userId); // Correction ici
+      await BoardService.getFavBoards(); // Correction ici
 
   setState(() {
     favoriteBoards = fetchedFavBoards; // Assignation correcte
-    print(favoriteBoards[1]['id']);
+    // print(favoriteBoards[1]['id']);
   });
 } catch (e) {
-  print('❌ Erreur lors du chargement des favoris : $e');
+  // print('❌ Erreur lors du chargement des favoris : $e');
 }
   }
 
@@ -109,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 20),
                               ElevatedButton(
                                 onPressed: () async {
+                                  MyApp.currentPage = 'board';
                                   await Navigator.pushNamed(context, '/workspace');
                                 },
                                 child: const Text('Voir les cartes'),
@@ -130,6 +134,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(height: 10),
                               TextButton(
                                 onPressed: () async {
+                                  MyApp.currentPage = 'member';
                                   await Navigator.pushNamed(context, '/members');
                                 },
                                 child: const Text('Members'),
@@ -220,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             leading: const Icon(Icons.dashboard, color: Colors.white),
                                             onTap: () {
                                               // Action lorsqu'on clique sur un board
-                                              print('Board sélectionné : ${favoriteBoards[index]['name']}');
+                                              // print('Board sélectionné : ${favoriteBoards[index]['name']}');
                                             },
                                           ),
                                         );

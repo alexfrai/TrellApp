@@ -18,6 +18,7 @@ class MembersScreen extends StatefulWidget {
   const MembersScreen({super.key});
 
   @override
+  // ignore: library_private_types_in_public_api
   _MembersScreenState createState() => _MembersScreenState();
 }
 
@@ -82,7 +83,7 @@ class _MembersScreenState extends State<MembersScreen> {
       setState(() {
         curentWorkspace = data['displayName'];
       });
-      print(data);
+      // print(data);
     }
   }
 
@@ -94,6 +95,7 @@ class _MembersScreenState extends State<MembersScreen> {
 
     if (members == null || members is! List) {
       debugPrint('Erreur lors du chargement des membres');
+      
       setState(() => isLoading = false);
       return;
     }
@@ -116,21 +118,21 @@ class _MembersScreenState extends State<MembersScreen> {
 
   Future<void> addMemberWithoutMail(member) async {
     final dynamic memberData = await fetchApi('https://api.trello.com/1/members/$member?key=$apiKey&token=$apiToken', 'PUT');
-    print(memberData);
+    // print(memberData);
     final String memberId = memberData['id'];
     final dynamic memberToAdd = await fetchApi('https://api.trello.com/1/organizations/$workspaceId/members/$memberId?type=normal&key=$apiKey&token=$apiToken',
-        'PUT');
+        'PUT',);
   }
 
   Future<void> addMemberWithMail(member) async {
     final dynamic memberToAdd = await fetchApi('https://api.trello.com/1/organizations/$workspaceId/members?email=$member&key=$apiKey&token=$apiToken',
-        'PUT');
+        'PUT',);
   }
 
   Future<void> supMember(member) async {
     final String memberId = member['id'];
     final dynamic memberToSup = await fetchApi('https://api.trello.com/1/organizations/$workspaceId/members/$memberId?key=$apiKey&token=$apiToken',
-        'DELETE');
+        'DELETE',);
     await getAllMembers();
   }
 
@@ -174,15 +176,15 @@ class _MembersScreenState extends State<MembersScreen> {
       backgroundColor: const Color.fromARGB(255, 208, 151, 102),
       body: Column(
         children: <Widget>[
-          SizedBox(
+          /*SizedBox(
             height: MediaQuery.of(context).size.height * 0.2,
             child: const Header(),
-          ),
+          ),*/
           Expanded(
             child: Row(
               children: <Widget>[
                 
-              Sidebar(onBoardChanged: updateBoardId),
+              //Sidebar(onBoardChanged: updateBoardId),
                 //Contenu de la page members
 
                 Expanded(
@@ -282,7 +284,7 @@ class _MembersScreenState extends State<MembersScreen> {
                                                               child: const Text('YES'),
                                                               onPressed: () async {
                                                                 Navigator.pop(context);
-                                                                supMember(member);
+                                                                await supMember(member);
                                                               },
                                                             ),
                                                             ElevatedButton(

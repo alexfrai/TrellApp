@@ -50,8 +50,8 @@ class _CardsModalState extends State<CardsModal> {
   final TextEditingController _checkItemController = TextEditingController();
 
   List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
-  List<dynamic> _checklists = [];
-  Map<String, List<Map<String, dynamic>>> _checkItemsByChecklist = {};
+  final List<dynamic> _checklists = [];
+  final Map<String, List<Map<String, dynamic>>> _checkItemsByChecklist = {};
 
   bool _isUpdating = false;
   bool _isDeleting = false;
@@ -87,7 +87,7 @@ class _CardsModalState extends State<CardsModal> {
   }
 
   Future<void> _loadChecklists() async {
-    final checklistData = await ChecklistService().getChecklist(widget.cardId);
+    final Map<String, dynamic>? checklistData = await ChecklistService().getChecklist(widget.cardId);
     if (checklistData == null || checklistData['idChecklists'] == null) return;
 
     final List<dynamic> checklistIds = checklistData['idChecklists'];
@@ -95,10 +95,10 @@ class _CardsModalState extends State<CardsModal> {
     _checkItemsByChecklist.clear();
 
     for (String id in checklistIds) {
-      final details = await ChecklistService().getChecklistDetails(id);
+      final Map<String, dynamic>? details = await ChecklistService().getChecklistDetails(id);
       if (details != null) {
         _checklists.add(details);
-        final checkItems = await _checkItemService.getCheckItems(id);
+        final List<Map<String, dynamic>> checkItems = await _checkItemService.getCheckItems(id);
         _checkItemsByChecklist[id] = checkItems;
       }
     }
@@ -111,7 +111,7 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isCreatingChecklist = true);
 
-    final success = await ChecklistService().createChecklist(
+    final bool success = await ChecklistService().createChecklist(
       widget.cardId,
       _checklistNameController.text,
     );
@@ -119,12 +119,11 @@ class _CardsModalState extends State<CardsModal> {
       _checklistNameController.clear();
       await _loadChecklists();
     }
-
     setState(() => _isCreatingChecklist = false);
   }
 
   Future<void> _updateChecklistName(String checklistId, String newName) async {
-    final success = await ChecklistService().updateChecklist(
+    final bool success = await ChecklistService().updateChecklist(
       checklistId,
       newName,
     );
@@ -132,7 +131,7 @@ class _CardsModalState extends State<CardsModal> {
   }
 
   Future<void> _deleteChecklist(String checklistId) async {
-    final success = await ChecklistService().deleteChecklist(checklistId);
+    final bool success = await ChecklistService().deleteChecklist(checklistId);
     if (success) await _loadChecklists();
   }
 
@@ -141,7 +140,7 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isCreatingCheckItem = true);
 
-    final success = await _checkItemService.createCheckItem(
+    final bool success = await _checkItemService.createCheckItem(
       checklistId,
       _checkItemController.text,
     );
@@ -180,8 +179,9 @@ class _CardsModalState extends State<CardsModal> {
       widget.selectedCardId!,
       _nameController.text,
     );
-    if (success)
+    if (success) {
       widget.onCardUpdated(widget.selectedCardId!, _nameController.text);
+    }
     setState(() => _isUpdating = false);
   }
 
@@ -190,12 +190,13 @@ class _CardsModalState extends State<CardsModal> {
       return;
 
     setState(() => _isUpdating = true);
-    final success = await UpdateService.updateCardDescription(
+    final bool success = await UpdateService.updateCardDescription(
       widget.selectedCardId!,
       _descriptionController.text,
     );
-    if (success)
+    if (success) {
       widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
+    }
     setState(() => _isUpdating = false);
   }
 
@@ -203,7 +204,7 @@ class _CardsModalState extends State<CardsModal> {
     if (widget.selectedCardId == null) return;
 
     setState(() => _isDeleting = true);
-    final success = await DeleteService.deleteCard(widget.selectedCardId!);
+    final bool success = await DeleteService.deleteCard(widget.selectedCardId!);
     if (success) widget.onCardDeleted(widget.selectedCardId!);
     setState(() => _isDeleting = false);
   }
@@ -212,7 +213,7 @@ class _CardsModalState extends State<CardsModal> {
     if (_selectedMemberId == null || widget.selectedCardId == null) return;
 
     setState(() => _isAssigning = true);
-    final service = CreateMemberCard();
+    final CreateMemberCard service = CreateMemberCard();
     await service.assignMemberToCard(
       widget.selectedCardId!,
       _selectedMemberId!,
@@ -241,23 +242,23 @@ class _CardsModalState extends State<CardsModal> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("📝 Gérer la carte", style: TextStyle(fontSize: 20, color: Colors.white)),
+            const Text('📝 Gérer la carte', style: TextStyle(fontSize: 20, color: Colors.white)),
             const SizedBox(height: 12),
             TextField(
               controller: _nameController,
               style: const TextStyle(color: Colors.white),
-              decoration: _fieldDecoration("Nom de la carte"),
+              decoration: _fieldDecoration('Nom de la carte'),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: _descriptionController,
               style: const TextStyle(color: Colors.white),
-              decoration: _fieldDecoration("Description"),
+              decoration: _fieldDecoration('Description'),
             ),
             const SizedBox(height: 12),
             DropdownButton<String>(
               value: _selectedMemberId,
-              hint: const Text("Sélectionner un membre", style: TextStyle(color: Colors.white)),
+              hint: const Text('Sélectionner un membre', style: TextStyle(color: Colors.white)),
               dropdownColor: const Color(0xFF3D1308),
               items: _members.map((member) {
                 return DropdownMenuItem<String>(
@@ -268,7 +269,7 @@ class _CardsModalState extends State<CardsModal> {
               onChanged: (val) => setState(() => _selectedMemberId = val),
             ),
             const Divider(color: Colors.white24),
-            const Text("✅ Checklists", style: TextStyle(color: Colors.white)),
+            const Text('✅ Checklists', style: TextStyle(color: Colors.white)),
 
             for (var checklist in _checklists)
               ExpansionTile(
@@ -285,23 +286,23 @@ class _CardsModalState extends State<CardsModal> {
                     IconButton(
                       icon: const Icon(Icons.edit, color: Colors.orange),
                       onPressed: () async {
-                        final controller = TextEditingController(text: checklist['name']);
+                        final TextEditingController controller = TextEditingController(text: checklist['name']);
                         await showDialog(
                           context: context,
                           builder: (_) => AlertDialog(
-                            title: const Text("Modifier Checklist"),
+                            title: const Text('Modifier Checklist'),
                             content: TextField(controller: controller),
                             actions: [
                               TextButton(
                                 onPressed: () => Navigator.pop(context),
-                                child: const Text("Annuler"),
+                                child: const Text('Annuler'),
                               ),
                               ElevatedButton(
                                 onPressed: () async {
                                   await _updateChecklistName(checklist['id'], controller.text);
                                   Navigator.pop(context);
                                 },
-                                child: const Text("Valider"),
+                                child: const Text('Valider'),
                               ),
                             ],
                           ),
@@ -319,10 +320,10 @@ class _CardsModalState extends State<CardsModal> {
                     CheckboxListTile(
                       value: item['state'] == 'complete',
                       title: Text(item['name'], style: const TextStyle(color: Colors.white)),
-                      onChanged: (val) => _updateCheckItemState(checklist['id'], item['id'], val ?? false),
+                      onChanged: (val) async => _updateCheckItemState(checklist['id'], item['id'], val ?? false),
                       secondary: IconButton(
                         icon: const Icon(Icons.delete, color: Colors.redAccent),
-                        onPressed: () => _deleteCheckItem(checklist['id'], item['id']),
+                        onPressed: () async => _deleteCheckItem(checklist['id'], item['id']),
                       ),
                     ),
                   Row(
@@ -331,12 +332,12 @@ class _CardsModalState extends State<CardsModal> {
                         child: TextField(
                           controller: _checkItemController,
                           style: const TextStyle(color: Colors.white),
-                          decoration: _fieldDecoration("Ajouter un checkitem"),
+                          decoration: _fieldDecoration('Ajouter un checkitem'),
                         ),
                       ),
                       IconButton(
                         icon: const Icon(Icons.add, color: Colors.greenAccent),
-                        onPressed: () => _createCheckItem(checklist['id']),
+                        onPressed: () async => _createCheckItem(checklist['id']),
                       ),
                     ],
                   ),
@@ -347,13 +348,13 @@ class _CardsModalState extends State<CardsModal> {
             TextField(
               controller: _checklistNameController,
               style: const TextStyle(color: Colors.white),
-              decoration: _fieldDecoration("Nom nouvelle checklist"),
+              decoration: _fieldDecoration('Nom nouvelle checklist'),
             ),
             const SizedBox(height: 8),
             ElevatedButton(
               onPressed: _isCreatingChecklist ? null : _createChecklist,
               style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text("Créer Checklist"),
+              child: const Text('Créer Checklist'),
             ),
             const SizedBox(height: 16),
             Row(
@@ -361,17 +362,18 @@ class _CardsModalState extends State<CardsModal> {
               children: [
                 ElevatedButton(
                   onPressed: _updateCardName,
-                  child: const Text("💾 Enregistrer"),
+                  child: const Text('💾 Enregistrer'),
                 ),
                 ElevatedButton(
                   onPressed: _deleteCard,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text("🗑 Supprimer"),
+                  child: const Text('🗑 Supprimer'),
                 ),
                 ElevatedButton(
                   onPressed: _assignMemberToCard,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: const Text("👤 Assigner"),
+
+                  child: const Text('👤 Assigner'),
                 ),
               ],
             ),

@@ -204,7 +204,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
+              children: [
                 TextButton(
                   onPressed: _loading ? null : _moveList,
                   style: TextButton.styleFrom(foregroundColor: Colors.blue),

@@ -12,14 +12,17 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   
   /// Create a new Board
   static Future<bool> createBoard(String name , String workspaceId, [String backgroundColor = 'blue', String visibility = 'org']) async {
+    print('create a board $visibility');
      final String url = 'https://api.trello.com/1/boards/?name=$name&idOrganization=$workspaceId&prefs_background=$backgroundColor&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
-     print(url);
+
+    //  print(url);
     try {
 
       final http.Response response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
+        // ignore: always_specify_types
         final data = json.decode(response.body);
-        print(data);
+        // print(data);
         return true;
       } else {
         throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
@@ -29,14 +32,16 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     }
   }
   /// Create a new Board with a template
-  static Future<bool> createBoardWithTemplate(String name , String boardId ,[String workspaceId = '672b2d9a2083a0e3c28a3212']) async {
-     final String url = 'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&key=$apiKey&token=$apiToken';
+  static Future<bool> createBoardWithTemplate(String name , String boardId ,[String workspaceId = '672b2d9a2083a0e3c28a3212' , String visibility = 'org']) async {
+    print('create a board with template $workspaceId');
+     final String url = 'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
     try {
 
       final http.Response response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
+        // ignore: unused_local_variable
         final data = json.decode(response.body);
-        print(data);
+        // print(data);
         return true;
       } else {
         throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
@@ -73,7 +78,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       final http.Response response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        print(data);
+        // print(data);
         return data;
       } else {
         throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
@@ -91,7 +96,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     try {
       final http.Response response = await http.delete(Uri.parse(url));
       if (response.statusCode == 200) {
-        print('board deleted successfully');
+        // print('board deleted successfully');
         return true;
       } else {
         throw Exception('Erreur lors de la supression du board : ${response.statusCode}');
@@ -101,20 +106,21 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     }
   }
 /// Get favorite board of a member (a mettre dans member_service ??)
-  static Future<List<Map<String, dynamic>>> getFavBoards(String memberId) async {
-  final String url = 'https://api.trello.com/1/members/$memberId/boardStars?key=$apiKey&token=$apiToken';
+  static Future<List<Map<String, dynamic>>> getFavBoards() async {
+  final String url = 'https://api.trello.com/1/members/me/boardStars?key=$apiKey&token=$apiToken';
 
   try {
     final http.Response response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      print('📌 Favorite boards data: $data');
 
-      List<String> boardIds = data.map((item) => item['idBoard'].toString()).toList();
+      // print('📌 Favorite boards data: $data');
+
+      final List<String> boardIds = data.map((item) => item['idBoard'].toString()).toList();
 
       // Attente de toutes les requêtes
-      List<Map<String, dynamic>> boardData = await Future.wait(
+      final List<Map<String, dynamic>> boardData = await Future.wait(
         boardIds.map((id) => getBoard(id)),
       );
 
@@ -136,12 +142,12 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     try {
       final http.Response response = await http.post(Uri.parse(url));
       if (response.statusCode == 200) {
-        print('Board successfully starred: ${response.body}');
+        // print('Board successfully starred: ${response.body}');
       } else {
-        print('Erreur lors de l ajout aux favoris: ${response.statusCode}');
+        // print('Erreur lors de l ajout aux favoris: ${response.statusCode}');
       }
     } catch (error) {
-      print('Erreur dans addBoardToFavorite: $error');
+      // print('Erreur dans addBoardToFavorite: $error');
     }
   }
 
@@ -152,7 +158,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     try {
       final http.Response response = await http.delete(Uri.parse(url));
       if (response.statusCode == 200) {
-        print('Board successfully unstarred');
+        // print('Board successfully unstarred');
       } else {
         throw Exception('Erreur lors de la suppression des favoris: ${response.statusCode}');
       }
@@ -170,7 +176,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final List<Map<String, dynamic>> starredBoards = data.where((board) => board['starred'] == true).cast<Map<String, dynamic>>().toList();
-        print('Starred (favorite) boards: $starredBoards');
+        // print('Starred (favorite) boards: $starredBoards');
         return starredBoards;
       } else {
         throw Exception('Erreur lors de la récupération des boards: ${response.statusCode}');
