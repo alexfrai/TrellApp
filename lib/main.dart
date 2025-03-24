@@ -1,4 +1,4 @@
-// ignore_for_file: public_member_api_docs
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -68,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
         print(workspaces);
       });
     } catch (e) {
-      print('❌ Erreur lors du chargement des workspaces : $e');
+      // print('❌ Erreur lors du chargement des workspaces : $e');
     }
 
     try {
@@ -77,10 +77,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   setState(() {
     favoriteBoards = fetchedFavBoards; // Assignation correcte
-    print(favoriteBoards[1]['id']);
+    // print(favoriteBoards[1]['id']);
   });
 } catch (e) {
-  print('❌ Erreur lors du chargement des favoris : $e');
+  // print('❌ Erreur lors du chargement des favoris : $e');
 }
   }
 
@@ -220,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             leading: const Icon(Icons.dashboard, color: Colors.white),
                                             onTap: () {
                                               // Action lorsqu'on clique sur un board
-                                              print('Board sélectionné : ${favoriteBoards[index]['name']}');
+                                              // print('Board sélectionné : ${favoriteBoards[index]['name']}');
                                             },
                                           ),
                                         );

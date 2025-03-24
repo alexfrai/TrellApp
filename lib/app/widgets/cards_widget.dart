@@ -1,3 +1,5 @@
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, always_specify_types
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/get_member_card.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
@@ -10,8 +12,8 @@ class CardsWidget extends StatefulWidget {
     required this.cardId,
     required this.cards,
     required this.refreshLists,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   final String listId;
   final String boardId;

@@ -1,11 +1,11 @@
-import 'dart:convert';
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/components/board.dart';
 import 'package:flutter_trell_app/app/widgets/header.dart';
 import 'package:flutter_trell_app/app/widgets/sidebar.dart';
-import 'package:http/http.dart' as http;
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? '';
