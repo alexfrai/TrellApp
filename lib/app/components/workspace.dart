@@ -7,6 +7,7 @@ import 'package:flutter_trell_app/app/components/board.dart';
 import 'package:flutter_trell_app/app/screens/members_screen.dart';
 import 'package:flutter_trell_app/app/widgets/header.dart';
 import 'package:flutter_trell_app/app/widgets/sidebar.dart';
+import 'package:flutter_trell_app/main.dart';
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? '';
@@ -65,7 +66,7 @@ class _WorkspaceState extends State<Workspace> {
             child: Row(
               children: <Widget>[
                 // Sidebar avec callback
-                Sidebar(onBoardChanged: updateBoardId),
+                Sidebar(currentPage: MyApp.currentPage,onBoardChanged: updateBoardId),
 
                 // Contenu principal
                 Expanded(
