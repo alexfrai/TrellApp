@@ -3,6 +3,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/main.dart';
 import 'package:http/http.dart' as http;
 
 /// API KEYS
@@ -14,8 +15,10 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 ///Class
 class Sidebar extends StatefulWidget {
   final Function(String) onBoardChanged; // Ajoute un callback
+  ///Page
+  String currentPage;
 
-  const Sidebar({required this.onBoardChanged, super.key});
+  Sidebar({required this.currentPage, required this.onBoardChanged, super.key});
 
   @override
   _SidebarState createState() => _SidebarState();
@@ -64,13 +67,19 @@ class _SidebarState extends State<Sidebar> {
   }
 
   Future<void> changeBoard(Map<String, dynamic> data) async {
+
+    if( MyApp.currentPage != 'board'){
+      MyApp.currentPage = 'board';
+      await Navigator.pushNamed(context, '/workspace');
+    }
+    print('change board into ');
     setState(() {
       boardId = data['id'];
       boardData = data;
     });
 
     widget.onBoardChanged(boardId); // 🔥 Informe `Workspace` du changement !
-    // debugPrint('Board sélectionné: $boardId');
+     debugPrint('Board sélectionné: $boardId');
   }
 
   Future<void> createBoard() async {
@@ -112,8 +121,8 @@ class _SidebarState extends State<Sidebar> {
     );
     if (boards != null) {
       setState(() {
-        final int boardLenght = boards.length;
-        print('all board $boardLenght');
+       // final int boardLenght = boards.length;
+        //print('all board $boardLenght');
         allBoards = boards;
       });
     }
@@ -197,15 +206,20 @@ class _SidebarState extends State<Sidebar> {
                         title: const Text('Boards'),
                         textColor: Colors.white,
                         onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/myboards'),
+                            () async =>{
+                              MyApp.currentPage = '',
+                              Navigator.pushNamed(context, '/myboards'),
+
+                            }
                       ),
                       ListTile(
                         title: const Text('Members'),
                         textColor: Colors.white,
                         onTap:
-                            () async =>
-                                Navigator.pushNamed(context, '/members'),
+                            () async =>{
+                              MyApp.currentPage = 'member',
+                              Navigator.pushNamed(context, '/members'),
+                            }
                       ),
                       ListTile(
                         title: const Text('Parameters'),
