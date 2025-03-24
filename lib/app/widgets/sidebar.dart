@@ -110,6 +110,8 @@ class _SidebarState extends State<Sidebar> {
     );
     if (boards != null) {
       setState(() {
+        final int boardLenght = boards.length;
+        print('all board $boardLenght');
         allBoards = boards;
       });
     }

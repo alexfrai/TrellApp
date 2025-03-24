@@ -12,6 +12,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   
   /// Create a new Board
   static Future<bool> createBoard(String name , String workspaceId, [String backgroundColor = 'blue', String visibility = 'org']) async {
+    print('create a board $visibility');
      final String url = 'https://api.trello.com/1/boards/?name=$name&idOrganization=$workspaceId&prefs_background=$backgroundColor&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
      print(url);
     try {
@@ -30,6 +31,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   }
   /// Create a new Board with a template
   static Future<bool> createBoardWithTemplate(String name , String boardId ,[String workspaceId = '672b2d9a2083a0e3c28a3212']) async {
+    print('create a board with template $workspaceId');
      final String url = 'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&key=$apiKey&token=$apiToken';
     try {
 

@@ -94,6 +94,7 @@ class _MembersScreenState extends State<MembersScreen> {
 
     if (members == null || members is! List) {
       debugPrint('Erreur lors du chargement des membres');
+      
       setState(() => isLoading = false);
       return;
     }
@@ -174,15 +175,15 @@ class _MembersScreenState extends State<MembersScreen> {
       backgroundColor: const Color.fromARGB(255, 208, 151, 102),
       body: Column(
         children: <Widget>[
-          SizedBox(
+          /*SizedBox(
             height: MediaQuery.of(context).size.height * 0.2,
             child: const Header(),
-          ),
+          ),*/
           Expanded(
             child: Row(
               children: <Widget>[
                 
-              Sidebar(onBoardChanged: updateBoardId),
+              //Sidebar(onBoardChanged: updateBoardId),
                 //Contenu de la page members
 
                 Expanded(

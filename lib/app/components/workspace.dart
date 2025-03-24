@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/components/board.dart';
+import 'package:flutter_trell_app/app/screens/members_screen.dart';
 import 'package:flutter_trell_app/app/widgets/header.dart';
 import 'package:flutter_trell_app/app/widgets/sidebar.dart';
 import 'package:http/http.dart' as http;
@@ -15,7 +16,10 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 ///Class
 class Workspace extends StatefulWidget {
   ///Constructor
-  const Workspace({super.key});
+   Workspace({required this.curentPage, super.key});
+
+  /// Curent page on website
+  final String curentPage;
 
   @override
   _WorkspaceState createState() => _WorkspaceState();
@@ -65,7 +69,8 @@ class _WorkspaceState extends State<Workspace> {
 
                 // Contenu principal
                 Expanded(
-                  child: Board(boardId: boardId), // 🔥 boardId mis à jour dynamiquement
+                  child: widget.curentPage == 'board' ? Board(boardId: boardId) 
+                  : widget.curentPage == 'member' ? MembersScreen() : SizedBox(), // 🔥 boardId mis à jour dynamiquement
                 ),
               ],
             ),
