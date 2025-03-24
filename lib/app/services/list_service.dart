@@ -104,6 +104,62 @@ static Future<dynamic> updateListPos(String idlist, String newpos) async {
     rethrow;
   }
 }
+
+///Récupère les postitions de toutes les list d'un board
+static Future<List<double>> getAllListPositions(String boardId) async {
+    try {
+      final Uri url = Uri.parse(
+        '$baseUrl/boards/$boardId/lists?key=$apikey&token=$apitoken',
+      );
+
+      final http.Response response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+
+      final List<dynamic> lists = jsonDecode(response.body);
+
+      // Extraire toutes les positions des listes
+      final List<double> positions = lists.map<double>((list) => (list["pos"] as num).toDouble()).toList();
+
+      // Trier les positions pour s'assurer qu'elles sont dans l'ordre
+      positions.sort();
+
+      return positions;
+    } catch (error) {
+      throw Exception('Erreur lors de la récupération des positions : $error');
+    }
+  }
+
+/// retourne la position de la liste
+static Future<double> getListPos(String idlist) async {
+  try {
+    final Uri url = Uri.parse(
+      '$baseUrl/lists/$idlist?key=$apikey&token=$apitoken',
+    );
+
+    final http.Response response = await http.get( // Correction: utiliser GET au lieu de PUT
+      url,
+      headers: <String, String>{'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    
+    if (data is Map<String, dynamic> && data.containsKey('pos')) {
+      return (data['pos'] as num).toDouble(); // S'assure que c'est un double
+    } else {
+      throw Exception("Réponse invalide: 'pos' non trouvé");
+    }
+  } catch (error) {
+    rethrow;
+  }
+}
+
 static Future<String?> getListName(String id) async {
   try {
     final Uri url = Uri.parse('$baseUrl/lists/$id?key=$apikey&token=$apitoken');
