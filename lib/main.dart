@@ -60,7 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> fetchData() async {
     try {
       final List<dynamic>? fetchedWorkspaces =
-          await WorkspaceService.getAllWorkspaces(userId);
+          await WorkspaceService.getAllWorkspaces();
 
       setState(() {
         workspaces = fetchedWorkspaces
@@ -75,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
   final List<Map<String, dynamic>> fetchedFavBoards =
-      await BoardService.getFavBoards(userId); // Correction ici
+      await BoardService.getFavBoards(); // Correction ici
 
   setState(() {
     favoriteBoards = fetchedFavBoards; // Assignation correcte
