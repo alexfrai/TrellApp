@@ -36,7 +36,7 @@ class GetListWidgetState extends State<GetListWidget> {
       } catch (error) {
         debugPrint('Erreur lors de la mise à jour des listes: $error');
       }
-      await Future.delayed(const Duration(seconds: 2)); // Temps d'attente entre chaque requête (plus rapide que 5s)
+      await Future.delayed(const Duration(seconds: 3)); // Temps d'attente entre chaque requête (plus rapide que 5s)
     }
   }
 

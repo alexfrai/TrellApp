@@ -23,7 +23,35 @@ class ListService {
       throw Exception('Request timeout or error: $e');
     }
   }
-  
+
+
+///renvoie toutes les listes d'un board
+static Future<List<Map<String, dynamic>>> getAllLists(String boardId) async {
+  try {
+    final Uri url = Uri.parse(
+      '$baseUrl/boards/$boardId/lists?key=$apikey&token=$apitoken',
+    );
+
+    final http.Response response = await http.get(url);
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
+    }
+
+    // Décoder la réponse JSON
+    final List<dynamic> lists = jsonDecode(response.body);
+
+    // Convertir en liste de Map<String, dynamic>
+    return lists.map<Map<String, dynamic>>((list) => Map<String, dynamic>.from(list)).toList();
+  } catch (error) {
+    throw Exception('Erreur lors de la récupération des listes : $error');
+  }
+}
+
+
+
+
+
   ///Retourne les listes présentes dans un board
   ///@var String Board_Id
   static Future<List<dynamic>> getList(String boardId) async {
@@ -104,6 +132,62 @@ static Future<dynamic> updateListPos(String idlist, String newpos) async {
     rethrow;
   }
 }
+
+///Récupère les postitions de toutes les list d'un board
+static Future<List<double>> getAllListPositions(String boardId) async {
+    try {
+      final Uri url = Uri.parse(
+        '$baseUrl/boards/$boardId/lists?key=$apikey&token=$apitoken',
+      );
+
+      final http.Response response = await http.get(url);
+
+      if (response.statusCode != 200) {
+        throw Exception('Erreur ${response.statusCode}: ${response.body}');
+      }
+
+      final List<dynamic> lists = jsonDecode(response.body);
+
+      // Extraire toutes les positions des listes
+      final List<double> positions = lists.map<double>((list) => (list["pos"] as num).toDouble()).toList();
+
+      // Trier les positions pour s'assurer qu'elles sont dans l'ordre
+      positions.sort();
+
+      return positions;
+    } catch (error) {
+      throw Exception('Erreur lors de la récupération des positions : $error');
+    }
+  }
+
+/// retourne la position de la liste
+static Future<double> getListPos(String idlist) async {
+  try {
+    final Uri url = Uri.parse(
+      '$baseUrl/lists/$idlist?key=$apikey&token=$apitoken',
+    );
+
+    final http.Response response = await http.get( // Correction: utiliser GET au lieu de PUT
+      url,
+      headers: <String, String>{'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Erreur ${response.statusCode}: ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    
+    if (data is Map<String, dynamic> && data.containsKey('pos')) {
+      return (data['pos'] as num).toDouble(); // S'assure que c'est un double
+    } else {
+      throw Exception("Réponse invalide: 'pos' non trouvé");
+    }
+  } catch (error) {
+    rethrow;
+  }
+}
+
 static Future<String?> getListName(String id) async {
   try {
     final Uri url = Uri.parse('$baseUrl/lists/$id?key=$apikey&token=$apitoken');
@@ -141,12 +225,47 @@ static Future<void> ArchiveList(String id) async {
 
     // Attendre le résultat de getListName avant de l'afficher
     final listName = await getListName(id);
-    print('List $listName archive success.');
   } catch (error) {
-    print('❌ Error archiving list: $error');
+    throw Exception('❌ Error archiving list: $error');
   }
 }
 
+///update les cards dans une list
+static Future<void> updateCardsList(List<Map<String, dynamic>> cards, String newListId) async {
+  try {
+    if (cards.isEmpty) {
+      print('⚠️ Aucune carte à déplacer.');
+      return;
+    }
+
+    print('🔄 Déplacement de ${cards.length} cartes vers la liste $newListId...');
+
+    for (final card in cards) {
+      final String cardId = card['id'];
+      final Uri url = Uri.parse(
+        '$baseUrl/cards/$cardId?key=$apikey&token=$apitoken',
+      );
+
+      final http.Response response = await http.put(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'idList': newListId}),
+      );
+
+      if (response.statusCode == 200) {
+        print('✅ Carte ${card['name']} déplacée avec succès.');
+      } else {
+        print('❌ Erreur pour la carte ${card['name']} : ${response.statusCode}');
+        print('Réponse : ${response.body}');
+      }
+    }
+
+    print('✅ Toutes les cartes ont été traitées.');
+  } catch (error) {
+    print('❌ Exception lors du déplacement des cartes : $error');
+    throw Exception('Erreur lors du déplacement des cartes : $error');
+  }
+}
 
 
 }

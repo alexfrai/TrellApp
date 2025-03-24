@@ -1,13 +1,12 @@
 // ignore_for_file: public_member_api_docs, library_private_types_in_public_api, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:flutter_trell_app/app/services/checkitem_service.dart';
 import 'package:flutter_trell_app/app/services/checklist_service.dart';
 import 'package:flutter_trell_app/app/services/create_member_card.dart';
 import 'package:flutter_trell_app/app/services/delete_service.dart';
 import 'package:flutter_trell_app/app/services/get_members.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
-import 'package:flutter_trell_app/app/widgets/cards_new.dart';
-import 'package:flutter_trell_app/app/widgets/checklist.dart';
 
 class CardsModal extends StatefulWidget {
   const CardsModal({
@@ -48,41 +47,35 @@ class _CardsModalState extends State<CardsModal> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _checklistNameController =
       TextEditingController();
-  late ChecklistManager _checklistManager;
+  final TextEditingController _checkItemController = TextEditingController();
 
   List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
-  String? _selectedMemberId;
+  List<dynamic> _checklists = [];
+  Map<String, List<Map<String, dynamic>>> _checkItemsByChecklist = {};
+
   bool _isUpdating = false;
   bool _isDeleting = false;
   bool _isAssigning = false;
-  bool _isCreating = false;
+  bool _isCreatingChecklist = false;
+  bool _isCreatingCheckItem = false;
+
+  String? _selectedMemberId;
+  String? _selectedChecklistId;
+
+  final CheckItemService _checkItemService = CheckItemService();
 
   @override
   void initState() {
     super.initState();
     _nameController.text = widget.taskName;
     _descriptionController.text = widget.descriptionName;
-
-    _checklistManager = ChecklistManager(
-      cardId: widget.selectedCardId ?? '',
-      refreshLists: widget.refreshLists,
-      handleClose: widget.handleClose,
-      checklistId: '',
-    );
-
     _loadData();
   }
 
   Future<void> _loadData() async {
     await _loadMembers();
     await _loadChecklists();
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  Future<void> _loadChecklists() async {
-    await _checklistManager.fetchChecklists();
+    if (mounted) setState(() {});
   }
 
   Future<void> _loadMembers() async {
@@ -90,50 +83,119 @@ class _CardsModalState extends State<CardsModal> {
     final List<Map<String, dynamic>> members = await service.getAllMembers(
       widget.boardId,
     );
+    setState(() => _members = members);
+  }
 
-    if (!mounted) return;
+  Future<void> _loadChecklists() async {
+    final checklistData = await ChecklistService().getChecklist(widget.cardId);
+    if (checklistData == null || checklistData['idChecklists'] == null) return;
 
-    setState(() {
-      _members = members;
-    });
+    final List<dynamic> checklistIds = checklistData['idChecklists'];
+    _checklists.clear();
+    _checkItemsByChecklist.clear();
+
+    for (String id in checklistIds) {
+      final details = await ChecklistService().getChecklistDetails(id);
+      if (details != null) {
+        _checklists.add(details);
+        final checkItems = await _checkItemService.getCheckItems(id);
+        _checkItemsByChecklist[id] = checkItems;
+      }
+    }
+
+    setState(() {});
+  }
+
+  Future<void> _createChecklist() async {
+    if (_checklistNameController.text.isEmpty) return;
+
+    setState(() => _isCreatingChecklist = true);
+
+    final success = await ChecklistService().createChecklist(
+      widget.cardId,
+      _checklistNameController.text,
+    );
+    if (success) {
+      _checklistNameController.clear();
+      await _loadChecklists();
+    }
+
+    setState(() => _isCreatingChecklist = false);
+  }
+
+  Future<void> _updateChecklistName(String checklistId, String newName) async {
+    final success = await ChecklistService().updateChecklist(
+      checklistId,
+      newName,
+    );
+    if (success) await _loadChecklists();
+  }
+
+  Future<void> _deleteChecklist(String checklistId) async {
+    final success = await ChecklistService().deleteChecklist(checklistId);
+    if (success) await _loadChecklists();
+  }
+
+  Future<void> _createCheckItem(String checklistId) async {
+    if (_checkItemController.text.isEmpty) return;
+
+    setState(() => _isCreatingCheckItem = true);
+
+    final success = await _checkItemService.createCheckItem(
+      checklistId,
+      _checkItemController.text,
+    );
+    if (success) {
+      _checkItemController.clear();
+      await _loadChecklists();
+    }
+
+    setState(() => _isCreatingCheckItem = false);
+  }
+
+  Future<void> _updateCheckItemState(
+    String checklistId,
+    String checkItemId,
+    bool state,
+  ) async {
+    await _checkItemService.updateCheckItem(
+      widget.cardId,
+      checkItemId,
+      '',
+      state,
+    );
+    await _loadChecklists();
+  }
+
+  Future<void> _deleteCheckItem(String checklistId, String checkItemId) async {
+    await _checkItemService.deleteCheckItem(checklistId, checkItemId);
+    await _loadChecklists();
   }
 
   Future<void> _updateCardName() async {
-    if (widget.selectedCardId == null || _nameController.text.isEmpty) return;
+    if (_nameController.text.isEmpty || widget.selectedCardId == null) return;
 
     setState(() => _isUpdating = true);
-    final bool success = await UpdateService.updateCardName(
+    final success = await UpdateService.updateCardName(
       widget.selectedCardId!,
       _nameController.text,
     );
-
-    if (success) {
+    if (success)
       widget.onCardUpdated(widget.selectedCardId!, _nameController.text);
-      widget.handleClose();
-    }
-
     setState(() => _isUpdating = false);
   }
 
-  Future<void> _updateDescription() async {
-    if (widget.selectedCardId == null || _descriptionController.text.isEmpty)
+  Future<void> _updateCardDescription() async {
+    if (_descriptionController.text.isEmpty || widget.selectedCardId == null)
       return;
 
     setState(() => _isUpdating = true);
-
-    final bool success = await UpdateService.updateCardDescription(
+    final success = await UpdateService.updateCardDescription(
       widget.selectedCardId!,
       _descriptionController.text,
     );
-
-    if (!mounted) return;
-
-    if (success) {
+    if (success)
       widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
-      widget.handleClose();
-      widget.refreshLists(); // ✅ Rafraîchir les cartes après la mise à jour
-    }
-
     setState(() => _isUpdating = false);
   }
 
@@ -141,227 +203,182 @@ class _CardsModalState extends State<CardsModal> {
     if (widget.selectedCardId == null) return;
 
     setState(() => _isDeleting = true);
-
-    final bool success = await DeleteService.deleteCard(widget.selectedCardId!);
-
-    if (success) {
-      widget.onCardDeleted(widget.selectedCardId!);
-      widget.handleClose();
-    }
-
+    final success = await DeleteService.deleteCard(widget.selectedCardId!);
+    if (success) widget.onCardDeleted(widget.selectedCardId!);
     setState(() => _isDeleting = false);
   }
 
   Future<void> _assignMemberToCard() async {
-    if (widget.selectedCardId == null || _selectedMemberId == null) return;
+    if (_selectedMemberId == null || widget.selectedCardId == null) return;
 
     setState(() => _isAssigning = true);
-
-    final CreateMemberCard service = CreateMemberCard();
-    try {
-      await service.assignMemberToCard(
-        widget.selectedCardId!,
-        _selectedMemberId!,
-      );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('✅ Membre assigné avec succès !')),
-      );
-    } catch (error) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('❌ Erreur : $error')));
-    }
-
+    final service = CreateMemberCard();
+    await service.assignMemberToCard(
+      widget.selectedCardId!,
+      _selectedMemberId!,
+    );
     setState(() => _isAssigning = false);
+  }
+
+  InputDecoration _fieldDecoration(String label) {
+    return InputDecoration(
+      labelText: label,
+      labelStyle: const TextStyle(color: Colors.white70),
+      filled: true,
+      fillColor: Colors.white10,
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 10,
-      backgroundColor: Colors.transparent,
-      child: Container(
-        width: MediaQuery.of(context).size.width * 0.5,
-        height: MediaQuery.of(context).size.height * 0.7,
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: const Color(0xFF3D1308),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: <BoxShadow>[
-            BoxShadow(
-              color: Colors.black.withOpacity(0.25),
-              blurRadius: 10,
-              spreadRadius: 3,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
+  return Dialog(
+    backgroundColor: const Color(0xFF3D1308),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            // ✅ Titre de la modale
-            const Text(
-              'Gérer la Carte',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFFF8E5EE),
-              ),
-            ),
+          children: [
+            const Text("📝 Gérer la carte", style: TextStyle(fontSize: 20, color: Colors.white)),
             const SizedBox(height: 12),
-
-            // ✅ Champ pour le nom de la carte
             TextField(
               controller: _nameController,
-              style: const TextStyle(color: Colors.white, fontSize: 18),
-              decoration: InputDecoration(
-                labelText: 'Nom de la carte',
-                labelStyle: const TextStyle(color: Colors.white70),
-                filled: true,
-                fillColor: const Color(0xFF9F2042).withOpacity(0.2),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // ✅ Sélecteur de membres
-            DropdownButton<String>(
-              hint: const Text('Sélectionner un membre'),
-              value: _selectedMemberId,
-              items:
-                  _members.map((Map<String, dynamic> member) {
-                    return DropdownMenuItem<String>(
-                      value: member['id'],
-                      child: Text(
-                        member['fullName'],
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    );
-                  }).toList(),
-              onChanged: (String? value) {
-                setState(() {
-                  _selectedMemberId = value;
-                });
-              },
-              dropdownColor: const Color(0xFF3D1308),
               style: const TextStyle(color: Colors.white),
+              decoration: _fieldDecoration("Nom de la carte"),
             ),
             const SizedBox(height: 12),
+            TextField(
+              controller: _descriptionController,
+              style: const TextStyle(color: Colors.white),
+              decoration: _fieldDecoration("Description"),
+            ),
+            const SizedBox(height: 12),
+            DropdownButton<String>(
+              value: _selectedMemberId,
+              hint: const Text("Sélectionner un membre", style: TextStyle(color: Colors.white)),
+              dropdownColor: const Color(0xFF3D1308),
+              items: _members.map((member) {
+                return DropdownMenuItem<String>(
+                  value: member['id'] as String,
+                  child: Text(member['fullName'], style: const TextStyle(color: Colors.white)),
+                );
+              }).toList(),
+              onChanged: (val) => setState(() => _selectedMemberId = val),
+            ),
+            const Divider(color: Colors.white24),
+            const Text("✅ Checklists", style: TextStyle(color: Colors.white)),
 
-            // ✅ Zone d'affichage des checklists avec FutureBuilder
-            Expanded(
-              child: FutureBuilder<void>(
-                future: _checklistManager.fetchChecklists(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return const Center(
-                      child: Text(
-                        '❌ Erreur lors du chargement des checklists.',
-                        style: TextStyle(color: Colors.white70),
+            for (var checklist in _checklists)
+              ExpansionTile(
+                backgroundColor: Colors.white10,
+                collapsedBackgroundColor: Colors.white12,
+                title: Text(checklist['name'], style: const TextStyle(color: Colors.white)),
+                subtitle: Text(
+                  "${_checkItemsByChecklist[checklist['id']]?.length ?? 0} éléments",
+                  style: const TextStyle(color: Colors.white70),
+                ),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.edit, color: Colors.orange),
+                      onPressed: () async {
+                        final controller = TextEditingController(text: checklist['name']);
+                        await showDialog(
+                          context: context,
+                          builder: (_) => AlertDialog(
+                            title: const Text("Modifier Checklist"),
+                            content: TextField(controller: controller),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(context),
+                                child: const Text("Annuler"),
+                              ),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  await _updateChecklistName(checklist['id'], controller.text);
+                                  Navigator.pop(context);
+                                },
+                                child: const Text("Valider"),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: () => _deleteChecklist(checklist['id']),
+                    ),
+                  ],
+                ),
+                children: [
+                  for (var item in (_checkItemsByChecklist[checklist['id']] ?? []))
+                    CheckboxListTile(
+                      value: item['state'] == 'complete',
+                      title: Text(item['name'], style: const TextStyle(color: Colors.white)),
+                      onChanged: (val) => _updateCheckItemState(checklist['id'], item['id'], val ?? false),
+                      secondary: IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.redAccent),
+                        onPressed: () => _deleteCheckItem(checklist['id'], item['id']),
                       ),
-                    );
-                  } else {
-                    return _checklistManager.checklistListWidget(context, () {
-                      setState(
-                        () {},
-                      ); // 🔄 Mettre à jour CardsModal après modification
-                    });
-                  }
-                },
+                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _checkItemController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: _fieldDecoration("Ajouter un checkitem"),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.add, color: Colors.greenAccent),
+                        onPressed: () => _createCheckItem(checklist['id']),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 12),
 
-            // ✅ Boutons d'action
+            const Divider(),
+            TextField(
+              controller: _checklistNameController,
+              style: const TextStyle(color: Colors.white),
+              decoration: _fieldDecoration("Nom nouvelle checklist"),
+            ),
+            const SizedBox(height: 8),
+            ElevatedButton(
+              onPressed: _isCreatingChecklist ? null : _createChecklist,
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+              child: const Text("Créer Checklist"),
+            ),
+            const SizedBox(height: 16),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton(
-                  onPressed: _isUpdating ? null : _updateCardName,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child:
-                      _isUpdating
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Enregistrer'),
+                  onPressed: _updateCardName,
+                  child: const Text("💾 Enregistrer"),
                 ),
                 ElevatedButton(
-                  onPressed: _isDeleting ? null : _deleteCard,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.redAccent,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child:
-                      _isDeleting
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('Supprimer'),
+                  onPressed: _deleteCard,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+                  child: const Text("🗑 Supprimer"),
                 ),
                 ElevatedButton(
-                  onPressed: _isAssigning ? null : _assignMemberToCard,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.greenAccent,
-                    foregroundColor: Colors.black,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child:
-                      _isAssigning
-                          ? const CircularProgressIndicator(color: Colors.black)
-                          : const Text('Assigner un membre'),
+                  onPressed: _assignMemberToCard,
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+                  child: const Text("👤 Assigner"),
                 ),
               ],
-            ),
-            const SizedBox(height: 12),
-
-            // ✅ Bouton pour créer une nouvelle checklist et rafraîchir l'affichage
-            ElevatedButton(
-              onPressed: () async {
-                await _checklistManager.createChecklist(context, () {
-                  setState(() {}); // Met à jour l'UI après création
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.greenAccent,
-                foregroundColor: Colors.black,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-              child: const Text('Créer Checklist'),
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

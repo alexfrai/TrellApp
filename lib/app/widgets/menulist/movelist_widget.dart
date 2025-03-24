@@ -22,11 +22,10 @@ class MoveListWidget extends StatefulWidget {
   final VoidCallback onCancel;
 
   @override
-  MoveListWidgetState createState() => MoveListWidgetState();
+  _MoveListWidgetState createState() => _MoveListWidgetState();
 }
 
-///move list widget sate
-class MoveListWidgetState extends State<MoveListWidget> {
+class _MoveListWidgetState extends State<MoveListWidget> {
   int? _selectedIndex;
   bool _loading = false;
   String? _error;
