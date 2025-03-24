@@ -31,9 +31,9 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     }
   }
   /// Create a new Board with a template
-  static Future<bool> createBoardWithTemplate(String name , String boardId ,[String workspaceId = '672b2d9a2083a0e3c28a3212']) async {
+  static Future<bool> createBoardWithTemplate(String name , String boardId ,[String workspaceId = '672b2d9a2083a0e3c28a3212' , String visibility = 'org']) async {
     print('create a board with template $workspaceId');
-     final String url = 'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&key=$apiKey&token=$apiToken';
+     final String url = 'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
     try {
 
       final http.Response response = await http.post(Uri.parse(url));
@@ -105,8 +105,8 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
     }
   }
 /// Get favorite board of a member (a mettre dans member_service ??)
-  static Future<List<Map<String, dynamic>>> getFavBoards(String memberId) async {
-  final String url = 'https://api.trello.com/1/members/$memberId/boardStars?key=$apiKey&token=$apiToken';
+  static Future<List<Map<String, dynamic>>> getFavBoards() async {
+  final String url = 'https://api.trello.com/1/members/me/boardStars?key=$apiKey&token=$apiToken';
 
   try {
     final http.Response response = await http.get(Uri.parse(url));

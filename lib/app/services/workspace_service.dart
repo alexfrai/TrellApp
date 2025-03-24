@@ -8,8 +8,8 @@ class WorkspaceService {
   static final String? _apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
 
   /// Récupère les workspaces d'un utilisateur
-  static Future<List<dynamic>?> getAllWorkspaces(String userId) async {
-    final String url = 'https://api.trello.com/1/members/$userId/organizations?key=$_apiKey&token=$_apiToken';
+  static Future<List<dynamic>?> getAllWorkspaces() async {
+    final String url = 'https://api.trello.com/1/members/me/organizations?key=$_apiKey&token=$_apiToken';
 
     try {
       final http.Response response = await http.get(Uri.parse(url));

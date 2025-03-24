@@ -45,7 +45,7 @@ class _HeaderState extends State<Header> {
 
   Future<void> fetchData() async {
     try {
-      final List<dynamic>? fetchedWorkspaces = await WorkspaceService.getAllWorkspaces(userId);
+      final List<dynamic>? fetchedWorkspaces = await WorkspaceService.getAllWorkspaces();
       
       //print(fetchedWorkspaces);
       setState(() {
