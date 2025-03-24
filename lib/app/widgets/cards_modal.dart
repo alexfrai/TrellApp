@@ -87,7 +87,8 @@ class _CardsModalState extends State<CardsModal> {
   }
 
   Future<void> _loadChecklists() async {
-    final Map<String, dynamic>? checklistData = await ChecklistService().getChecklist(widget.cardId);
+    final Map<String, dynamic>? checklistData = await ChecklistService()
+        .getChecklist(widget.cardId);
     if (checklistData == null || checklistData['idChecklists'] == null) return;
 
     final List<dynamic> checklistIds = checklistData['idChecklists'];
@@ -95,10 +96,12 @@ class _CardsModalState extends State<CardsModal> {
     _checkItemsByChecklist.clear();
 
     for (String id in checklistIds) {
-      final Map<String, dynamic>? details = await ChecklistService().getChecklistDetails(id);
+      final Map<String, dynamic>? details = await ChecklistService()
+          .getChecklistDetails(id);
       if (details != null) {
         _checklists.add(details);
-        final List<Map<String, dynamic>> checkItems = await _checkItemService.getCheckItems(id);
+        final List<Map<String, dynamic>> checkItems = await _checkItemService
+            .getCheckItems(id);
         _checkItemsByChecklist[id] = checkItems;
       }
     }
@@ -234,153 +237,245 @@ class _CardsModalState extends State<CardsModal> {
 
   @override
   Widget build(BuildContext context) {
-  return Dialog(
-    backgroundColor: const Color(0xFF3D1308),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('📝 Gérer la carte', style: TextStyle(fontSize: 20, color: Colors.white)),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _nameController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _fieldDecoration('Nom de la carte'),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: _descriptionController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _fieldDecoration('Description'),
-            ),
-            const SizedBox(height: 12),
-            DropdownButton<String>(
-              value: _selectedMemberId,
-              hint: const Text('Sélectionner un membre', style: TextStyle(color: Colors.white)),
-              dropdownColor: const Color(0xFF3D1308),
-              items: _members.map((member) {
-                return DropdownMenuItem<String>(
-                  value: member['id'] as String,
-                  child: Text(member['fullName'], style: const TextStyle(color: Colors.white)),
-                );
-              }).toList(),
-              onChanged: (val) => setState(() => _selectedMemberId = val),
-            ),
-            const Divider(color: Colors.white24),
-            const Text('✅ Checklists', style: TextStyle(color: Colors.white)),
-
-            for (var checklist in _checklists)
-              ExpansionTile(
-                backgroundColor: Colors.white10,
-                collapsedBackgroundColor: Colors.white12,
-                title: Text(checklist['name'], style: const TextStyle(color: Colors.white)),
-                subtitle: Text(
-                  "${_checkItemsByChecklist[checklist['id']]?.length ?? 0} éléments",
-                  style: const TextStyle(color: Colors.white70),
-                ),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.edit, color: Colors.orange),
-                      onPressed: () async {
-                        final TextEditingController controller = TextEditingController(text: checklist['name']);
-                        await showDialog(
-                          context: context,
-                          builder: (_) => AlertDialog(
-                            title: const Text('Modifier Checklist'),
-                            content: TextField(controller: controller),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.pop(context),
-                                child: const Text('Annuler'),
-                              ),
-                              ElevatedButton(
+    return Dialog(
+      backgroundColor: const Color.fromRGBO(113, 117, 104, 1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: SizedBox(
+        width: MediaQuery.of(context).size.width * 0.7,
+        height: MediaQuery.of(context).size.height * 0.75,
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 🧱 Partie gauche
+              Expanded(
+                flex: 3,
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '📝 Gérer la carte',
+                        style: TextStyle(fontSize: 20, color: Colors.white),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _nameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _fieldDecoration('Nom de la carte'),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: _descriptionController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _fieldDecoration('Description'),
+                      ),
+                      const SizedBox(height: 16),
+                      const Divider(color: Colors.white24),
+                      const Text(
+                        '✅ Checklists',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      const SizedBox(height: 8),
+                      for (var checklist in _checklists)
+                        ExpansionTile(
+                          backgroundColor: Colors.white10,
+                          collapsedBackgroundColor: Colors.white12,
+                          title: Text(
+                            checklist['name'],
+                            style: const TextStyle(color: Colors.white),
+                          ),
+                          subtitle: Text(
+                            "${_checkItemsByChecklist[checklist['id']]?.length ?? 0} éléments",
+                            style: const TextStyle(color: Colors.white70),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.edit,
+                                  color: Colors.orange,
+                                ),
                                 onPressed: () async {
-                                  await _updateChecklistName(checklist['id'], controller.text);
-                                  Navigator.pop(context);
+                                  final TextEditingController controller =
+                                      TextEditingController(
+                                        text: checklist['name'],
+                                      );
+                                  await showDialog(
+                                    context: context,
+                                    builder:
+                                        (_) => AlertDialog(
+                                          title: const Text(
+                                            'Modifier Checklist',
+                                          ),
+                                          content: TextField(
+                                            controller: controller,
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed:
+                                                  () => Navigator.pop(context),
+                                              child: const Text('Annuler'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                await _updateChecklistName(
+                                                  checklist['id'],
+                                                  controller.text,
+                                                );
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Valider'),
+                                            ),
+                                          ],
+                                        ),
+                                  );
                                 },
-                                child: const Text('Valider'),
+                              ),
+                              IconButton(
+                                icon: const Icon(
+                                  Icons.delete,
+                                  color: Colors.red,
+                                ),
+                                onPressed:
+                                    () => _deleteChecklist(checklist['id']),
                               ),
                             ],
                           ),
-                        );
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: () => _deleteChecklist(checklist['id']),
-                    ),
-                  ],
-                ),
-                children: [
-                  for (var item in (_checkItemsByChecklist[checklist['id']] ?? []))
-                    CheckboxListTile(
-                      value: item['state'] == 'complete',
-                      title: Text(item['name'], style: const TextStyle(color: Colors.white)),
-                      onChanged: (val) async => _updateCheckItemState(checklist['id'], item['id'], val ?? false),
-                      secondary: IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.redAccent),
-                        onPressed: () async => _deleteCheckItem(checklist['id'], item['id']),
-                      ),
-                    ),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: _checkItemController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: _fieldDecoration('Ajouter un checkitem'),
+                          children: [
+                            for (var item
+                                in (_checkItemsByChecklist[checklist['id']] ??
+                                    []))
+                              CheckboxListTile(
+                                value: item['state'] == 'complete',
+                                title: Text(
+                                  item['name'],
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                                onChanged:
+                                    (val) async => _updateCheckItemState(
+                                      checklist['id'],
+                                      item['id'],
+                                      val ?? false,
+                                    ),
+                                secondary: IconButton(
+                                  icon: const Icon(
+                                    Icons.delete,
+                                    color: Colors.redAccent,
+                                  ),
+                                  onPressed:
+                                      () async => _deleteCheckItem(
+                                        checklist['id'],
+                                        item['id'],
+                                      ),
+                                ),
+                              ),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextField(
+                                    controller: _checkItemController,
+                                    style: const TextStyle(color: Colors.white),
+                                    decoration: _fieldDecoration(
+                                      'Ajouter un checkitem',
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Colors.greenAccent,
+                                  ),
+                                  onPressed:
+                                      () async =>
+                                          _createCheckItem(checklist['id']),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
+                      const Divider(),
+                      TextField(
+                        controller: _checklistNameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: _fieldDecoration('Nom nouvelle checklist'),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.add, color: Colors.greenAccent),
-                        onPressed: () async => _createCheckItem(checklist['id']),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed:
+                            _isCreatingChecklist ? null : _createChecklist,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                        ),
+                        child: const Text('Créer Checklist'),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
 
-            const Divider(),
-            TextField(
-              controller: _checklistNameController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _fieldDecoration('Nom nouvelle checklist'),
-            ),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: _isCreatingChecklist ? null : _createChecklist,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-              child: const Text('Créer Checklist'),
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton(
-                  onPressed: _updateCardName,
-                  child: const Text('💾 Enregistrer'),
+              const SizedBox(width: 24),
+
+              // 🧱 Partie droite dans une SizedBox centrée verticalement
+              Center(
+                child: SizedBox(
+                  width: 200,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ElevatedButton(
+                        onPressed: _updateCardName,
+                        child: const Text('💾 Enregistrer'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _deleteCard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text('🗑 Supprimer'),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _assignMemberToCard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                        child: const Text('👤 Assigner'),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButton<String>(
+                        value: _selectedMemberId,
+                        hint: const Text(
+                          'Sélectionner un membre',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        dropdownColor: const Color.fromRGBO(225, 244, 203, 1),
+                        isExpanded: true,
+                        items:
+                            _members.map((member) {
+                              return DropdownMenuItem<String>(
+                                value: member['id'] as String,
+                                child: Text(
+                                  member['fullName'],
+                                  style: const TextStyle(color: Colors.black),
+                                ),
+                              );
+                            }).toList(),
+                        onChanged:
+                            (val) => setState(() => _selectedMemberId = val),
+                      ),
+                    ],
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: _deleteCard,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-                  child: const Text('🗑 Supprimer'),
-                ),
-                ElevatedButton(
-                  onPressed: _assignMemberToCard,
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
-                  child: const Text('👤 Assigner'),
-                ),
-              ],
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 }

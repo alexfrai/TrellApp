@@ -195,7 +195,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF3D1308),
+        color: const Color.fromRGBO(113, 117, 104, 1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white24, width: 2),
         boxShadow: <BoxShadow>[
@@ -291,7 +291,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                             ),
                             child: DecoratedBox(
                               decoration: BoxDecoration(
-                                color: const Color(0xFF7B0D1E),
+                                color: const Color.fromRGBO(186, 203, 169,1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.white12),
                                 boxShadow: <BoxShadow>[
@@ -396,7 +396,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                 child: ElevatedButton(
                   onPressed: _createNewCard,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF9F2042),
+                    backgroundColor: const Color.fromRGBO(63, 71, 57,1),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,

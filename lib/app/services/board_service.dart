@@ -113,7 +113,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      // print('📌 Favorite boards data: $data');
+      print('📌 Favorite boards data: $data');
 
       final List<String> boardIds = data.map((item) => item['idBoard'].toString()).toList();
 
