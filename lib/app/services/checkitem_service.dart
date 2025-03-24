@@ -1,3 +1,4 @@
+
 // ignore_for_file: public_member_api_docs
 
 import 'dart:convert';
@@ -11,6 +12,7 @@ class CheckItemService {
 
   Future<List<Map<String, dynamic>>> getCheckItems(String checklistId) async {
     final Uri url = Uri.parse('https://api.trello.com/1/checklists/$checklistId/checkItems?key=$apiKey&token=$apiToken');
+
     final http.Response res = await http.get(url);
 
     if (res.statusCode == 200) {
@@ -19,6 +21,7 @@ class CheckItemService {
       return [];
     }
   }
+
 
   /// creates checkitem
   Future<bool> createCheckItem(String checklistId, String name) async {

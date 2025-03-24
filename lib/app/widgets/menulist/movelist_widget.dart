@@ -1,19 +1,25 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
-
+///move list widget
 class MoveListWidget extends StatefulWidget {
-  final String listId;
-  final List<double> positions;
-  final VoidCallback onMoveSuccess;
-  final VoidCallback onCancel;
-
+  ///list des paramètres
   const MoveListWidget({
     required this.listId,
     required this.positions,
     required this.onMoveSuccess,
     required this.onCancel,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
+  ///id d'une list
+  final String listId;
+  ///tableau de position
+  final List<double> positions;
+  ///callback du move
+  final VoidCallback onMoveSuccess;
+  ///callback du cancel
+  final VoidCallback onCancel;
 
   @override
   _MoveListWidgetState createState() => _MoveListWidgetState();
@@ -30,7 +36,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
   @override
   void initState() {
     super.initState();
-    _fetchListPosition();
+    unawaited(_fetchListPosition());
   }
 
   @override
@@ -41,7 +47,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
 
   Future<void> _fetchListPosition() async {
     try {
-      final pos = await ListService.getListPos(widget.listId);
+      final double pos = await ListService.getListPos(widget.listId);
       setState(() {
         _currentPos = pos;
         _selectedIndex = widget.positions.indexOf(pos);
@@ -63,7 +69,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
 
   void _showDropdown() {
     _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
+      builder: (BuildContext context) => Positioned(
         width: 200,
         child: CompositedTransformFollower(
           link: _layerLink,
@@ -77,7 +83,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: List.generate(widget.positions.length, (index) {
+                  children: List<Widget>.generate(widget.positions.length, (int index) {
                     return ListTile(
                       title: Text(
                         'Position ${index + 1}',
@@ -114,7 +120,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
       _loading = true;
       _error = null;
     });
-    final newPos = _calculateNewPosition(_selectedIndex!);
+    final double newPos = _calculateNewPosition(_selectedIndex!);
     try {
       await ListService.updateListPos(widget.listId, newPos.toString());
       widget.onMoveSuccess();
@@ -162,7 +168,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+          children: <Widget>[
             const Text(
               'Move List',
               style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
@@ -184,7 +190,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                    children: <Widget>[
                       Text(
                         _selectedIndex == null ? 'Select Position' : 'Position ${_selectedIndex! + 1}',
                         style: const TextStyle(color: Colors.white, fontSize: 16),

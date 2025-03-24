@@ -119,7 +119,6 @@ class _CardsModalState extends State<CardsModal> {
       _checklistNameController.clear();
       await _loadChecklists();
     }
-
     setState(() => _isCreatingChecklist = false);
   }
 
@@ -176,7 +175,7 @@ class _CardsModalState extends State<CardsModal> {
     if (_nameController.text.isEmpty || widget.selectedCardId == null) return;
 
     setState(() => _isUpdating = true);
-    final bool success = await UpdateService.updateCardName(
+    final success = await UpdateService.updateCardName(
       widget.selectedCardId!,
       _nameController.text,
     );
@@ -373,6 +372,7 @@ class _CardsModalState extends State<CardsModal> {
                 ElevatedButton(
                   onPressed: _assignMemberToCard,
                   style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
+
                   child: const Text('👤 Assigner'),
                 ),
               ],
