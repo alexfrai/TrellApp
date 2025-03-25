@@ -425,9 +425,16 @@ class _CardsModalState extends State<CardsModal> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+                      const SizedBox(height: 8),
                       ElevatedButton(
                         onPressed: _updateCardName,
-                        child: const Text('💾 Enregistrer'),
+                        child: const Text('💾 Enregistrer nouveau nom'),
+                      ),
+                      const SizedBox(height: 8),
+
+                      ElevatedButton(
+                        onPressed: _updateCardDescription,
+                        child: const Text('💾 Enregistrer description'),
                       ),
                       const SizedBox(height: 8),
                       ElevatedButton(
@@ -436,14 +443,6 @@ class _CardsModalState extends State<CardsModal> {
                           backgroundColor: Colors.red,
                         ),
                         child: const Text('🗑 Supprimer'),
-                      ),
-                      const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: _assignMemberToCard,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                        ),
-                        child: const Text('👤 Assigner'),
                       ),
                       const SizedBox(height: 16),
                       DropdownButton<String>(
@@ -466,6 +465,14 @@ class _CardsModalState extends State<CardsModal> {
                             }).toList(),
                         onChanged:
                             (val) => setState(() => _selectedMemberId = val),
+                      ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: _assignMemberToCard,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                        child: const Text('👤 Assigner'),
                       ),
                     ],
                   ),
