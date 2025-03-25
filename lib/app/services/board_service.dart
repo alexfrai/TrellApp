@@ -14,6 +14,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   static Future<bool> createBoard(String name , String workspaceId, [String backgroundColor = 'blue', String visibility = 'org']) async {
     print('create a board $visibility');
      final String url = 'https://api.trello.com/1/boards/?name=$name&idOrganization=$workspaceId&prefs_background=$backgroundColor&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
+
     //  print(url);
     try {
 
@@ -113,7 +114,8 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
 
     if (response.statusCode == 200) {
       final List<dynamic> data = json.decode(response.body);
-      print('📌 Favorite boards data: $data');
+
+      // print('📌 Favorite boards data: $data');
 
       final List<String> boardIds = data.map((item) => item['idBoard'].toString()).toList();
 

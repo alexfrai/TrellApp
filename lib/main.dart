@@ -70,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
         print(workspaces);
       });
     } catch (e) {
+
       // print('❌ Erreur lors du chargement des workspaces : $e');
     }
 

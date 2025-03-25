@@ -50,6 +50,8 @@ Color getMemberColor(int index) {
 ///affiche une liste
 class GetOneListWidgetState extends State<GetOneListWidget> {
   final GetMemberCardService _memberService = GetMemberCardService();
+  final StreamController<List<Map<String, dynamic>>> _cardsStreamController = StreamController<List<Map<String, dynamic>>>.broadcast();
+  List<Map<String, dynamic>>? _lastCards;
 
   ///cartes
   List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
@@ -66,14 +68,24 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
   ///le nom de la list éditer
   late TextEditingController listNameController;
 
-  @override
-  void initState() {
-    super.initState();
-    focusNode = FocusNode();
-    listNameController = TextEditingController(text: widget.list['name']);
-    focusNode.addListener(_onFocusChange);
-    unawaited(_getCardsInList());
-  }
+@override
+void initState() {
+  super.initState();
+  focusNode = FocusNode();
+  listNameController = TextEditingController(text: widget.list['name']);
+  focusNode.addListener(_onFocusChange);
+  unawaited(_getCardsInList());
+
+  // Lancer la mise à jour en temps réel
+  Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+    if (mounted) {
+      unawaited(_getCardsInList());
+    } else {
+      timer.cancel();
+    }
+  });
+}
+
 
   @override
   void dispose() {
@@ -114,80 +126,99 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
   }
 
   Future<void> _getCardsInList() async {
-    setState(() => isLoading = true);
+if (_lastCards == null) {
+  setState(() => isLoading = true);
+}
 
-    try {
-      final http.Response response = await http.get(
-        Uri.parse(
-          'https://api.trello.com/1/lists/${widget.list['id']}/cards?members=true&key=$apiKey&token=$apiToken',
-        ),
-      );
+  try {
+    final http.Response response = await http.get(
+      Uri.parse(
+        'https://api.trello.com/1/lists/${widget.list['id']}/cards?members=true&key=$apiKey&token=$apiToken',
+      ),
+    );
 
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body);
+      final List<Map<String, dynamic>> newCards = data.map((dynamic card) {
+        return <String, dynamic>{
+          'id': card['id'],
+          'name': card['name'],
+          'desc': card['desc'] ?? '',
+        };
+      }).toList();
 
+      // Vérifie si les cartes ont changé avant d'émettre un nouvel état
+      if (_lastCards == null || !_listEquals(newCards, _lastCards!)) {
+        _cardsStreamController.add(newCards);
         setState(() {
-          cards =
-              data.map((dynamic card) {
-                return <String, dynamic>{
-                  'id': card['id'],
-                  'name': card['name'],
-                  'desc': card['desc'] ?? '',
-                };
-              }).toList();
-        });
-      } else {
-        throw Exception('Erreur API: ${response.statusCode}');
+  cards = newCards;
+});
+
+        _lastCards = newCards;
       }
-    } catch (error) {
-      debugPrint('❌ Erreur lors du chargement des cartes: $error');
-    } finally {
-      if (mounted) {
-        setState(() => isLoading = false);
-      }
+    } else {
+      throw Exception('Erreur API: ${response.statusCode}');
+    }
+  } catch (error) {
+    debugPrint('❌ Erreur lors du chargement des cartes: $error');
+  } finally {
+    if (mounted) {
+      setState(() => isLoading = false);
     }
   }
+}
 
-  void _showModal(BuildContext context, RenderBox button) {
-  final Offset position = button.localToGlobal(Offset.zero);
-  final double screenWidth = MediaQuery.of(context).size.width;
-  
-  late OverlayEntry overlayEntry;
-
-  overlayEntry = OverlayEntry(
-    builder: (BuildContext context) {
-      return Stack(
-        children: [
-          // Capture les clics pour fermer la modale
-          Positioned.fill(
-            child: GestureDetector(
-              onTap: () {
-                overlayEntry.remove();
-              },
-              behavior: HitTestBehavior.translucent, // Permet le scroll en arrière-plan
-            ),
-          ),
-          // Modale
-          ModalListWidget(
-            listId: widget.list['id'],
-            boardId: widget.boardId,
-            refreshLists: widget.refreshLists,
-            position: position,
-            screenWidth: screenWidth,
-            closeModal: () {
-              overlayEntry.remove();
-            },
-          ),
-        ],
-      );
-    },
-  );
-
-  Overlay.of(context).insert(overlayEntry);
+/// Fonction pour comparer les listes et éviter les mises à jour inutiles
+bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> list2) {
+  if (list1.length != list2.length) return false;
+  for (int i = 0; i < list1.length; i++) {
+    if (list1[i]['id'] != list2[i]['id'] || list1[i]['desc'] != list2[i]['desc']) {
+      return false;
+    }
+  }
+  return true;
 }
 
 
+  void _showModal(BuildContext context, RenderBox button) {
+    final Offset position = button.localToGlobal(Offset.zero);
+    final double screenWidth = MediaQuery.of(context).size.width;
 
+    late OverlayEntry overlayEntry;
+
+    overlayEntry = OverlayEntry(
+      builder: (BuildContext context) {
+        return Stack(
+          children: [
+            // Capture les clics pour fermer la modale
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  overlayEntry.remove();
+                },
+                behavior:
+                    HitTestBehavior
+                        .translucent, // Permet le scroll en arrière-plan
+              ),
+            ),
+            // Modale
+            ModalListWidget(
+              listId: widget.list['id'],
+              boardId: widget.boardId,
+              refreshLists: widget.refreshLists,
+              position: position,
+              screenWidth: screenWidth,
+              closeModal: () {
+                overlayEntry.remove();
+              },
+            ),
+          ],
+        );
+      },
+    );
+
+    Overlay.of(context).insert(overlayEntry);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -413,22 +444,21 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
             ],
           ),
           Positioned(
-  top: 0,
-  right: 0,
-  child: Builder(
-    builder: (BuildContext context) {
-      return IconButton(
-        icon: const Icon(Icons.more_vert, color: Colors.white),
-        onPressed: () {
-          final RenderBox button = context.findRenderObject() as RenderBox;
-          _showModal(context, button);
-        },
-      );
-    },
-  ),
-),
-
-
+            top: 0,
+            right: 0,
+            child: Builder(
+              builder: (BuildContext context) {
+                return IconButton(
+                  icon: const Icon(Icons.more_vert, color: Colors.white),
+                  onPressed: () {
+                    final RenderBox button =
+                        context.findRenderObject() as RenderBox;
+                    _showModal(context, button);
+                  },
+                );
+              },
+            ),
+          ),
         ],
       ),
     );

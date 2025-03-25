@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
+import 'package:flutter_trell_app/app/widgets/menulist/moveallcard_widget.dart';
 import 'package:flutter_trell_app/app/widgets/menulist/movelist_widget.dart';
 
+///modal de la list
 class ModalListWidget extends StatefulWidget {
-  final String listId;
-  final String boardId;
-  final VoidCallback refreshLists;
-  final Offset position;
-  final double screenWidth;
-  final VoidCallback closeModal;
-
+  ///parametres
   const ModalListWidget({
     required this.listId,
     required this.boardId,
@@ -17,8 +13,20 @@ class ModalListWidget extends StatefulWidget {
     required this.position,
     required this.screenWidth,
     required this.closeModal,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
+  /// listID
+  final String listId;
+  ///Voard id
+  final String boardId;
+  ///Callback refresh
+  final VoidCallback refreshLists;
+  ///position
+  final Offset position;
+  ///largeyr screan
+  final double screenWidth;
+  ///close callback
+  final VoidCallback closeModal;
 
   @override
   _ModalListWidgetState createState() => _ModalListWidgetState();
@@ -26,8 +34,10 @@ class ModalListWidget extends StatefulWidget {
 
 class _ModalListWidgetState extends State<ModalListWidget> {
   bool _isMoveListOpen = false;
+  bool _isMoveAllCardsOpen = false; // Ajouter un nouvel état pour MoveAllCards
   List<double> _positions = [];
   Offset? _moveListPosition;
+  Offset? _moveAllCardsPosition;
 
   // Variables pour détecter les hover sur les boutons
   bool _isHoveredCopy = false;
@@ -60,17 +70,20 @@ class _ModalListWidgetState extends State<ModalListWidget> {
   void _moveList(TapDownDetails details) {
     setState(() {
       _isMoveListOpen = true;
+      _isMoveAllCardsOpen = false; // Fermer MoveAllCardsWidget si MoveListWidget est ouvert
       _moveListPosition = details.localPosition; // Local position du bouton, pas global
     });
   }
 
   void _moveAllCards() {
-    print('Déplacer toutes les cartes');
-    widget.closeModal();
+    setState(() {
+      _isMoveAllCardsOpen = true; // Ouvrir le MoveAllCardsWidget
+      _isMoveListOpen = false; // Fermer MoveListWidget si MoveAllCardsWidget est ouvert
+      _moveAllCardsPosition = widget.position; // Position de départ pour MoveAllCardsWidget
+    });
   }
 
   void _archiveList() {
-    print('Archiver la liste');
     ListService.ArchiveList(widget.listId);
     widget.closeModal();
   }
@@ -216,7 +229,7 @@ class _ModalListWidgetState extends State<ModalListWidget> {
         if (_isMoveListOpen && _moveListPosition != null)
           Positioned(
             left: moveListLeftPosition, // Utilisation de la nouvelle position calculée
-            top: widget.position.dy + _moveListPosition!.dy, // Même position verticale
+            top: widget.position.dy + _moveListPosition!.dy + 50, // Même position verticale
             child: SizedBox(
               width: 200, // Largeur du MoveListWidget
               child: MoveListWidget(
@@ -234,7 +247,26 @@ class _ModalListWidgetState extends State<ModalListWidget> {
               ),
             ),
           ),
+       if (_isMoveAllCardsOpen && _moveAllCardsPosition != null)
+  Positioned(
+    left: moveListLeftPosition, // Décale à droite du bouton de déplacement de la liste
+    top: widget.position.dy +125,  // Ajuste la position verticale pour la mettre à droite du bouton
+    child: SizedBox(
+      width: 200, // Largeur du MoveAllCardsWidget
+      child: MoveAllCardsWidget(
+        sourceListId: widget.listId, // ID de la liste source
+        boardId: widget.boardId, // Passe le boardId ici
+        onMoveSuccess: () {
+          widget.refreshLists();
+          widget.closeModal();
+        },
+      ),
+    ),
+  ),
+
+
       ],
     );
   }
 }
+

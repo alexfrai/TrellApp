@@ -138,6 +138,7 @@ class ChecklistManager {
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.pop(context),
+
                           child: const Text('Annuler'),
                         ),
                         ElevatedButton(
