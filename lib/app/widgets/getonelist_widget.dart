@@ -1,17 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_trell_app/app/services/get_member_card.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
 import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
-import 'package:flutter_trell_app/app/widgets/menulist/menulist_widget.dart'; // Import the modal widget
-import 'package:http/http.dart' as http;
+import 'package:flutter_trell_app/app/widgets/menulist/menulist_widget.dart';
 
-/// widget getoneliste
+/// Widget to display a single list with its cards.
 class GetOneListWidget extends StatefulWidget {
-  /// Parameters
   const GetOneListWidget({
     required this.list,
     required this.refreshLists,
@@ -19,20 +17,16 @@ class GetOneListWidget extends StatefulWidget {
     super.key,
   });
 
-  /// List of lists
+  /// Parameters
   final Map<String, dynamic> list;
-
-  /// Refresh lists
   final VoidCallback refreshLists;
-
-  /// Board ID
   final String boardId;
 
   @override
   GetOneListWidgetState createState() => GetOneListWidgetState();
 }
 
-/// List of colors
+/// List of colors for members
 List<Color> memberColors = <Color>[
   Colors.red,
   Colors.blue,
@@ -42,50 +36,50 @@ List<Color> memberColors = <Color>[
   Colors.yellow,
 ];
 
-/// Get a member color
+/// Get a member color based on index
 Color getMemberColor(int index) {
   return memberColors[index % memberColors.length];
 }
 
-///affiche une liste
+/// State for GetOneListWidget
 class GetOneListWidgetState extends State<GetOneListWidget> {
   final GetMemberCardService _memberService = GetMemberCardService();
-  final StreamController<List<Map<String, dynamic>>> _cardsStreamController = StreamController<List<Map<String, dynamic>>>.broadcast();
+  final StreamController<List<Map<String, dynamic>>> _cardsStreamController =
+      StreamController<List<Map<String, dynamic>>>.broadcast();
   List<Map<String, dynamic>>? _lastCards;
 
-  ///cartes
+  /// Cards in the list
   List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
 
-  /// état chargement
+  /// Loading state
   bool isLoading = false;
 
-  ///état éditage
+  /// Editing state
   bool isEditingName = false;
 
-  ///focus pour la souris
+  /// Focus node for text field
   late FocusNode focusNode;
 
-  ///le nom de la list éditer
+  /// Controller for list name text field
   late TextEditingController listNameController;
 
-@override
-void initState() {
-  super.initState();
-  focusNode = FocusNode();
-  listNameController = TextEditingController(text: widget.list['name']);
-  focusNode.addListener(_onFocusChange);
-  unawaited(_getCardsInList());
+  @override
+  void initState() {
+    super.initState();
+    focusNode = FocusNode();
+    listNameController = TextEditingController(text: widget.list['name']);
+    focusNode.addListener(_onFocusChange);
+    unawaited(_getCardsInList());
 
-  // Lancer la mise à jour en temps réel
-  Timer.periodic(const Duration(seconds: 3), (Timer timer) {
-    if (mounted) {
-      unawaited(_getCardsInList());
-    } else {
-      timer.cancel();
-    }
-  });
-}
-
+    // Periodic refresh
+    Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+      if (mounted) {
+        unawaited(_getCardsInList());
+      } else {
+        timer.cancel();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -109,7 +103,7 @@ void initState() {
           widget.list['name'] = newName;
         });
       } catch (error) {
-        debugPrint('Erreur lors de la mise à jour du nom: $error');
+        debugPrint('Error updating list name: $error');
       }
     }
     setState(() => isEditingName = false);
@@ -126,59 +120,57 @@ void initState() {
   }
 
   Future<void> _getCardsInList() async {
-if (_lastCards == null) {
-  setState(() => isLoading = true);
-}
+    if (_lastCards == null) {
+      setState(() => isLoading = true);
+    }
 
-  try {
-    final http.Response response = await http.get(
-      Uri.parse(
-        'https://api.trello.com/1/lists/${widget.list['id']}/cards?members=true&key=$apiKey&token=$apiToken',
-      ),
-    );
+    try {
+      final http.Response response = await http.get(
+        Uri.parse(
+          'https://api.trello.com/1/lists/${widget.list['id']}/cards?members=true&key=$apiKey&token=$apiToken',
+        ),
+      );
 
-    if (response.statusCode == 200) {
-      final List<dynamic> data = json.decode(response.body);
-      final List<Map<String, dynamic>> newCards = data.map((dynamic card) {
-        return <String, dynamic>{
-          'id': card['id'],
-          'name': card['name'],
-          'desc': card['desc'] ?? '',
-        };
-      }).toList();
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final List<Map<String, dynamic>> newCards = data.map((dynamic card) {
+          return <String, dynamic>{
+            'id': card['id'],
+            'name': card['name'],
+            'desc': card['desc'] ?? '',
+          };
+        }).toList();
 
-      // Vérifie si les cartes ont changé avant d'émettre un nouvel état
-      if (_lastCards == null || !_listEquals(newCards, _lastCards!)) {
-        _cardsStreamController.add(newCards);
-        setState(() {
-  cards = newCards;
-});
-
-        _lastCards = newCards;
+        // Check if cards have changed before emitting a new state
+        if (_lastCards == null || !_listEquals(newCards, _lastCards!)) {
+          _cardsStreamController.add(newCards);
+          setState(() {
+            cards = newCards;
+          });
+          _lastCards = newCards;
+        }
+      } else {
+        throw Exception('API Error: ${response.statusCode}');
       }
-    } else {
-      throw Exception('Erreur API: ${response.statusCode}');
-    }
-  } catch (error) {
-    debugPrint('❌ Erreur lors du chargement des cartes: $error');
-  } finally {
-    if (mounted) {
-      setState(() => isLoading = false);
+    } catch (error) {
+      debugPrint('❌ Error loading cards: $error');
+    } finally {
+      if (mounted) {
+        setState(() => isLoading = false);
+      }
     }
   }
-}
 
-/// Fonction pour comparer les listes et éviter les mises à jour inutiles
-bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> list2) {
-  if (list1.length != list2.length) return false;
-  for (int i = 0; i < list1.length; i++) {
-    if (list1[i]['id'] != list2[i]['id'] || list1[i]['desc'] != list2[i]['desc']) {
-      return false;
+  /// Function to compare lists and avoid unnecessary updates
+  bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> list2) {
+    if (list1.length != list2.length) return false;
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i]['id'] != list2[i]['id'] || list1[i]['desc'] != list2[i]['desc']) {
+        return false;
+      }
     }
+    return true;
   }
-  return true;
-}
-
 
   void _showModal(BuildContext context, RenderBox button) {
     final Offset position = button.localToGlobal(Offset.zero);
@@ -190,18 +182,16 @@ bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> li
       builder: (BuildContext context) {
         return Stack(
           children: [
-            // Capture les clics pour fermer la modale
+            // Capture taps to close the modal
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
                   overlayEntry.remove();
                 },
-                behavior:
-                    HitTestBehavior
-                        .translucent, // Permet le scroll en arrière-plan
+                behavior: HitTestBehavior.translucent,
               ),
             ),
-            // Modale
+            // Modal
             ModalListWidget(
               listId: widget.list['id'],
               boardId: widget.boardId,
@@ -231,7 +221,7 @@ bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> li
         border: Border.all(color: Colors.white24, width: 2),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
+            color: Colors.black.withOpacity(0.3),
             blurRadius: 6,
             offset: const Offset(2, 4),
           ),
@@ -254,38 +244,34 @@ bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> li
                       isEditingName = true;
                     });
                   },
-                  child:
-                      isEditingName
-                          ? TextField(
-                            controller: listNameController,
-                            autofocus: true,
-                            focusNode: focusNode,
-                            onSubmitted:
-                                (String newName) =>
-                                    unawaited(_updateListName(newName)),
-                            onEditingComplete: () {
-                              unawaited(
-                                _updateListName(listNameController.text),
-                              );
-                            },
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              fillColor: Colors.white24,
-                              filled: true,
-                            ),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 18,
-                            ),
-                          )
-                          : Text(
-                            widget.list['name'],
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                  child: isEditingName
+                      ? TextField(
+                          controller: listNameController,
+                          autofocus: true,
+                          focusNode: focusNode,
+                          onSubmitted: (String newName) =>
+                              unawaited(_updateListName(newName)),
+                          onEditingComplete: () {
+                            unawaited(_updateListName(listNameController.text));
+                          },
+                          decoration: const InputDecoration(
+                            border: InputBorder.none,
+                            fillColor: Colors.white24,
+                            filled: true,
                           ),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                          ),
+                        )
+                      : Text(
+                          widget.list['name'],
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                 ),
               ),
               const SizedBox(height: 8),
@@ -307,12 +293,9 @@ bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> li
                     itemBuilder: (BuildContext context, int index) {
                       final Map<String, dynamic> card = cards[index];
                       return FutureBuilder<List<Map<String, dynamic>>>(
-                        // ignore: discarded_futures
                         future: _memberService.getMembersCard(card['id']),
-                        builder: (
-                          BuildContext context,
-                          AsyncSnapshot<List<Map<String, dynamic>>> snapshot,
-                        ) {
+                        builder: (BuildContext context,
+                            AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
                           final List<Map<String, dynamic>> members =
                               snapshot.data ?? <Map<String, dynamic>>[];
                           return Padding(
@@ -327,37 +310,32 @@ bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> li
                                 border: Border.all(color: Colors.white12),
                                 boxShadow: <BoxShadow>[
                                   BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
+                                    color: Colors.black.withOpacity(0.2),
                                     blurRadius: 6,
                                     offset: const Offset(2, 4),
                                   ),
                                 ],
                               ),
                               child: ListTile(
-                                leading:
-                                    members.isNotEmpty
-                                        ? Wrap(
-                                          spacing: 4,
-                                          children: List<
-                                            Widget
-                                          >.generate(members.length, (
-                                            int memberIndex,
-                                          ) {
-                                            return CircleAvatar(
-                                              backgroundColor: getMemberColor(
-                                                memberIndex,
+                                leading: members.isNotEmpty
+                                    ? Wrap(
+                                        spacing: 4,
+                                        children: List<Widget>.generate(
+                                            members.length, (int memberIndex) {
+                                          return CircleAvatar(
+                                            backgroundColor:
+                                                getMemberColor(memberIndex),
+                                            child: Text(
+                                              members[memberIndex]['username'][0]
+                                                  .toUpperCase(),
+                                              style: const TextStyle(
+                                                color: Colors.white,
                                               ),
-                                              child: Text(
-                                                members[memberIndex]['username'][0]
-                                                    .toUpperCase(),
-                                                style: const TextStyle(
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            );
-                                          }),
-                                        )
-                                        : const SizedBox(width: 40, height: 40),
+                                            ),
+                                          );
+                                        }),
+                                      )
+                                    : const SizedBox(width: 40, height: 40),
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 16,
                                   vertical: 8,
@@ -377,31 +355,24 @@ bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> li
                                         taskName: card['name'],
                                         descriptionName: card['desc'] ?? '',
                                         selectedCardId: card['id'],
-                                        handleClose:
-                                            () => Navigator.pop(context),
-                                        onCardUpdated: (
-                                          String cardId,
-                                          String newDesc,
-                                        ) {
+                                        handleClose: () => Navigator.pop(context),
+                                        onCardUpdated: (String cardId,
+                                            String newDesc) {
                                           setState(() {
-                                            final int cardIndex = cards
-                                                .indexWhere(
-                                                  (Map<String, dynamic> c) =>
-                                                      c['id'] == cardId,
-                                                );
+                                            final int cardIndex = cards.indexWhere(
+                                                (Map<String, dynamic> c) =>
+                                                    c['id'] == cardId);
                                             if (cardIndex != -1) {
-                                              cards[cardIndex]['desc'] =
-                                                  newDesc;
+                                              cards[cardIndex]['desc'] = newDesc;
                                             }
                                           });
-                                          _getCardsInList();
+                                          widget.refreshLists();
                                         },
                                         onCardDeleted: (String cardId) {
                                           setState(() {
                                             cards.removeWhere(
-                                              (Map<String, dynamic> c) =>
-                                                  c['id'] == cardId,
-                                            );
+                                                (Map<String, dynamic> c) =>
+                                                    c['id'] == cardId);
                                           });
                                         },
                                         listId: widget.list['id'],

@@ -1,8 +1,7 @@
 // ignore_for_file: public_member_api_docs, always_specify_types
 
-import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter_trell_app/app/services/list_service.dart';
+import 'package:flutter_trell_app/app/services/board_service.dart';
 import 'package:flutter_trell_app/app/widgets/button_create_list.dart';
 import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 
@@ -16,43 +15,17 @@ class GetListWidget extends StatefulWidget {
 }
 
 class GetListWidgetState extends State<GetListWidget> {
-  final StreamController<List<dynamic>> _listsStreamController = StreamController<List<dynamic>>.broadcast();
-  List<dynamic>? _lastLists;
+  final BoardService _boardService = BoardService();
 
   @override
   void initState() {
     super.initState();
-    _fetchAndUpdateLists();
-  }
-
-  Future<void> _fetchAndUpdateLists() async {
-    while (mounted) {
-      try {
-        final List<dynamic> lists = await ListService.getList(widget.boardId);
-
-        // Vérifie si les données ont changé
-        if (_lastLists == null || !_listEquals(lists, _lastLists!)) {
-          _listsStreamController.add(lists);  // Met à jour le stream
-          _lastLists = lists;  // Mets à jour la version locale des listes
-        }
-      } catch (error) {
-        debugPrint('Erreur lors de la mise à jour des listes: $error');
-      }
-      await Future.delayed(const Duration(seconds: 3)); // Temps d'attente entre chaque requête (plus rapide que 5s)
-    }
-  }
-
-  bool _listEquals(List<dynamic> list1, List<dynamic> list2) {
-    if (list1.length != list2.length) return false;
-    for (int i = 0; i < list1.length; i++) {
-      if (list1[i]['id'] != list2[i]['id']) return false; // Compare les IDs des listes (ou autres propriétés uniques)
-    }
-    return true;
+    _boardService.fetchBoardData(widget.boardId);
   }
 
   @override
-  Future<void> dispose() async {
-    await _listsStreamController.close();
+  void dispose() {
+    _boardService.dispose();
     super.dispose();
   }
 
@@ -60,18 +33,18 @@ class GetListWidgetState extends State<GetListWidget> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: StreamBuilder<List<dynamic>>(
-        stream: _listsStreamController.stream,
-        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
+      body: StreamBuilder<Map<String, dynamic>>(
+        stream: _boardService.boardStream,
+        builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Erreur: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!['lists'].isEmpty) {
             return const Center(child: Text('Aucune liste trouvée'));
           }
 
-          final List<dynamic> lists = snapshot.data!;
+          final lists = snapshot.data!['lists'];
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
@@ -82,7 +55,7 @@ class GetListWidgetState extends State<GetListWidget> {
                     width: 300,
                     child: GetOneListWidget(
                       list: list,
-                      refreshLists: _fetchAndUpdateLists,
+                      refreshLists: () => _boardService.fetchBoardData(widget.boardId),
                       boardId: widget.boardId,
                     ),
                   );

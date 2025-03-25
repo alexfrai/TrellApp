@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -9,7 +11,14 @@ class BoardService {
 static final String? apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'];
 ///@var apiToken
 static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
-  
+
+
+  final StreamController<Map<String, dynamic>> _boardStreamController =
+      StreamController<Map<String, dynamic>>.broadcast();
+
+
+Stream<Map<String, dynamic>> get boardStream => _boardStreamController.stream;
+
   /// Create a new Board
   static Future<bool> createBoard(String name , String workspaceId, [String backgroundColor = 'blue', String visibility = 'org']) async {
     print('create a board $visibility');
@@ -185,5 +194,28 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       throw Exception('Erreur dans getBoardFromFavorite: $error');
     }
   }
+
+  Future<void> fetchBoardData(String boardId) async {
+    try {
+      final listsResponse = await http.get(Uri.parse('https://api.trello.com/1/boards/$boardId/lists?key=$apiKey&token=$apiToken'));
+      final cardsResponse = await http.get(Uri.parse('https://api.trello.com/1/boards/$boardId/cards?key=$apiKey&token=$apiToken'));
+
+      if (listsResponse.statusCode == 200 && cardsResponse.statusCode == 200) {
+        final lists = json.decode(listsResponse.body);
+        final cards = json.decode(cardsResponse.body);
+
+        _boardStreamController.add({'lists': lists, 'cards': cards});
+      } else {
+        throw Exception('Failed to load data');
+      }
+    } catch (error) {
+      print('Error fetching board data: $error');
+    }
+  }
+
+  void dispose() {
+    _boardStreamController.close();
+  }
+
 
 }
