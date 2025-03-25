@@ -169,7 +169,7 @@ class _CardsWidgetState extends State<CardsWidget> {
           child: ElevatedButton(
             onPressed: _createNewCard,
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF9F2042),
+              backgroundColor: const Color.fromRGBO(63, 71, 57, 1),
               foregroundColor: Colors.white,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
