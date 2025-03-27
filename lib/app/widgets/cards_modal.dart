@@ -1,10 +1,11 @@
-// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, deprecated_member_use
+// ignore_for_file: public_member_api_docs, library_private_types_in_public_api, deprecated_member_use, unused_field, use_late_for_private_fields_and_variables, always_specify_types, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/checkitem_service.dart';
 import 'package:flutter_trell_app/app/services/checklist_service.dart';
 import 'package:flutter_trell_app/app/services/create_member_card.dart';
 import 'package:flutter_trell_app/app/services/delete_service.dart';
+import 'package:flutter_trell_app/app/services/get_member_card.dart';
 import 'package:flutter_trell_app/app/services/get_members.dart';
 import 'package:flutter_trell_app/app/services/update_service.dart';
 
@@ -52,6 +53,7 @@ class _CardsModalState extends State<CardsModal> {
   List<Map<String, dynamic>> _members = <Map<String, dynamic>>[];
   final List<dynamic> _checklists = [];
   final Map<String, List<Map<String, dynamic>>> _checkItemsByChecklist = {};
+  List<Map<String, dynamic>> _assignedMembers = <Map<String, dynamic>>[];
 
   bool _isUpdating = false;
   bool _isDeleting = false;
@@ -63,6 +65,7 @@ class _CardsModalState extends State<CardsModal> {
   String? _selectedChecklistId;
 
   final CheckItemService _checkItemService = CheckItemService();
+  final GetMemberCardService _getMemberService = GetMemberCardService();
 
   @override
   void initState() {
@@ -75,7 +78,10 @@ class _CardsModalState extends State<CardsModal> {
   Future<void> _loadData() async {
     await _loadMembers();
     await _loadChecklists();
-    if (mounted) setState(() {});
+    await _loadAssignedMembers();
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   Future<void> _loadMembers() async {
@@ -83,7 +89,9 @@ class _CardsModalState extends State<CardsModal> {
     final List<Map<String, dynamic>> members = await service.getAllMembers(
       widget.boardId,
     );
-    setState(() => _members = members);
+    if (mounted) {
+      setState(() => _members = members);
+    }
   }
 
   Future<void> _loadChecklists() async {
@@ -95,7 +103,7 @@ class _CardsModalState extends State<CardsModal> {
     _checklists.clear();
     _checkItemsByChecklist.clear();
 
-    for (String id in checklistIds) {
+    for (final String id in checklistIds) {
       final Map<String, dynamic>? details = await ChecklistService()
           .getChecklistDetails(id);
       if (details != null) {
@@ -106,7 +114,19 @@ class _CardsModalState extends State<CardsModal> {
       }
     }
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _loadAssignedMembers() async {
+    final List<Map<String, dynamic>> assignedMembers = await _getMemberService
+        .getMembersCard(widget.cardId);
+    if (mounted) {
+      setState(() {
+        _assignedMembers = assignedMembers;
+      });
+    }
   }
 
   Future<void> _createChecklist() async {
@@ -118,11 +138,13 @@ class _CardsModalState extends State<CardsModal> {
       widget.cardId,
       _checklistNameController.text,
     );
-    if (success) {
+    if (success && mounted) {
       _checklistNameController.clear();
       await _loadChecklists();
     }
-    setState(() => _isCreatingChecklist = false);
+    if (mounted) {
+      setState(() => _isCreatingChecklist = false);
+    }
   }
 
   Future<void> _updateChecklistName(String checklistId, String newName) async {
@@ -130,12 +152,16 @@ class _CardsModalState extends State<CardsModal> {
       checklistId,
       newName,
     );
-    if (success) await _loadChecklists();
+    if (success && mounted) {
+      await _loadChecklists();
+    }
   }
 
   Future<void> _deleteChecklist(String checklistId) async {
     final bool success = await ChecklistService().deleteChecklist(checklistId);
-    if (success) await _loadChecklists();
+    if (success && mounted) {
+      await _loadChecklists();
+    }
   }
 
   Future<void> _createCheckItem(String checklistId) async {
@@ -147,12 +173,13 @@ class _CardsModalState extends State<CardsModal> {
       checklistId,
       _checkItemController.text,
     );
-    if (success) {
+    if (success && mounted) {
       _checkItemController.clear();
       await _loadChecklists();
     }
-
-    setState(() => _isCreatingCheckItem = false);
+    if (mounted) {
+      setState(() => _isCreatingCheckItem = false);
+    }
   }
 
   Future<void> _updateCheckItemState(
@@ -166,41 +193,34 @@ class _CardsModalState extends State<CardsModal> {
       '',
       state,
     );
-    await _loadChecklists();
+    if (mounted) {
+      await _loadChecklists();
+    }
   }
 
   Future<void> _deleteCheckItem(String checklistId, String checkItemId) async {
     await _checkItemService.deleteCheckItem(checklistId, checkItemId);
-    await _loadChecklists();
+    if (mounted) {
+      await _loadChecklists();
+    }
   }
 
-  Future<void> _updateCardName() async {
+  Future<void> _updateCard() async {
     if (_nameController.text.isEmpty || widget.selectedCardId == null) return;
 
     setState(() => _isUpdating = true);
-    final success = await UpdateService.updateCardName(
+
+    final bool success = await UpdateService.updateCardFields(
       widget.selectedCardId!,
-      _nameController.text,
+      {'name': _nameController.text, 'desc': _descriptionController.text},
     );
-    if (success) {
+
+    if (success && mounted) {
       widget.onCardUpdated(widget.selectedCardId!, _nameController.text);
     }
-    setState(() => _isUpdating = false);
-  }
-
-  Future<void> _updateCardDescription() async {
-    if (_descriptionController.text.isEmpty || widget.selectedCardId == null)
-      return;
-
-    setState(() => _isUpdating = true);
-    final bool success = await UpdateService.updateCardDescription(
-      widget.selectedCardId!,
-      _descriptionController.text,
-    );
-    if (success) {
-      widget.onCardUpdated(widget.selectedCardId!, _descriptionController.text);
+    if (mounted) {
+      setState(() => _isUpdating = false);
     }
-    setState(() => _isUpdating = false);
   }
 
   Future<void> _deleteCard() async {
@@ -208,8 +228,12 @@ class _CardsModalState extends State<CardsModal> {
 
     setState(() => _isDeleting = true);
     final bool success = await DeleteService.deleteCard(widget.selectedCardId!);
-    if (success) widget.onCardDeleted(widget.selectedCardId!);
-    setState(() => _isDeleting = false);
+    if (success && mounted) {
+      widget.onCardDeleted(widget.selectedCardId!);
+    }
+    if (mounted) {
+      setState(() => _isDeleting = false);
+    }
   }
 
   Future<void> _assignMemberToCard() async {
@@ -221,7 +245,9 @@ class _CardsModalState extends State<CardsModal> {
       widget.selectedCardId!,
       _selectedMemberId!,
     );
-    setState(() => _isAssigning = false);
+    if (mounted) {
+      setState(() => _isAssigning = false);
+    }
   }
 
   InputDecoration _fieldDecoration(String label) {
@@ -246,7 +272,7 @@ class _CardsModalState extends State<CardsModal> {
           padding: const EdgeInsets.all(16),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+            children: <Widget>[
               // 🧱 Partie gauche
               Expanded(
                 flex: 3,
@@ -277,7 +303,7 @@ class _CardsModalState extends State<CardsModal> {
                         style: TextStyle(color: Colors.white),
                       ),
                       const SizedBox(height: 8),
-                      for (var checklist in _checklists)
+                      for (final checklist in _checklists)
                         ExpansionTile(
                           backgroundColor: Colors.white10,
                           collapsedBackgroundColor: Colors.white12,
@@ -298,6 +324,7 @@ class _CardsModalState extends State<CardsModal> {
                                   color: Colors.orange,
                                 ),
                                 onPressed: () async {
+                                  if (!mounted) return;
                                   final TextEditingController controller =
                                       TextEditingController(
                                         text: checklist['name'],
@@ -324,6 +351,7 @@ class _CardsModalState extends State<CardsModal> {
                                                   checklist['id'],
                                                   controller.text,
                                                 );
+                                                if (!mounted) return;
                                                 Navigator.pop(context);
                                               },
                                               child: const Text('Valider'),
@@ -336,15 +364,16 @@ class _CardsModalState extends State<CardsModal> {
                               IconButton(
                                 icon: const Icon(
                                   Icons.delete,
-                                  color: Colors.red,
+                                  color: Color.fromRGBO(63, 71, 57, 1),
                                 ),
                                 onPressed:
-                                    () => _deleteChecklist(checklist['id']),
+                                    () async =>
+                                        _deleteChecklist(checklist['id']),
                               ),
                             ],
                           ),
                           children: [
-                            for (var item
+                            for (final item
                                 in (_checkItemsByChecklist[checklist['id']] ??
                                     []))
                               CheckboxListTile(
@@ -354,7 +383,7 @@ class _CardsModalState extends State<CardsModal> {
                                   style: const TextStyle(color: Colors.white),
                                 ),
                                 onChanged:
-                                    (val) async => _updateCheckItemState(
+                                    (bool? val) async => _updateCheckItemState(
                                       checklist['id'],
                                       item['id'],
                                       val ?? false,
@@ -414,58 +443,108 @@ class _CardsModalState extends State<CardsModal> {
                   ),
                 ),
               ),
-
               const SizedBox(width: 24),
-
-              // 🧱 Partie droite dans une SizedBox centrée verticalement
               Center(
                 child: SizedBox(
                   width: 200,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
+                    children: <Widget>[
                       ElevatedButton(
-                        onPressed: _updateCardName,
-                        child: const Text('💾 Enregistrer'),
+                        onPressed: _updateCard,
+                        child: const Text('💾 Enregistrer la carte'),
                       ),
                       const SizedBox(height: 8),
                       ElevatedButton(
                         onPressed: _deleteCard,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
+                          backgroundColor: const Color.fromRGBO(244, 67, 54, 1),
                         ),
                         child: const Text('🗑 Supprimer'),
                       ),
                       const SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: _assignMemberToCard,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue,
-                        ),
-                        child: const Text('👤 Assigner'),
+                      const Text(
+                        'Membres : ',
+                        style: TextStyle(color: Colors.white),
                       ),
-                      const SizedBox(height: 16),
-                      DropdownButton<String>(
-                        value: _selectedMemberId,
-                        hint: const Text(
-                          'Sélectionner un membre',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        dropdownColor: const Color.fromRGBO(225, 244, 203, 1),
-                        isExpanded: true,
-                        items:
-                            _members.map((member) {
-                              return DropdownMenuItem<String>(
-                                value: member['id'] as String,
+                      if (_assignedMembers.isNotEmpty)
+                        Wrap(
+                          spacing: 4,
+                          children: List<Widget>.generate(
+                            _assignedMembers.length,
+                            (int index) {
+                              return CircleAvatar(
                                 child: Text(
-                                  member['fullName'],
-                                  style: const TextStyle(color: Colors.black),
+                                  _assignedMembers[index]['username'][0]
+                                      .toUpperCase(),
+                                  style: const TextStyle(color: Colors.white),
                                 ),
                               );
-                            }).toList(),
-                        onChanged:
-                            (val) => setState(() => _selectedMemberId = val),
+                            },
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      ElevatedButton.icon(
+                        icon: const Icon(Icons.person_add),
+                        label: const Text('Assigner un membre'),
+                        onPressed: () async {
+                          await showDialog(
+                            context: context,
+                            builder: (context) {
+                              String? selectedId;
+                              return AlertDialog(
+                                title: const Text('Assigner un membre'),
+                                content: StatefulBuilder(
+                                  builder:
+                                      (context, setState) => Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          DropdownButton<String>(
+                                            isExpanded: true,
+                                            hint: const Text(
+                                              'Sélectionnez un membre',
+                                            ),
+                                            value: selectedId,
+                                            items:
+                                                _members.map((member) {
+                                                  return DropdownMenuItem<
+                                                    String
+                                                  >(
+                                                    value: member['id'],
+                                                    child: Text(
+                                                      member['fullName'],
+                                                    ),
+                                                  );
+                                                }).toList(),
+                                            onChanged:
+                                                (val) => setState(
+                                                  () => selectedId = val,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                ),
+                                actions: [
+                                  TextButton(
+                                    child: const Text('Annuler'),
+                                    onPressed: () => Navigator.pop(context),
+                                  ),
+                                  ElevatedButton(
+                                    child: const Text('Assigner'),
+                                    onPressed: () async {
+                                      if (selectedId != null) {
+                                        _selectedMemberId = selectedId;
+                                        await _assignMemberToCard();
+                                        if (mounted) Navigator.pop(context);
+                                      }
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          );
+                        },
                       ),
                     ],
                   ),
