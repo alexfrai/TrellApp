@@ -128,9 +128,9 @@ class ChecklistManager {
             children: [
               IconButton(
                 icon: const Icon(Icons.edit, color: Colors.orange),
-                onPressed: () {
+                onPressed: () async {
                   final TextEditingController controller = TextEditingController(text: name);
-                  showDialog(
+                  await showDialog(
                     context: context,
                     builder: (_) => AlertDialog(
                       title: const Text('Modifier Checklist'),
