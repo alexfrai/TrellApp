@@ -68,6 +68,25 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
   }
 }
 
+/// Get all boards of a workspace 
+static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async {
+  final String url = 'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken';
+
+  try {
+    final http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body); // ✅ Décode en liste
+      return data.cast<Map<String, dynamic>>(); // ✅ Cast sécurisé en liste de maps
+    } else {
+      throw Exception('❌ Erreur lors du chargement des boards: ${response.statusCode} / ${response.body}');
+    }
+  } catch (error) {
+    throw Exception('❌ Erreur dans getBoard: $error');
+  }
+}
+
+
 
 /// Get a board id
   static Future<List<dynamic>?> getBoardWithShortId(String boardId) async {
@@ -115,7 +134,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       final List<dynamic> data = json.decode(response.body);
       // print('📌 Favorite boards data: $data');
 
-      final List<String> boardIds = data.map((item) => item['idBoard'].toString()).toList();
+      final List<String> boardIds = data.map((dynamic item) => item['idBoard'].toString()).toList();
 
       // Attente de toutes les requêtes
       final List<Map<String, dynamic>> boardData = await Future.wait(
@@ -173,7 +192,7 @@ static final String? apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'];
       final http.Response response = await http.get(Uri.parse(url));
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
-        final List<Map<String, dynamic>> starredBoards = data.where((board) => board['starred'] == true).cast<Map<String, dynamic>>().toList();
+        final List<Map<String, dynamic>> starredBoards = data.where((dynamic board) => board['starred'] == true).cast<Map<String, dynamic>>().toList();
         // print('Starred (favorite) boards: $starredBoards');
         return starredBoards;
       } else {

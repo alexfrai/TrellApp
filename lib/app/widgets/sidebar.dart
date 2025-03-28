@@ -42,8 +42,10 @@ class _SidebarState extends State<Sidebar> {
     super.initState();
     fetchData();
   }
+  
 
   Future<void> fetchData() async {
+    
     await getBoard();
     await getAllBoards();
     await getCurentWorkspace();

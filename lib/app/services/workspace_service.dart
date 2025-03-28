@@ -24,5 +24,23 @@ class WorkspaceService {
       return null;
     }
   }
-  
+
+/// Récupère un workspaces avec un ID
+  static Future<List<dynamic>?> getWorkspace(String workspaceId) async {
+    final String url = 'https://api.trello.com/1/organizations/$workspaceId?key=$_apiKey&token=$_apiToken';
+
+    try {
+      final http.Response response = await http.get(Uri.parse(url));
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body); // Convertit la réponse en liste JSON
+      } else {
+        throw Exception('Erreur HTTP: ${response.statusCode} ${response.reasonPhrase}');
+      }
+    } catch (error) {
+      //print('❌ Erreur dans getAllWorkspaces : $error');
+      return null;
+    }
+  }
+
 }
