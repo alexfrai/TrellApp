@@ -71,7 +71,7 @@ class _WorkspaceState extends State<Workspace> {
                 // Contenu principal
                 Expanded(
                   child: widget.curentPage == 'board' ? Board(boardId: boardId) 
-                  : widget.curentPage == 'member' ? MembersScreen() : SizedBox(), // 🔥 boardId mis à jour dynamiquement
+                  : widget.curentPage == 'member' ? MembersScreen(curentPage: '',) : SizedBox(), // 🔥 boardId mis à jour dynamiquement
                 ),
               ],
             ),

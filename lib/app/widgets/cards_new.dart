@@ -48,22 +48,22 @@ class _CardsNewState extends State<CardsNew> {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15.0),
+        borderRadius: BorderRadius.circular(15),
       ),
       backgroundColor: const Color.fromRGBO(113, 117, 104, 1),
-      title: Row(
-        children: const [
+      title: const Row(
+        children: [
           Icon(
             Icons.add_card,
             color: Colors.white,
-            size: 24.0,
+            size: 24,
           ),
-          SizedBox(width: 8.0),
+          SizedBox(width: 8),
           Text(
             'Nouvelle Carte',
             style: TextStyle(
               color: Colors.white,
-              fontSize: 20.0,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -78,7 +78,7 @@ class _CardsNewState extends State<CardsNew> {
           filled: true,
           fillColor: Colors.white10,
           border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10.0),
+            borderRadius: BorderRadius.circular(10),
           ),
         ),
       ),
@@ -88,18 +88,18 @@ class _CardsNewState extends State<CardsNew> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10.0),
+              borderRadius: BorderRadius.circular(10),
             ),
           ),
           child: _isLoading
               ? CircularProgressIndicator(
                   valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                 )
-              : Text(
+              : const Text(
                   'Créer',
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: 16.0,
+                    fontSize: 16,
                   ),
                 ),
         ),

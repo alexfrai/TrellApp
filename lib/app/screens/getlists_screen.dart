@@ -1,5 +1,3 @@
-// ignore_for_file: public_member_api_docs, always_specify_types
-
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
