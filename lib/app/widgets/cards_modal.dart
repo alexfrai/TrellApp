@@ -453,7 +453,14 @@ class _CardsModalState extends State<CardsModal> {
                     children: <Widget>[
                       ElevatedButton(
                         onPressed: _updateCard,
-                        child: const Text('💾 Enregistrer la carte'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.save),
+                            SizedBox(width: 8),
+                            Text('Enregistrer la carte'),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 8),
                       ElevatedButton(
@@ -461,7 +468,14 @@ class _CardsModalState extends State<CardsModal> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color.fromRGBO(244, 67, 54, 1),
                         ),
-                        child: const Text('🗑 Supprimer'),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.delete),
+                            SizedBox(width: 8),
+                            Text('Supprimer'),
+                          ],
+                        ),
                       ),
                       const SizedBox(height: 8),
                       const Text(
@@ -491,19 +505,61 @@ class _CardsModalState extends State<CardsModal> {
                         onPressed: () async {
                           await showDialog(
                             context: context,
-                            builder: (context) {
+                            builder: (BuildContext context) {
                               String? selectedId;
                               return AlertDialog(
-                                title: const Text('Assigner un membre'),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15.0),
+                                ),
+                                backgroundColor: const Color.fromRGBO(
+                                  113,
+                                  117,
+                                  104,
+                                  1,
+                                ),
+                                title: Row(
+                                  children: const [
+                                    Icon(
+                                      Icons.person_add,
+                                      color: Colors.white,
+                                      size: 24.0,
+                                    ),
+                                    SizedBox(width: 8.0),
+                                    Text(
+                                      'Assigner un membre',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 20.0,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                                 content: StatefulBuilder(
                                   builder:
                                       (context, setState) => Column(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          DropdownButton<String>(
+                                          DropdownButtonFormField<String>(
                                             isExpanded: true,
-                                            hint: const Text(
-                                              'Sélectionnez un membre',
+                                            decoration: InputDecoration(
+                                              labelText:
+                                                  'Sélectionnez un membre',
+                                              labelStyle: TextStyle(
+                                                color: Colors.white70,
+                                              ),
+                                              border: OutlineInputBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(10.0),
+                                              ),
+                                              filled: true,
+                                              fillColor: Colors.white10,
+                                            ),
+                                            dropdownColor: const Color.fromRGBO(
+                                              113,
+                                              117,
+                                              104,
+                                              1,
                                             ),
                                             value: selectedId,
                                             items:
@@ -514,6 +570,10 @@ class _CardsModalState extends State<CardsModal> {
                                                     value: member['id'],
                                                     child: Text(
                                                       member['fullName'],
+                                                      style: TextStyle(
+                                                        color: Colors.white,
+                                                        fontSize: 16.0,
+                                                      ),
                                                     ),
                                                   );
                                                 }).toList(),
@@ -527,11 +587,16 @@ class _CardsModalState extends State<CardsModal> {
                                 ),
                                 actions: [
                                   TextButton(
-                                    child: const Text('Annuler'),
                                     onPressed: () => Navigator.pop(context),
+                                    child: Text(
+                                      'Annuler',
+                                      style: TextStyle(
+                                        color: Colors.redAccent,
+                                        fontSize: 16.0,
+                                      ),
+                                    ),
                                   ),
                                   ElevatedButton(
-                                    child: const Text('Assigner'),
                                     onPressed: () async {
                                       if (selectedId != null) {
                                         _selectedMemberId = selectedId;
@@ -539,6 +604,21 @@ class _CardsModalState extends State<CardsModal> {
                                         if (mounted) Navigator.pop(context);
                                       }
                                     },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(
+                                          10.0,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Assigner',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 16.0,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               );

@@ -92,6 +92,26 @@ class BoardService {
     }
   }
 
+}
+
+/// Get all boards of a workspace 
+static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async {
+  final String url = 'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken';
+
+  try {
+    final http.Response response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = json.decode(response.body); // ✅ Décode en liste
+      return data.cast<Map<String, dynamic>>(); // ✅ Cast sécurisé en liste de maps
+    } else {
+      throw Exception('❌ Erreur lors du chargement des boards: ${response.statusCode} / ${response.body}');
+    }
+  } catch (error) {
+    throw Exception('❌ Erreur dans getBoard: $error');
+  }
+}
+
   /// Get a board id
   static Future<List<dynamic>?> getBoardWithShortId(String boardId) async {
     final String url = 'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken';
@@ -129,14 +149,7 @@ class BoardService {
   /// Get favorite board of a member (a mettre dans member_service ??)
   static Future<List<Map<String, dynamic>>> getFavBoards() async {
     final String url = 'https://api.trello.com/1/members/me/boardStars?key=$apiKey&token=$apiToken';
-
-    try {
-      final http.Response response = await http.get(Uri.parse(url));
-      _incrementBoardApiRequestCount();
-      if (response.statusCode == 200) {
-        final List<dynamic> data = json.decode(response.body);
-        final List<String> boardIds = data.map((dynamic item) => item['idBoard'].toString()).toList();
-
+      final List<String> boardIds = data.map((dynamic item) => item['idBoard'].toString()).toList();
         final List<Map<String, dynamic>> boardData = await Future.wait(
           boardIds.map(getBoard),
         );
@@ -194,6 +207,8 @@ class BoardService {
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final List<Map<String, dynamic>> starredBoards = data.where((dynamic board) => board['starred'] == true).cast<Map<String, dynamic>>().toList();
+
+        // print('Starred (favorite) boards: $starredBoards');
         return starredBoards;
       } else {
         throw Exception('Erreur lors de la récupération des boards: ${response.statusCode}');

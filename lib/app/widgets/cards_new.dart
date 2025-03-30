@@ -35,13 +35,10 @@ class _CardsNewState extends State<CardsNew> {
 
     if (response.statusCode == 200) {
       final newCard = json.decode(response.body);
-      if (response.statusCode == 200) {
-        final newCard = json.decode(response.body);
-        Navigator.pop(context, {
-          'id': newCard['id'],
-          'name': newCard['name'],
-        }); 
-      }
+      Navigator.pop(context, {
+        'id': newCard['id'],
+        'name': newCard['name'],
+      });
     }
 
     setState(() => _isLoading = false);
@@ -50,12 +47,63 @@ class _CardsNewState extends State<CardsNew> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Nouvelle Carte'),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
+      ),
+      backgroundColor: const Color.fromRGBO(113, 117, 104, 1),
+      title: Row(
+        children: const [
+          Icon(
+            Icons.add_card,
+            color: Colors.white,
+            size: 24.0,
+          ),
+          SizedBox(width: 8.0),
+          Text(
+            'Nouvelle Carte',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 20.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ],
+      ),
       content: TextField(
         controller: _controller,
-        decoration: const InputDecoration(labelText: 'Nom'),
+        style: TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          labelText: 'Nom',
+          labelStyle: TextStyle(color: Colors.white70),
+          filled: true,
+          fillColor: Colors.white10,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
       ),
-      actions: [TextButton(onPressed: _createCard, child: const Text('Créer'))],
+      actions: [
+        ElevatedButton(
+          onPressed: _isLoading ? null : _createCard,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
+            ),
+          ),
+          child: _isLoading
+              ? CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                )
+              : Text(
+                  'Créer',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.0,
+                  ),
+                ),
+        ),
+      ],
     );
   }
 }

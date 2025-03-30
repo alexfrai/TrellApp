@@ -48,14 +48,23 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
 
-  List<String> workspaces = [];
-  List<dynamic> favoriteBoards = [];
+  List<String> workspaces = <String>[];
+  List<dynamic> favoriteBoards = <dynamic>[];
 
   @override
   void initState() {
     super.initState();
     fetchData();
   }
+
+  Future<void> updateWorkspace(String newWorkspaceId) async {
+   
+  setState(() {
+    Workspace.workspaceId = newWorkspaceId;
+  });
+
+    //fetchData(); // Recharge les données
+}
 
   Future<void> fetchData() async {
     try {
@@ -95,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.grey,
         child: Column(
           children: <Widget>[
-            const Header(),
+            Header(onWorkspaceChanged: updateWorkspace),
             Expanded(
               child: Container(
                 width: MediaQuery.of(context).size.width * 0.7,
