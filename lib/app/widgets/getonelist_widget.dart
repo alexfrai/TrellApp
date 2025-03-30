@@ -8,25 +8,24 @@ import 'package:flutter_trell_app/app/widgets/cards_modal.dart';
 import 'package:flutter_trell_app/app/widgets/cards_new.dart';
 import 'package:flutter_trell_app/app/widgets/menulist/menulist_widget.dart';
 
-/// Widget to display a single list with its cards.
 class GetOneListWidget extends StatefulWidget {
   const GetOneListWidget({
     required this.list,
     required this.refreshLists,
     required this.boardId,
+    required this.positions,
     super.key,
   });
 
-  /// Parameters
   final Map<String, dynamic> list;
   final VoidCallback refreshLists;
   final String boardId;
+  final List<double> positions;
 
   @override
   GetOneListWidgetState createState() => GetOneListWidgetState();
 }
 
-/// List of colors for members
 List<Color> memberColors = <Color>[
   Colors.red,
   Colors.blue,
@@ -36,31 +35,20 @@ List<Color> memberColors = <Color>[
   Colors.yellow,
 ];
 
-/// Get a member color based on index
 Color getMemberColor(int index) {
   return memberColors[index % memberColors.length];
 }
 
-/// State for GetOneListWidget
 class GetOneListWidgetState extends State<GetOneListWidget> {
   final GetMemberCardService _memberService = GetMemberCardService();
   final StreamController<List<Map<String, dynamic>>> _cardsStreamController =
       StreamController<List<Map<String, dynamic>>>.broadcast();
   List<Map<String, dynamic>>? _lastCards;
 
-  /// Cards in the list
   List<Map<String, dynamic>> cards = <Map<String, dynamic>>[];
-
-  /// Loading state
   bool isLoading = false;
-
-  /// Editing state
   bool isEditingName = false;
-
-  /// Focus node for text field
   late FocusNode focusNode;
-
-  /// Controller for list name text field
   late TextEditingController listNameController;
 
   @override
@@ -71,7 +59,6 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
     focusNode.addListener(_onFocusChange);
     unawaited(_getCardsInList());
 
-    // Periodic refresh
     Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       if (mounted) {
         unawaited(_getCardsInList());
@@ -141,7 +128,6 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
           };
         }).toList();
 
-        // Check if cards have changed before emitting a new state
         if (_lastCards == null || !_listEquals(newCards, _lastCards!)) {
           _cardsStreamController.add(newCards);
           setState(() {
@@ -161,7 +147,6 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
     }
   }
 
-  /// Function to compare lists and avoid unnecessary updates
   bool _listEquals(List<Map<String, dynamic>> list1, List<Map<String, dynamic>> list2) {
     if (list1.length != list2.length) return false;
     for (int i = 0; i < list1.length; i++) {
@@ -177,12 +162,10 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
     final double screenWidth = MediaQuery.of(context).size.width;
 
     late OverlayEntry overlayEntry;
-
     overlayEntry = OverlayEntry(
       builder: (BuildContext context) {
         return Stack(
-          children: [
-            // Capture taps to close the modal
+          children: <Widget>[
             Positioned.fill(
               child: GestureDetector(
                 onTap: () {
@@ -191,7 +174,6 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                 behavior: HitTestBehavior.translucent,
               ),
             ),
-            // Modal
             ModalListWidget(
               listId: widget.list['id'],
               boardId: widget.boardId,
@@ -201,6 +183,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
               closeModal: () {
                 overlayEntry.remove();
               },
+              positions: widget.positions,
             ),
           ],
         );
@@ -221,7 +204,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
         border: Border.all(color: Colors.white24, width: 2),
         boxShadow: <BoxShadow>[
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 6,
             offset: const Offset(2, 4),
           ),
@@ -295,7 +278,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                       return FutureBuilder<List<Map<String, dynamic>>>(
                         future: _memberService.getMembersCard(card['id']),
                         builder: (BuildContext context,
-                            AsyncSnapshot<List<Map<String, dynamic>>> snapshot) {
+                            AsyncSnapshot<List<Map<String, dynamic>>> snapshot,) {
                           final List<Map<String, dynamic>> members =
                               snapshot.data ?? <Map<String, dynamic>>[];
                           return Padding(
@@ -305,12 +288,12 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                             ),
                             child: DecoratedBox(
                               decoration: BoxDecoration(
-                                color: const Color.fromRGBO(186, 203, 169,1),
+                                color: const Color.fromRGBO(186, 203, 169, 1),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(color: Colors.white12),
                                 boxShadow: <BoxShadow>[
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.2),
+                                    color: Colors.black.withValues(alpha: 0.2),
                                     blurRadius: 6,
                                     offset: const Offset(2, 4),
                                   ),
@@ -357,11 +340,11 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                                         selectedCardId: card['id'],
                                         handleClose: () => Navigator.pop(context),
                                         onCardUpdated: (String cardId,
-                                            String newDesc) {
+                                            String newDesc,) {
                                           setState(() {
                                             final int cardIndex = cards.indexWhere(
                                                 (Map<String, dynamic> c) =>
-                                                    c['id'] == cardId);
+                                                    c['id'] == cardId,);
                                             if (cardIndex != -1) {
                                               cards[cardIndex]['desc'] = newDesc;
                                             }
@@ -372,7 +355,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                                           setState(() {
                                             cards.removeWhere(
                                                 (Map<String, dynamic> c) =>
-                                                    c['id'] == cardId);
+                                                    c['id'] == cardId,);
                                           });
                                         },
                                         listId: widget.list['id'],
@@ -398,7 +381,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                 child: ElevatedButton(
                   onPressed: _createNewCard,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color.fromRGBO(63, 71, 57,1),
+                    backgroundColor: const Color.fromRGBO(63, 71, 57, 1),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(
                       horizontal: 20,
@@ -423,7 +406,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
                   icon: const Icon(Icons.more_vert, color: Colors.white),
                   onPressed: () {
                     final RenderBox button =
-                        context.findRenderObject() as RenderBox;
+                        context.findRenderObject()! as RenderBox;
                     _showModal(context, button);
                   },
                 );
