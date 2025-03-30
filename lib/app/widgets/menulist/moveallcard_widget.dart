@@ -5,7 +5,7 @@ import 'package:flutter_trell_app/app/services/list_service.dart';
 
 /// Widget pour déplacer toutes les cartes
 class MoveAllCardsWidget extends StatefulWidget {
-  /// Constructeur
+  ///required parameter
   const MoveAllCardsWidget({
     required this.sourceListId,
     required this.boardId,
@@ -13,20 +13,20 @@ class MoveAllCardsWidget extends StatefulWidget {
     super.key,
   });
 
-  /// ID de la liste source
+  ///list id
   final String sourceListId;
 
-  /// ID du tableau
+  /// board id
   final String boardId;
 
-  /// Callback de succès
+  /// callback move
   final VoidCallback onMoveSuccess;
 
   @override
   MoveListWidgetState createState() => MoveListWidgetState();
 }
 
-/// État du widget
+///move state
 class MoveListWidgetState extends State<MoveAllCardsWidget> {
   bool _loading = false;
   bool _loadingCards = true;
@@ -34,62 +34,70 @@ class MoveListWidgetState extends State<MoveAllCardsWidget> {
   List<Map<String, dynamic>> _targetLists = <Map<String, dynamic>>[];
   int? _selectedTargetIndex;
   int _cardCount = 0;
-  List<Map<String, dynamic>> _cardsToMove = []; // Stockage des cartes
+  List<Map<String, dynamic>> _cardsToMove = <Map<String, dynamic>>[];
   final LayerLink _layerLink = LayerLink();
   OverlayEntry? _overlayEntry;
 
-@override
-void initState() {
-  super.initState();
-  _selectedTargetIndex = null; // Initialiser à null pour ne pas sélectionner la première liste par défaut
-  unawaited(_fetchTargetLists());
-  unawaited(_fetchCards());
-}
+  @override
+  void initState() {
+    super.initState();
+    _selectedTargetIndex = null;
+    unawaited(_fetchTargetLists());
+    unawaited(_fetchCards());
+  }
 
   @override
   void dispose() {
-    _hideDropdown(); // Ferme le dropdown s'il est ouvert
+    _hideDropdown();
     super.dispose();
   }
 
-  /// Récupère les listes cibles
-Future<void> _fetchTargetLists() async {
-  try {
-    final List<Map<String, dynamic>> targetLists =
-        await ListService.getAllLists(widget.boardId);
-    setState(() {
-      _targetLists = targetLists;
-      // Ne pas sélectionner une liste par défaut
-      _selectedTargetIndex = null; // Ne pas initialiser à 0 ici
-    });
-  } catch (e) {
-    setState(() {
-      _error = 'Erreur lors du chargement des listes : $e';
-    });
-  }
-}
-
-  /// Récupère les cartes de la liste source et les stocke
-  Future<void> _fetchCards() async {
+  Future<void> _fetchTargetLists() async {
     try {
-      final List<Map<String, dynamic>> cards =
-          await CardService.getAllCards([{'id': widget.sourceListId}]);
-      setState(() {
-        _cardsToMove = cards;
-        _cardCount = cards.length;
-        _loadingCards = false;
-      });
+      final List<Map<String, dynamic>> targetLists =
+          await ListService.getAllLists(widget.boardId);
+      if (mounted) {
+        setState(() {
+          _targetLists = targetLists;
+          _selectedTargetIndex = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _error = 'Erreur lors du chargement des cartes : $e';
-        _loadingCards = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Erreur lors du chargement des listes : $e';
+        });
+      }
     }
   }
 
-  /// Déplace toutes les cartes stockées
+  Future<void> _fetchCards() async {
+    try {
+      final List<Map<String, dynamic>> cards = await CardService.getAllCards(
+        <dynamic>[
+          <String, String>{'id': widget.sourceListId},
+        ],
+      );
+      if (mounted) {
+        setState(() {
+          _cardsToMove = cards;
+          _cardCount = cards.length;
+          _loadingCards = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Erreur lors du chargement des cartes : $e';
+          _loadingCards = false;
+        });
+      }
+    }
+  }
+
   Future<void> _moveAllCards() async {
-    if (_selectedTargetIndex == null || _loading || _cardsToMove.isEmpty) return;
+    if (_selectedTargetIndex == null || _loading || _cardsToMove.isEmpty)
+      return;
 
     setState(() {
       _loading = true;
@@ -99,19 +107,19 @@ Future<void> _fetchTargetLists() async {
     final String targetListId = _targetLists[_selectedTargetIndex!]['id'];
 
     try {
-      print('Déplacement des cartes vers la liste cible : $targetListId');
-       await ListService.updateCardsList(_cardsToMove, targetListId);
-      
-
-      widget.onMoveSuccess();
+      await ListService.updateCardsList(_cardsToMove, targetListId);
+      widget
+          .onMoveSuccess(); // Appelle le callback pour réactualiser les données
     } catch (e) {
       setState(() {
         _error = 'Erreur lors du déplacement des cartes : $e';
       });
     } finally {
-      setState(() {
-        _loading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _loading = false;
+        });
+      }
     }
   }
 
@@ -123,57 +131,65 @@ Future<void> _fetchTargetLists() async {
     }
   }
 
-void _showDropdown() {
-  _overlayEntry = OverlayEntry(
-    builder: (BuildContext context) => Positioned(
-      width: 200,
-      child: CompositedTransformFollower(
-        link: _layerLink,
-        offset: const Offset(0, 40),
-        child: Material(
-          color: Colors.grey[800],
-          elevation: 5,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          child: Container(
-            constraints: const BoxConstraints(maxHeight: 200),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: List<Widget>.generate(_targetLists.length, (int index) {
-                  // Vérifie si c'est la liste source pour griser l'élément
-                  bool isCurrentList = _targetLists[index]['id'] == widget.sourceListId;
-                  
-                  return ListTile(
-                    title: Text(
-                      _targetLists[index]['name'],
-                      style: TextStyle(
-                        color: isCurrentList
-                            ? Colors.grey // Griser la liste source
-                            : index == _selectedTargetIndex
-                                ? Colors.white // Enlever la couleur verte
-                                : Colors.white, // Couleur par défaut
-                      ),
+  void _showDropdown() {
+    if (_overlayEntry != null)
+      return; // Ne crée pas un nouvel overlay si un existe déjà.
+
+    _overlayEntry = OverlayEntry(
+      builder:
+          (BuildContext context) => Positioned(
+            width: 200,
+            child: CompositedTransformFollower(
+              link: _layerLink,
+              offset: const Offset(0, 40),
+              child: Material(
+                color: Colors.grey[800],
+                elevation: 5,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Container(
+                  constraints: const BoxConstraints(maxHeight: 200),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: List<Widget>.generate(_targetLists.length, (
+                        int index,
+                      ) {
+                        final bool isCurrentList =
+                            _targetLists[index]['id'] == widget.sourceListId;
+                        return ListTile(
+                          title: Text(
+                            _targetLists[index]['name'],
+                            style: TextStyle(
+                              color:
+                                  isCurrentList
+                                      ? Colors.grey
+                                      : index == _selectedTargetIndex
+                                      ? Colors.white
+                                      : Colors.white,
+                            ),
+                          ),
+                          onTap:
+                              isCurrentList
+                                  ? null
+                                  : () {
+                                    setState(() {
+                                      _selectedTargetIndex = index;
+                                    });
+                                    _hideDropdown();
+                                  },
+                        );
+                      }),
                     ),
-                    onTap: isCurrentList
-                        ? null // Empêche la sélection de la liste source
-                        : () {
-                            setState(() {
-                              _selectedTargetIndex = index;
-                            });
-                            _hideDropdown();
-                          },
-                  );
-                }),
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
-    ),
-  );
-  Overlay.of(context).insert(_overlayEntry!);
-}
-
+    );
+    Overlay.of(context)?.insert(_overlayEntry!);
+  }
 
   void _hideDropdown() {
     _overlayEntry?.remove();
@@ -196,33 +212,38 @@ void _showDropdown() {
           children: <Widget>[
             const Text(
               'Move All Cards',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-
-            // Affichage du nombre de cartes
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 8),
-              child: _loadingCards
-                  ? const CircularProgressIndicator(strokeWidth: 2, color: Colors.white)
-                  : Text(
-                      '$_cardCount card${_cardCount > 1 ? 's' : ''} to move',
-                      style: const TextStyle(color: Colors.white),
-                    ),
+              child:
+                  _loadingCards
+                      ? const CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      )
+                      : Text(
+                        '$_cardCount card${_cardCount > 1 ? 's' : ''} to move',
+                        style: const TextStyle(color: Colors.white),
+                      ),
             ),
-
             if (_error != null)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Text(_error!, style: const TextStyle(color: Colors.red)),
               ),
-
-            // Dropdown de sélection de liste cible
             CompositedTransformTarget(
               link: _layerLink,
               child: GestureDetector(
                 onTap: _toggleDropdown,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 12,
+                    horizontal: 10,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.grey[700],
                     borderRadius: BorderRadius.circular(8),
@@ -234,7 +255,10 @@ void _showDropdown() {
                         _selectedTargetIndex == null
                             ? 'Select Target List'
                             : _targetLists[_selectedTargetIndex!]['name'],
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
                       ),
                       const Icon(Icons.arrow_drop_down, color: Colors.white),
                     ],
@@ -242,9 +266,7 @@ void _showDropdown() {
                 ),
               ),
             ),
-
             const SizedBox(height: 10),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[

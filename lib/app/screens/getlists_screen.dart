@@ -1,100 +1,114 @@
-// ignore_for_file: public_member_api_docs, always_specify_types
-
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_trell_app/app/services/list_service.dart';
+import 'package:flutter_trell_app/app/services/board_service.dart';
 import 'package:flutter_trell_app/app/widgets/button_create_list.dart';
 import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 
+///affiche toutes les lists
 class GetListWidget extends StatefulWidget {
+  ///parametres requis
   const GetListWidget({required this.boardId, super.key});
-
+  ///id du board
   final String boardId;
-
   @override
   GetListWidgetState createState() => GetListWidgetState();
 }
-
+/// list state
 class GetListWidgetState extends State<GetListWidget> {
-  final StreamController<List<dynamic>> _listsStreamController = StreamController<List<dynamic>>.broadcast();
-  List<dynamic>? _lastLists;
+  final BoardService _boardService = BoardService();
+  List<double> _positions = <double>[];
+  List<dynamic> _lists = <dynamic>[];
+  Timer? _timer;
 
   @override
   void initState() {
     super.initState();
-    _fetchAndUpdateLists();
+    unawaited(_fetchBoardData()); // Charger les données initiales
+    _startAutoRefresh(); // Démarrer l'auto-rafraîchissement
   }
 
-  Future<void> _fetchAndUpdateLists() async {
-    while (mounted) {
-      try {
-        final List<dynamic> lists = await ListService.getList(widget.boardId);
-
-        // Vérifie si les données ont changé
-        if (_lastLists == null || !_listEquals(lists, _lastLists!)) {
-          _listsStreamController.add(lists);  // Met à jour le stream
-          _lastLists = lists;  // Mets à jour la version locale des listes
-        }
-      } catch (error) {
-        debugPrint('Erreur lors de la mise à jour des listes: $error');
-      }
-      await Future.delayed(const Duration(seconds: 3)); // Temps d'attente entre chaque requête (plus rapide que 5s)
-    }
+  // Fonction pour démarrer le timer qui actualise les données toutes les 5 secondes
+  void _startAutoRefresh() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (Timer timer) {
+      unawaited(_fetchBoardData()); // Actualiser les données toutes les 5 secondes
+    });
   }
 
-  bool _listEquals(List<dynamic> list1, List<dynamic> list2) {
-    if (list1.length != list2.length) return false;
-    for (int i = 0; i < list1.length; i++) {
-      if (list1[i]['id'] != list2[i]['id']) return false; // Compare les IDs des listes (ou autres propriétés uniques)
-    }
-    return true;
-  }
-
+  // Arrêter le timer lorsque le widget est détruit
   @override
-  Future<void> dispose() async {
-    await _listsStreamController.close();
+  void dispose() {
+    _timer?.cancel(); // Annuler le timer
+    unawaited(_boardService.dispose());
     super.dispose();
+  }
+
+  // Fonction pour récupérer les données du tableau
+  Future<void> _fetchBoardData() async {
+    unawaited(_boardService.fetchBoardData(widget.boardId));
+    _boardService.boardStream.listen((Map<String, dynamic> data) async {
+      if (mounted && data.containsKey('lists')) {
+        final List<double> positions = await computeListPositions(data['lists']);
+        setState(() {
+          _lists = data['lists'];
+          _positions = positions;
+        });
+      }
+    });
+  }
+
+  ///positions des list
+  Future<List<double>> computeListPositions(List<dynamic> lists) async {
+    return compute(_extractAndSortPositions, jsonEncode(lists));
+  }
+
+  static List<double> _extractAndSortPositions(String encodedLists) {
+    final List<dynamic> lists = jsonDecode(encodedLists);
+    final List<double> positions = lists
+        .map<double>((dynamic list) => (list['pos'] as num).toDouble())
+        .toList();
+    positions.sort();
+    return positions;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_lists.isEmpty) {
+      return const Center(child: Text('Aucune liste trouvée'));
+    }
+
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: StreamBuilder<List<dynamic>>(
-        stream: _listsStreamController.stream,
-        builder: (BuildContext context, AsyncSnapshot<List<dynamic>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Erreur: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Aucune liste trouvée'));
-          }
-
-          final List<dynamic> lists = snapshot.data!;
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                ...lists.map<Widget>((dynamic list) {
-                  return SizedBox(
-                    width: 300,
-                    child: GetOneListWidget(
-                      list: list,
-                      refreshLists: _fetchAndUpdateLists,
-                      boardId: widget.boardId,
-                    ),
-                  );
-                }),
-                SizedBox(
-                  width: 300,
-                  child: Createlistbutton(boardId: widget.boardId),
+      body: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // Affichage des listes
+            ..._lists.map<Widget>((dynamic list) {
+              return SizedBox(
+                width: 300,
+                child: GetOneListWidget(
+                  key: ValueKey<dynamic>(list['id']),
+                  list: list,
+                  refreshLists: _fetchBoardData, // Rafraîchissement de la liste
+                  boardId: widget.boardId,
+                  positions: _positions,
                 ),
-              ],
+              );
+            }),
+
+            // Le bouton pour créer une nouvelle liste
+            SizedBox(
+              width: 300,
+              child: Createlistbutton(
+                boardId: widget.boardId,
+                refreshLists: _fetchBoardData, // Rafraîchissement après création
+              ),
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

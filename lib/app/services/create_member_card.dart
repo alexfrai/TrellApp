@@ -1,11 +1,8 @@
-// ignore_for_file: public_member_api_docs
-
 import 'dart:convert';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
-/// Creates members
 class CreateMemberCard {
   final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? 'DEFAULT_KEY';
   final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
@@ -21,19 +18,16 @@ class CreateMemberCard {
         final List<dynamic> members = json.decode(response.body);
         return members.any((member) => member['id'] == memberId);
       } else {
-        // print('❌ Erreur API (GET membres): ${response.statusCode}');
-        return false;
+        throw Exception('❌ Erreur API (GET membres): ${response.statusCode}');
       }
     } catch (error) {
-      // print('❌ Erreur lors de la récupération des membres: $error');
-      return false;
+      throw Exception('❌ Erreur lors de la récupération des membres: $error');
     }
   }
 
   Future<void> assignMemberToCard(String cardId, String memberId) async {
     if (await _isMemberAlreadyAssigned(cardId, memberId)) {
-      // print('⚠️ Le membre est déjà assigné à cette carte.');
-      return;
+      throw Exception('⚠️ Le membre est déjà assigné à cette carte.');
     }
 
     final String url =
@@ -46,12 +40,12 @@ class CreateMemberCard {
       );
 
       if (response.statusCode == 200) {
-        // print('✅ Membre assigné avec succès à la carte !');
+        print('✅ Membre assigné avec succès à la carte !');
       } else {
         throw Exception('❌ Erreur API: ${response.statusCode} - ${response.body}');
       }
     } catch (error) {
-      // print("❌ Erreur lors de l'assignation du membre : $error");
+      throw Exception("❌ Erreur lors de l'assignation du membre : $error");
     }
   }
 }
