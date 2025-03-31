@@ -59,16 +59,6 @@ class _WorkspaceState extends State<Workspace> {
 
   bool isLoading = true;
 
-  @override
-  void initState() {
-    super.initState();
-    boardId = widget.focusedBoardId ?? '6756c8816b281ad931249861';
-
-    //fetchData();
-    setState(() {
-      workspaceId = Workspace.workspaceId;
-    });
-  }
 
   Future<void> updateWorkspace(String newWorkspaceId) async {
     print('update workspace in workspace');
@@ -88,18 +78,33 @@ class _WorkspaceState extends State<Workspace> {
 
     
   }
+  @override
+  void initState() {
+    super.initState();
+    boardId = widget.focusedBoardId ?? '6756c8816b281ad931249861';
+    print(Workspace.workspaceId);
+    updateWorkspace(Workspace.workspaceId);
+
+    fetchData();
+    setState(() {
+      workspaceId = Workspace.workspaceId;
+    });
+  }
 
   Future<void> fetchData() async {
   print('🔄 Rechargement des données...');
   try {
     final List<Map<String, dynamic>> fetchedBoards = await BoardService.getAllBoard(Workspace.workspaceId);
 
-    print('📋 Données reçues : $fetchedBoards'); // Vérifie la structure des données
+    //print('📋 Données reçues : $fetchedBoards'); // Vérifie la structure des données
 
     setState(() {
       allBoards = fetchedBoards; // ✅ Assignation directe
       if (allBoards.isNotEmpty) {
         boardId = allBoards.first['id']; // Sélection du premier board
+        print('board loaded');
+      }
+      else{
       }
     });
   } catch (e) {

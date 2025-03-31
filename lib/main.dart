@@ -19,7 +19,11 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  static String currentPage = ''; // Variable accessible partout
+  static String currentPage = '';
+
+  static String newWorkspaceName = '';
+  static String newWorkspaceVis = '';
+  static String newWorkspaceDesc = '';
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final String userId = '5e31418954e5fd1a91bd6ae5';
 
   List<String> workspaces = <String>[];
+  List<dynamic>? workspaceData = <dynamic>[];
   List<dynamic> favoriteBoards = <dynamic>[];
 
   @override
@@ -72,6 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
           await WorkspaceService.getAllWorkspaces();
 
       setState(() {
+        workspaceData = fetchedWorkspaces;
         workspaces = fetchedWorkspaces
                 ?.map((dynamic workspace) => workspace['displayName'].toString())
                 .toList() ??
@@ -85,15 +91,48 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
   final List<Map<String, dynamic>> fetchedFavBoards =
-      await BoardService.getFavBoards(); // Correction ici
+      await BoardService.getFavBoards();
 
   setState(() {
-    favoriteBoards = fetchedFavBoards; // Assignation correcte
+    favoriteBoards = fetchedFavBoards; 
     // print(favoriteBoards[1]['id']);
   });
-} catch (e) {
+  } catch (e) {
   // print('❌ Erreur lors du chargement des favoris : $e');
+  }
 }
+
+Future<void> modalWorkspace(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create a new workspace'),
+          content: Column(
+            children:<Widget>[
+              Text('Name of your new Workspace'),
+              TextField(onChanged: (String value) =>  MyApp.newWorkspaceName = value,),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              style: TextButton.styleFrom(textStyle: Theme.of(context).textTheme.labelLarge),
+              child: const Text('Create'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -166,7 +205,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     style: TextStyle(color: Colors.white),
                                   ),
                                   TextButton(
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      await modalWorkspace(context);
+                                    },
                                     child: const Text(
                                       '+',
                                       style: TextStyle(color: Colors.white),
@@ -183,9 +224,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                         itemCount: workspaces.length,
                                         itemBuilder: (BuildContext context, int index) {
                                           return ListTile(
-                                            title: Text(
-                                              workspaces[index],
-                                              style: const TextStyle(color: Colors.white),
+                                            title: TextButton(
+                                              onPressed: () async {
+                                                MyApp.currentPage = 'board';
+                                                Workspace.workspaceId = workspaceData?[index]['id'];
+                                                await Navigator.pushNamed(context, '/workspace');
+                                              },
+                                              child : Text(workspaces[index]),
                                             ),
                                           );
                                         },
@@ -260,5 +305,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+
+    
   }
 }
