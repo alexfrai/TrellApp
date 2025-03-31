@@ -149,6 +149,7 @@ class _WorkspaceState extends State<Workspace> {
                           ? MembersScreen(curentPage: '')
                           : SizedBox(), // 🔥 boardId mis à jour dynamiquement
                 // Contenu principal
+                ),
               ],
             ),
           ),

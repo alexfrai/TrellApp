@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_trell_app/app/screens/getlists_screen.dart';
+import 'package:flutter_trell_app/app/services/board_service.dart';
 import 'package:http/http.dart' as http;
 
 class Board extends StatefulWidget {
@@ -47,6 +48,15 @@ class _BoardState extends State<Board> {
       return null;
     }
   }
+
+  Future<void> changeVisibility(String visibility) async {
+  print('🔄 Rechargement des données...');
+  try {
+    await BoardService.updateBoardVisibility(widget.boardId , visibility);
+  } catch (e) {
+    print('❌ Erreur lors du changement de visibility : $e');
+  }
+}
 
   @override
   void didUpdateWidget(Board oldWidget) {
@@ -101,6 +111,7 @@ class _BoardState extends State<Board> {
         currentBoard = snapshot.data;
         background = currentBoard?['prefs']['backgroundImage'] ?? '';
         isFavorite = currentBoard?['starred'] ?? false;
+        print(currentBoard?['starred']);
 
         return DecoratedBox(
           decoration: BoxDecoration(
@@ -142,7 +153,7 @@ class _BoardState extends State<Board> {
                     Row(
                       children: <Widget>[
                         ElevatedButton.icon(
-                          onPressed: () {},
+                          onPressed: () {changeVisibility('org');},
                           icon: const Icon(Icons.visibility),
                           label: const Text('Visibility'),
                         ),
