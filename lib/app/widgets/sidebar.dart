@@ -42,6 +42,9 @@ class _SidebarState extends State<Sidebar> {
     super.initState();
     workspaceId = widget.workspaceId;
     fetchData();
+    setState(() {
+      workspaceId = widget.workspaceId;
+    });
   }
 
   @override
@@ -75,9 +78,37 @@ class _SidebarState extends State<Sidebar> {
   }
 
   Future<void> fetchData() async {
+    
     await getBoard();
     await getAllBoards();
     await getCurentWorkspace();
+  }
+
+  Future<void> changeBoard(Map<String, dynamic> data) async {
+    if (MyApp.currentPage != 'board') {
+      MyApp.currentPage = 'board';
+      await Navigator.pushNamed(context, '/workspace');
+    }
+    print('change board into');
+    setState(() {
+      boardId = data['id'];
+      boardData = data;
+    });
+
+    widget.onBoardChanged(boardId); // 🔥 Informe `Workspace` du changement !
+    debugPrint('Board sélectionné: $boardId');
+  }
+
+  Future<void> createBoard() async {
+    await fetchApi(
+      'https://api.trello.com/1/boards/?name=$boardName&key=$apiKey&token=$apiToken',
+      'POST',
+    );
+    await getAllBoards();
+  }
+
+  Future<void> deleteBoard(String boardId) async {
+    await BoardService.deleteBoard(boardId);
   }
 
   Future<void> getBoard() async {
@@ -93,7 +124,8 @@ class _SidebarState extends State<Sidebar> {
   }
 
   Future<void> getCurentWorkspace() async {
-    final data = await fetchApi(
+    
+    final dynamic data = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
       'GET',
     );
@@ -115,34 +147,6 @@ class _SidebarState extends State<Sidebar> {
         allBoards = boards;
       });
     }
-  }
-
-  Future<void> changeBoard(Map<String, dynamic> data) async {
-    if (MyApp.currentPage != 'board') {
-      MyApp.currentPage = 'board';
-      await Navigator.pushNamed(context, '/workspace');
-    }
-
-    setState(() {
-      boardId = data['id'];
-      boardData = data;
-    });
-
-    widget.onBoardChanged(boardId);
-    debugPrint('📌 Board sélectionné : ${data['name']}');
-  }
-
-  Future<void> createBoard() async {
-    await fetchApi(
-      'https://api.trello.com/1/boards/?name=$boardName&idOrganization=$workspaceId&key=$apiKey&token=$apiToken',
-      'POST',
-    );
-    await getAllBoards();
-  }
-
-  Future<void> deleteBoard(String boardId) async {
-    await BoardService.deleteBoard(boardId);
-    await getAllBoards();
   }
 
   Future<void> modalDeleteBoard(String boardId, String boardName) async {
@@ -245,21 +249,39 @@ class _SidebarState extends State<Sidebar> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
-              children: [
-                ListTile(
-                  title: const Text('Boards'),
-                  textColor: Colors.white,
-                  onTap: () => Navigator.pushNamed(context, '/myboards'),
-                ),
-                ListTile(
-                  title: const Text('Members'),
-                  textColor: Colors.white,
-                  onTap: () => Navigator.pushNamed(context, '/members'),
-                ),
-                ListTile(
-                  title: const Text('Parameters'),
-                  textColor: Colors.white,
-                  onTap: () => Navigator.pushNamed(context, '/parameters'),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                SizedBox(
+                  height: 150,
+                  child: Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: const Text('Boards'),
+                        textColor: Colors.white,
+                        onTap:
+                            () async => <Object>{
+                              MyApp.currentPage = '',
+                              Navigator.pushNamed(context, '/myboards'),
+                            },
+                      ),
+                      ListTile(
+                        title: const Text('Members'),
+                        textColor: Colors.white,
+                        onTap:
+                            () async => <Object>{
+                              MyApp.currentPage = 'member',
+                              Navigator.pushNamed(context, '/members'),
+                            },
+                      ),
+                      ListTile(
+                        title: const Text('Parameters'),
+                        textColor: Colors.white,
+                        onTap:
+                            () async =>
+                                Navigator.pushNamed(context, '/parameters'),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -278,36 +300,48 @@ class _SidebarState extends State<Sidebar> {
 
           // Boards list
           Expanded(
-            child: ListView.builder(
-              itemCount: allBoards.length,
-              itemBuilder: (_, index) {
-                final board = allBoards[index];
-                return ListTile(
-                  selected: board['id'] == boardId,
-                  selectedTileColor: Colors.blueGrey[700],
-                  leading: CircleAvatar(
-                    backgroundImage: board['prefs']['backgroundImage'] != null
-                        ? NetworkImage(board['prefs']['backgroundImage'])
-                        : null,
-                    backgroundColor: board['prefs']['backgroundColor'] != null
-                        ? Color(
-                            int.parse(
-                              '0xFF${board['prefs']['backgroundColor'].substring(1)}',
-                            ),
-                          )
-                        : Colors.grey,
-                  ),
-                  title: Text(
-                    board['name'],
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: () => modalDeleteBoard(board['id'], board['name']),
-                  ),
-                  onTap: () => changeBoard(board),
-                );
-              },
+            child: SizedBox(
+              child: Padding(
+                padding: EdgeInsets.all(10),
+                child: ListView.builder(
+                  itemCount: allBoards.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final dynamic board = allBoards[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage:
+                            board['prefs']['backgroundImage'] != null
+                                ? NetworkImage(
+                                  board['prefs']['backgroundImage'],
+                                )
+                                : null,
+                        backgroundColor:
+                            board['prefs']['backgroundColor'] != null
+                                ? Color(
+                                  int.parse(
+                                    '0xFF' +
+                                        board['prefs']['backgroundColor']
+                                            .substring(1),
+                                  ),
+                                ) // Convertir HEX en `Color`
+                                : Colors.grey,
+                      ),
+                      title: Text(
+                        board['name'],
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      trailing: TextButton(
+                        onPressed: () async {
+                          await modalDeleteBoard(board['id'], board['name']);
+                        },
+                        child: Icon(Icons.delete, color: Colors.red),
+                      ),
+                      hoverColor: Colors.amber,
+                      onTap: () async => changeBoard(board),
+                    );
+                  },
+                ),
+              ),
             ),
           ),
         ],
