@@ -206,6 +206,7 @@ class _HeaderState extends State<Header> {
                   boardWorkspace = value!;
                   workspaceId = selectWorkspaceId;
                   Workspace.workspaceId = selectWorkspaceId;
+                  
                   //print(selectWorkspaceId);
                 });
                   widget.onWorkspaceChanged(selectWorkspaceId); // 🔥 Notifie Workspace du changement

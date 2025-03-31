@@ -19,19 +19,23 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 ///Class
 class Workspace extends StatefulWidget {
   ///Constructor
-   Workspace({required this.curentPage, super.key});
+   Workspace({required this.curentPage,super.key});
 
   /// Curent page on website
   final String curentPage;
 
-  ///curent workspace to show
+  /// Curent page on website
   static String workspaceId = '672b2d9a2083a0e3c28a3212';
+
+  ///curent workspace to show
+  //static String workspaceId = '672b2d9a2083a0e3c28a3212';
 
   @override
   _WorkspaceState createState() => _WorkspaceState();
 }
 
 class _WorkspaceState extends State<Workspace> {
+  late String workspaceId;
   final String userId = '5e31418954e5fd1a91bd6ae5';
 
   String boardId = '6756c8816b281ad931249861';
@@ -47,6 +51,9 @@ class _WorkspaceState extends State<Workspace> {
   void initState() {
     super.initState();
     //fetchData();
+    setState(() {
+      workspaceId = Workspace.workspaceId;
+    });
   }
 
   Future<void> updateWorkspace(String newWorkspaceId) async {
@@ -64,6 +71,8 @@ class _WorkspaceState extends State<Workspace> {
 
     await fetchData(); // 🔥 Attendre que les données soient chargées avant de naviguer
     //await Navigator.pushNamed(context, '/workspace'); // 🔥 Naviguer après mise à jour
+
+    
   }
 
   Future<void> fetchData() async {
@@ -109,7 +118,7 @@ class _WorkspaceState extends State<Workspace> {
             child: Row(
               children: <Widget>[
                 // Sidebar avec callback
-                Sidebar(currentPage: MyApp.currentPage, onBoardChanged: updateBoardId),
+                Sidebar(currentPage: MyApp.currentPage, onBoardChanged: updateBoardId, workspaceId: Workspace.workspaceId),
 
                 // Contenu principal
                 Expanded(
