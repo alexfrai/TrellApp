@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
-///move list widget
+
+///modal list
 class MoveListWidget extends StatefulWidget {
-  ///list des paramètres
+  ///parametres
   const MoveListWidget({
     required this.listId,
     required this.positions,
@@ -12,20 +12,21 @@ class MoveListWidget extends StatefulWidget {
     required this.onCancel,
     super.key,
   });
-  ///id d'une list
+  ///id de la liste
   final String listId;
-  ///tableau de position
+  ///liste de position
   final List<double> positions;
-  ///callback du move
+  ///move
   final VoidCallback onMoveSuccess;
-  ///callback du cancel
+  ///cancel
   final VoidCallback onCancel;
 
   @override
-  _MoveListWidgetState createState() => _MoveListWidgetState();
+  MoveListWidgetState createState() => MoveListWidgetState();
 }
 
-class _MoveListWidgetState extends State<MoveListWidget> {
+///move state
+class MoveListWidgetState extends State<MoveListWidget> {
   int? _selectedIndex;
   bool _loading = false;
   String? _error;
@@ -73,13 +74,13 @@ class _MoveListWidgetState extends State<MoveListWidget> {
         width: 200,
         child: CompositedTransformFollower(
           link: _layerLink,
-          offset: const Offset(0, 40), // Décalage sous le bouton
+          offset: const Offset(0, 40),
           child: Material(
             color: Colors.grey[800],
             elevation: 5,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
             child: Container(
-              constraints: const BoxConstraints(maxHeight: 200), // Hauteur max
+              constraints: const BoxConstraints(maxHeight: 200),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -123,7 +124,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
     final double newPos = _calculateNewPosition(_selectedIndex!);
     try {
       await ListService.updateListPos(widget.listId, newPos.toString());
-      widget.onMoveSuccess();
+      widget.onMoveSuccess(); // Appelle la fonction pour rafraîchir les données
     } catch (e) {
       setState(() {
         _error = 'Erreur lors du déplacement de la liste : $e';
@@ -136,24 +137,20 @@ class _MoveListWidgetState extends State<MoveListWidget> {
   }
 
   double _calculateNewPosition(int index) {
-  if (widget.positions.isEmpty) return 1;
+    if (widget.positions.isEmpty) return 1;
 
-  if (index == 0) {
-    return widget.positions[0] / 2;
-  } else if (index == widget.positions.length - 1) {
-    return widget.positions.last * 2;
-  } else {
-    // Calculer la nouvelle position en fonction de la direction du mouvement
-    if (_currentPos! > widget.positions[index]) {
-      // Mouvement vers le haut
-      return widget.positions[index - 1] + (widget.positions[index] - widget.positions[index - 1]) / 2;
+    if (index == 0) {
+      return widget.positions[0] / 2;
+    } else if (index == widget.positions.length - 1) {
+      return widget.positions.last * 2;
     } else {
-      // Mouvement vers le bas
-      return widget.positions[index] + (widget.positions[index + 1] - widget.positions[index]) / 2;
+      if (_currentPos! > widget.positions[index]) {
+        return widget.positions[index - 1] + (widget.positions[index] - widget.positions[index - 1]) / 2;
+      } else {
+        return widget.positions[index] + (widget.positions[index + 1] - widget.positions[index]) / 2;
+      }
     }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -162,8 +159,8 @@ class _MoveListWidgetState extends State<MoveListWidget> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.grey[850], // Fond gris
-          borderRadius: BorderRadius.circular(12), // Bords arrondis
+          color: Colors.grey[850],
+          borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -185,7 +182,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
                   decoration: BoxDecoration(
-                    color: Colors.grey[700], // Fond de la liste déroulante
+                    color: Colors.grey[700],
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -204,7 +201,7 @@ class _MoveListWidgetState extends State<MoveListWidget> {
             const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
+              children: <Widget>[
                 TextButton(
                   onPressed: _loading ? null : _moveList,
                   style: TextButton.styleFrom(foregroundColor: Colors.blue),

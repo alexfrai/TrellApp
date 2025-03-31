@@ -18,16 +18,18 @@ class Sidebar extends StatefulWidget {
   final Function(String) onBoardChanged; // Ajoute un callback
   ///Page
   String currentPage;
+  //Id du workspace parent
+  String workspaceId;
 
-  Sidebar({required this.currentPage, required this.onBoardChanged, super.key});
+  Sidebar({required this.currentPage, required this.onBoardChanged,required this.workspaceId , super.key});
 
   @override
   _SidebarState createState() => _SidebarState();
 }
 
 class _SidebarState extends State<Sidebar> {
+  late String workspaceId;
   final String userId = '5e31418954e5fd1a91bd6ae5';
-  final String workspaceId = '672b2d9a2083a0e3c28a3212';
 
   String boardId = '6756c8816b281ad931249861';
   String boardName = '';
@@ -41,9 +43,26 @@ class _SidebarState extends State<Sidebar> {
   void initState() {
     super.initState();
     fetchData();
+    setState(() {
+      workspaceId = widget.workspaceId;
+    });
   }
 
+  @override
+void didUpdateWidget(covariant Sidebar oldWidget) {
+  super.didUpdateWidget(oldWidget);
+  
+  if (oldWidget.workspaceId != widget.workspaceId) {
+    setState(() {
+      workspaceId = widget.workspaceId;
+    });
+    fetchData(); // 🔥 Recharge les données quand le workspace change
+  }
+}
+  
+
   Future<void> fetchData() async {
+    
     await getBoard();
     await getAllBoards();
     await getCurentWorkspace();
@@ -72,7 +91,7 @@ class _SidebarState extends State<Sidebar> {
       MyApp.currentPage = 'board';
       await Navigator.pushNamed(context, '/workspace');
     }
-    print('change board into ');
+    print('change board into');
     setState(() {
       boardId = data['id'];
       boardData = data;
@@ -107,6 +126,7 @@ class _SidebarState extends State<Sidebar> {
   }
 
   Future<void> getCurentWorkspace() async {
+    
     final dynamic data = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId?key=$apiKey&token=$apiToken',
       'GET',
@@ -184,7 +204,7 @@ class _SidebarState extends State<Sidebar> {
                       child: const Text('YES'),
                       onPressed: () async {
                         Navigator.pop(context);
-                        print(boardToDelete);
+                        //print(boardToDelete);
                         await deleteBoard(boardToDelete);
                       },
                     ),
@@ -248,7 +268,7 @@ class _SidebarState extends State<Sidebar> {
                         title: const Text('Boards'),
                         textColor: Colors.white,
                         onTap:
-                            () async => {
+                            () async => <Object>{
                               MyApp.currentPage = '',
                               Navigator.pushNamed(context, '/myboards'),
                             },
@@ -257,7 +277,7 @@ class _SidebarState extends State<Sidebar> {
                         title: const Text('Members'),
                         textColor: Colors.white,
                         onTap:
-                            () async => {
+                            () async => <Object>{
                               MyApp.currentPage = 'member',
                               Navigator.pushNamed(context, '/members'),
                             },
@@ -322,8 +342,8 @@ class _SidebarState extends State<Sidebar> {
                         style: const TextStyle(color: Colors.white),
                       ),
                       trailing: TextButton(
-                        onPressed: () {
-                          modalDeleteBoard(board['id'], board['name']);
+                        onPressed: () async {
+                          await modalDeleteBoard(board['id'], board['name']);
                         },
                         child: Icon(Icons.delete, color: Colors.red),
                       ),
