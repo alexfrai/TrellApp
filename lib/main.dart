@@ -106,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: <Widget>[
             Header(onWorkspaceChanged: updateWorkspace),
             Expanded(
-              child: Container(
+              child: SizedBox(
                 width: MediaQuery.of(context).size.width * 0.7,
                 child: Center(
                   child: Row(

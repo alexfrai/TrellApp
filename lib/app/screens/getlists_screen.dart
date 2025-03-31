@@ -8,10 +8,17 @@ import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 
 ///affiche toutes les lists
 class GetListWidget extends StatefulWidget {
-  ///parametres requis
-  const GetListWidget({required this.boardId, super.key});
-  ///id du board
+  const GetListWidget({
+    required this.boardId,
+    super.key,
+    this.focusedListId,
+    this.focusedCardId,
+  });
+
   final String boardId;
+  final String? focusedListId;
+  final String? focusedCardId;
+
   @override
   GetListWidgetState createState() => GetListWidgetState();
 }

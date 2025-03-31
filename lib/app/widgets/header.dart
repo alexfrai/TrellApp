@@ -1,11 +1,10 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/components/workspace.dart';
 import 'package:flutter_trell_app/app/services/board_service.dart';
 import 'package:flutter_trell_app/app/services/workspace_service.dart';
 import 'package:flutter_trell_app/app/widgets/color_selector.dart';
+import 'package:flutter_trell_app/app/widgets/searchbar.dart';
 
-/// Header
 class Header extends StatefulWidget {
   const Header({super.key, required this.onWorkspaceChanged});
 
@@ -20,7 +19,7 @@ class _HeaderState extends State<Header> {
   String workspaceId = '672b2d9a2083a0e3c28a3212';
   String currentWorkspace = '';
 
-  //Board Data
+  // Board Data
   String boardName = '';
   String backgroundColor = 'blue';
   String boardWorkspace = '';
@@ -59,9 +58,7 @@ class _HeaderState extends State<Header> {
       final List<dynamic>? fetchedWorkspaces =
           await WorkspaceService.getAllWorkspaces();
       workspacesData = fetchedWorkspaces;
-
       //currentWorkspace = fetchedWorkspaces?[0]['id'];
-
       setState(() {
         workspaces =
             fetchedWorkspaces
@@ -70,7 +67,7 @@ class _HeaderState extends State<Header> {
             <String>[];
       });
     } catch (e) {
-      //print('❌ Erreur lors du chargement des données : $e');
+      // Handle error
     }
   }
 
@@ -102,7 +99,6 @@ class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      //height: MediaQuery.of(context).size.height * 0.2,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       color: Colors.grey[800],
       child: Row(
@@ -114,11 +110,12 @@ class _HeaderState extends State<Header> {
                 onPressed: () async {
                   await Navigator.pushNamed(context, '/');
                 },
-                child: Text(
+                child: const Text(
                   "Trell'Wish",
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.w900, //bold
+                    fontWeight: FontWeight.w900,
+
                     color: Colors.white,
                   ),
                 ),
@@ -130,13 +127,20 @@ class _HeaderState extends State<Header> {
               _buildDropdown('Create', <String>[
                 'Create a board',
                 'Create from a template',
-              ], 'openModal',),
+              ], 'openModal'),
             ],
           ),
           Row(
             children: <Widget>[
-              _buildSearchBar(),
-              const SizedBox(width: 10),
+              IconButton(
+                icon: const Icon(Icons.search, color: Colors.white),
+                onPressed: () {
+                  showSearch(
+                    context: context,
+                    delegate: TrelloSearchDelegate(),
+                  );
+                },
+              ),
               const CircleAvatar(
                 backgroundColor: Colors.blue,
                 child: Icon(Icons.person, color: Colors.white),
@@ -252,22 +256,18 @@ class _HeaderState extends State<Header> {
       ),
     );
   }
-
   Future<void> modalBoard(BuildContext context) {
     colorSelected = colorsToSelect[0];
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text(
-            'Create a new board',
-            style: TextStyle(color: Colors.white),
-          ),
+          title: const Text('Create a new board', style: TextStyle(color: Colors.white)),
           backgroundColor: Colors.black,
           content: Column(
-            spacing: 10,
+            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              Text('Background color', style: TextStyle(color: Colors.white)),
+              const Text('Background color', style: TextStyle(color: Colors.white)),
               SizedBox(
                 width: 300,
                 child: Column(

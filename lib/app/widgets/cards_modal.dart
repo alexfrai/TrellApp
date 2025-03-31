@@ -455,7 +455,7 @@ class _CardsModalState extends State<CardsModal> {
                         onPressed: _updateCard,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          children: const [
                             Icon(Icons.save),
                             SizedBox(width: 8),
                             Text('Enregistrer la carte'),
@@ -470,7 +470,7 @@ class _CardsModalState extends State<CardsModal> {
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
+                          children: const [
                             Icon(Icons.delete),
                             SizedBox(width: 8),
                             Text('Supprimer'),
@@ -509,7 +509,7 @@ class _CardsModalState extends State<CardsModal> {
                               String? selectedId;
                               return AlertDialog(
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(15.0),
+                                  borderRadius: BorderRadius.circular(15),
                                 ),
                                 backgroundColor: const Color.fromRGBO(
                                   113,
@@ -517,19 +517,19 @@ class _CardsModalState extends State<CardsModal> {
                                   104,
                                   1,
                                 ),
-                                title: Row(
-                                  children: const [
+                                title: const Row(
+                                  children: [
                                     Icon(
                                       Icons.person_add,
                                       color: Colors.white,
-                                      size: 24.0,
+                                      size: 24,
                                     ),
-                                    SizedBox(width: 8.0),
+                                    SizedBox(width: 8),
                                     Text(
                                       'Assigner un membre',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 20.0,
+                                        fontSize: 20,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -550,7 +550,7 @@ class _CardsModalState extends State<CardsModal> {
                                               ),
                                               border: OutlineInputBorder(
                                                 borderRadius:
-                                                    BorderRadius.circular(10.0),
+                                                    BorderRadius.circular(10),
                                               ),
                                               filled: true,
                                               fillColor: Colors.white10,
@@ -570,9 +570,9 @@ class _CardsModalState extends State<CardsModal> {
                                                     value: member['id'],
                                                     child: Text(
                                                       member['fullName'],
-                                                      style: TextStyle(
+                                                      style: const TextStyle(
                                                         color: Colors.white,
-                                                        fontSize: 16.0,
+                                                        fontSize: 16,
                                                       ),
                                                     ),
                                                   );
@@ -588,11 +588,11 @@ class _CardsModalState extends State<CardsModal> {
                                 actions: [
                                   TextButton(
                                     onPressed: () => Navigator.pop(context),
-                                    child: Text(
+                                    child: const Text(
                                       'Annuler',
                                       style: TextStyle(
                                         color: Colors.redAccent,
-                                        fontSize: 16.0,
+                                        fontSize: 16,
                                       ),
                                     ),
                                   ),
@@ -607,16 +607,14 @@ class _CardsModalState extends State<CardsModal> {
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: Colors.green,
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(
-                                          10.0,
-                                        ),
+                                        borderRadius: BorderRadius.circular(10),
                                       ),
                                     ),
-                                    child: Text(
+                                    child: const Text(
                                       'Assigner',
                                       style: TextStyle(
                                         color: Colors.white,
-                                        fontSize: 16.0,
+                                        fontSize: 16,
                                       ),
                                     ),
                                   ),

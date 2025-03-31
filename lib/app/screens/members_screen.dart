@@ -15,7 +15,7 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 /// Class MembersScreen
 class MembersScreen extends StatefulWidget {
   /// Constructor
-  const MembersScreen({super.key});
+  const MembersScreen({super.key, required String curentPage});
 
   @override
   // ignore: library_private_types_in_public_api

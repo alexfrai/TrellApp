@@ -8,8 +8,15 @@ import 'package:flutter_trell_app/app/screens/getlists_screen.dart';
 import 'package:http/http.dart' as http;
 
 class Board extends StatefulWidget {
-  const Board({required this.boardId, super.key});
+  const Board({
+    required this.boardId,
+    super.key,
+    this.focusedListId,
+    this.focusedCardId,
+  });
   final String boardId;
+  final String? focusedListId;
+  final String? focusedCardId;
 
   @override
   _BoardState createState() => _BoardState();
@@ -40,7 +47,7 @@ class _BoardState extends State<Board> {
       return null;
     }
   }
-  
+
   @override
   void didUpdateWidget(Board oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -79,11 +86,16 @@ class _BoardState extends State<Board> {
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, dynamic>?>(
       future: fetchBoard(),
-      builder: (BuildContext context, AsyncSnapshot<Map<String, dynamic>?> snapshot) {
+      builder: (
+        BuildContext context,
+        AsyncSnapshot<Map<String, dynamic>?> snapshot,
+      ) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         } else if (snapshot.hasError || snapshot.data == null) {
-          return const Center(child: Text('Erreur lors du chargement du board'));
+          return const Center(
+            child: Text('Erreur lors du chargement du board'),
+          );
         }
 
         currentBoard = snapshot.data;
@@ -92,12 +104,13 @@ class _BoardState extends State<Board> {
 
         return DecoratedBox(
           decoration: BoxDecoration(
-            image: background.isNotEmpty
-                ? DecorationImage(
-                    image: NetworkImage(background),
-                    fit: BoxFit.cover,
-                  )
-                : null,
+            image:
+                background.isNotEmpty
+                    ? DecorationImage(
+                      image: NetworkImage(background),
+                      fit: BoxFit.cover,
+                    )
+                    : null,
           ),
           child: Column(
             children: <Widget>[
@@ -146,7 +159,11 @@ class _BoardState extends State<Board> {
               ),
               // Body - Ici, tu peux afficher les listes et cartes
               Expanded(
-                child: GetListWidget(boardId: widget.boardId),
+                child: GetListWidget(
+                  boardId: widget.boardId,
+                  focusedListId: widget.focusedListId,
+                  focusedCardId: widget.focusedCardId,
+                ),
               ),
             ],
           ),

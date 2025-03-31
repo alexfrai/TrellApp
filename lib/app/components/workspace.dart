@@ -13,16 +13,26 @@ import 'package:flutter_trell_app/main.dart';
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? '';
+
 /// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 
 ///Class
 class Workspace extends StatefulWidget {
   ///Constructor
-   Workspace({required this.curentPage,super.key});
+  const Workspace({
+    required this.curentPage,
+    super.key,
+    this.focusedBoardId,
+    this.focusedListId,
+    this.focusedCardId,
+  });
 
   /// Curent page on website
   final String curentPage;
+  final String? focusedBoardId;
+  final String? focusedListId;
+  final String? focusedCardId;
 
   /// Curent page on website
   static String workspaceId = '672b2d9a2083a0e3c28a3212';
@@ -38,7 +48,7 @@ class _WorkspaceState extends State<Workspace> {
   late String workspaceId;
   final String userId = '5e31418954e5fd1a91bd6ae5';
 
-  String boardId = '6756c8816b281ad931249861';
+  late String boardId;
   String boardName = '';
 
   Map<String, dynamic> boardData = <String, dynamic>{};
@@ -50,6 +60,8 @@ class _WorkspaceState extends State<Workspace> {
   @override
   void initState() {
     super.initState();
+    boardId = widget.focusedBoardId ?? '6756c8816b281ad931249861';
+
     //fetchData();
     setState(() {
       workspaceId = Workspace.workspaceId;
@@ -118,14 +130,25 @@ class _WorkspaceState extends State<Workspace> {
             child: Row(
               children: <Widget>[
                 // Sidebar avec callback
-                Sidebar(currentPage: MyApp.currentPage, onBoardChanged: updateBoardId, workspaceId: Workspace.workspaceId),
+                Sidebar(
+                  currentPage: MyApp.currentPage,
+                  onBoardChanged: updateBoardId,
+                  workspaceId: Workspace.workspaceId
+                ),
 
                 // Contenu principal
                 Expanded(
-                  child: widget.curentPage == 'board' ? Board(boardId: boardId) 
-                  : widget.curentPage == 'member' ? MembersScreen() 
-                  : SizedBox(), // 🔥 boardId mis à jour dynamiquement
-                ),
+                  child:
+                      widget.curentPage == 'board'
+                          ? Board(
+                            boardId: boardId,
+                            focusedListId: widget.focusedListId,
+                            focusedCardId: widget.focusedCardId,
+                          )
+                          : widget.curentPage == 'member'
+                          ? MembersScreen(curentPage: '')
+                          : SizedBox(), // 🔥 boardId mis à jour dynamiquement
+                // Contenu principal
               ],
             ),
           ),
