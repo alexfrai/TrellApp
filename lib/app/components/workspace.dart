@@ -24,6 +24,7 @@ class Workspace extends StatefulWidget {
     this.focusedBoardId,
     this.focusedListId,
     this.focusedCardId,
+    this.focusedWorkspaceId,
   });
 
   /// Curent page on website
@@ -31,6 +32,7 @@ class Workspace extends StatefulWidget {
   final String? focusedBoardId;
   final String? focusedListId;
   final String? focusedCardId;
+  final String? focusedWorkspaceId;
 
   @override
   _WorkspaceState createState() => _WorkspaceState();
@@ -80,6 +82,8 @@ class _WorkspaceState extends State<Workspace> {
                 Sidebar(
                   currentPage: MyApp.currentPage,
                   onBoardChanged: updateBoardId,
+                  workspaceId: widget.focusedWorkspaceId ?? '672b2d9a2083a0e3c28a3212', // fallback par défaut
+
                 ),
 
                 // Contenu principal

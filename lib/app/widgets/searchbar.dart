@@ -56,21 +56,47 @@ class TrelloSearchDelegate extends SearchDelegate {
             return ListTile(
               title: Text(card['name'] ?? 'Unnamed Card'),
               subtitle: Text('List ID: ${card['idList'] ?? 'N/A'}'),
-              onTap: () {
+              onTap: () async {
                 close(context, null);
 
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder:
-                        (context) => Workspace(
-                          curentPage: 'board',
-                          focusedCardId: card['id'],
-                          focusedListId: card['idList'],
-                          focusedBoardId: card['idBoard'],
-                        ),
+                final response = await http.get(
+                  Uri.parse(
+                    'https://api.trello.com/1/boards/${card['idBoard']}?key=$apiKey&token=$apiToken',
                   ),
                 );
+
+                if (response.statusCode == 200) {
+                  final data = json.decode(response.body);
+                  final String? workspaceId = data['idOrganization'];
+
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => Workspace(
+                            curentPage: 'board',
+                            focusedBoardId: card['idBoard'],
+                            focusedListId: card['idList'],
+                            focusedCardId: card['id'],
+                            focusedWorkspaceId: workspaceId,
+                          ),
+                    ),
+                  );
+                } else {
+                  // Fallback sans workspace
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder:
+                          (context) => Workspace(
+                            curentPage: 'board',
+                            focusedBoardId: card['idBoard'],
+                            focusedListId: card['idList'],
+                            focusedCardId: card['id'],
+                          ),
+                    ),
+                  );
+                }
               },
             );
           },
