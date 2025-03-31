@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_trell_app/app/components/workspace.dart';
 import 'package:flutter_trell_app/app/screens/getlists_screen.dart';
 import 'package:http/http.dart' as http;
 
@@ -10,6 +11,7 @@ final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? 'DEFAULT_TOKEN';
 class TrelloSearchDelegate extends SearchDelegate {
   List<dynamic> _results = [];
   bool _isLoading = false;
+  static String currentPage = ''; // Variable accessible partout
 
   Future<void> _search(String query) async {
     _isLoading = true;
@@ -53,13 +55,20 @@ class TrelloSearchDelegate extends SearchDelegate {
             final card = _results[index];
             return ListTile(
               title: Text(card['name'] ?? 'Unnamed Card'),
-              subtitle: Text('List ID: ${card['idList'] ?? 'N/A'}' ),
+              subtitle: Text('List ID: ${card['idList'] ?? 'N/A'}'),
               onTap: () {
-                close(context, null); // Ferme la recherche
+                close(context, null);
+
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => GetListWidget(boardId: card['idBoard']),
+                    builder:
+                        (context) => Workspace(
+                          curentPage: 'board',
+                          focusedCardId: card['id'],
+                          focusedListId: card['idList'],
+                          focusedBoardId: card['idBoard'],
+                        ),
                   ),
                 );
               },

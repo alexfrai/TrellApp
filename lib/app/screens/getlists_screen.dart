@@ -5,16 +5,24 @@ import 'package:flutter_trell_app/app/widgets/button_create_list.dart';
 import 'package:flutter_trell_app/app/widgets/getonelist_widget.dart';
 
 class GetListWidget extends StatefulWidget {
-  const GetListWidget({required this.boardId, super.key});
+  const GetListWidget({
+    required this.boardId,
+    super.key,
+    this.focusedListId,
+    this.focusedCardId,
+  });
 
   final String boardId;
+  final String? focusedListId;
+  final String? focusedCardId;
 
   @override
   GetListWidgetState createState() => GetListWidgetState();
 }
 
 class GetListWidgetState extends State<GetListWidget> {
-  final StreamController<List<dynamic>> _listsStreamController = StreamController<List<dynamic>>.broadcast();
+  final StreamController<List<dynamic>> _listsStreamController =
+      StreamController<List<dynamic>>.broadcast();
   List<dynamic>? _lastLists;
 
   @override
@@ -30,20 +38,23 @@ class GetListWidgetState extends State<GetListWidget> {
 
         // Vérifie si les données ont changé
         if (_lastLists == null || !_listEquals(lists, _lastLists!)) {
-          _listsStreamController.add(lists);  // Met à jour le stream
-          _lastLists = lists;  // Mets à jour la version locale des listes
+          _listsStreamController.add(lists); // Met à jour le stream
+          _lastLists = lists; // Mets à jour la version locale des listes
         }
       } catch (error) {
         debugPrint('Erreur lors de la mise à jour des listes: $error');
       }
-      await Future.delayed(const Duration(seconds: 3)); // Temps d'attente entre chaque requête (plus rapide que 5s)
+      await Future.delayed(
+        const Duration(seconds: 3),
+      ); // Temps d'attente entre chaque requête (plus rapide que 5s)
     }
   }
 
   bool _listEquals(List<dynamic> list1, List<dynamic> list2) {
     if (list1.length != list2.length) return false;
     for (int i = 0; i < list1.length; i++) {
-      if (list1[i]['id'] != list2[i]['id']) return false; // Compare les IDs des listes (ou autres propriétés uniques)
+      if (list1[i]['id'] != list2[i]['id'])
+        return false; // Compare les IDs des listes (ou autres propriétés uniques)
     }
     return true;
   }
