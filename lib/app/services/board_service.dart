@@ -14,7 +14,8 @@ class BoardService {
       StreamController<Map<String, dynamic>>.broadcast();
 
   static int _boardApiRequestCount = 0;
-  ///board stream
+
+  /// Board stream
   Stream<Map<String, dynamic>> get boardStream => _boardStreamController.stream;
 
   static Future<http.Response> _makeRequest(String url, {required String method}) async {
@@ -34,10 +35,9 @@ class BoardService {
     }
   }
 
-
   /// Create a new Board
   static Future<bool> createBoard(String name, String workspaceId,
-      [String backgroundColor = 'blue', String visibility = 'org',]) async {
+      [String backgroundColor = 'blue', String visibility = 'org']) async {
     final String url =
         'https://api.trello.com/1/boards/?name=$name&idOrganization=$workspaceId&prefs_background=$backgroundColor&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
 
@@ -48,7 +48,7 @@ class BoardService {
         final data = json.decode(response.body);
         return true;
       } else {
-        throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
+        throw Exception('Erreur lors de la création du board : ${response.statusCode} / ${response.body}');
       }
     } catch (error) {
       throw Exception('Erreur dans createBoard: $error');
@@ -57,7 +57,7 @@ class BoardService {
 
   /// Create a new Board with a template
   static Future<bool> createBoardWithTemplate(String name, String boardId,
-      [String workspaceId = '672b2d9a2083a0e3c28a3212', String visibility = 'org',]) async {
+      [String workspaceId = '672b2d9a2083a0e3c28a3212', String visibility = 'org']) async {
     final String url =
         'https://api.trello.com/1/boards/?name=$name&idBoardSource=$boardId&idOrganization=$workspaceId&prefs_permissionLevel=$visibility&key=$apiKey&token=$apiToken';
     try {
@@ -67,10 +67,10 @@ class BoardService {
         final dynamic data = json.decode(response.body);
         return true;
       } else {
-        throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
+        throw Exception('Erreur lors de la création du board : ${response.statusCode} / ${response.body}');
       }
     } catch (error) {
-      throw Exception('Erreur dans createBoard: $error');
+      throw Exception('Erreur dans createBoardWithTemplate: $error');
     }
   }
 
@@ -85,17 +85,15 @@ class BoardService {
         final Map<String, dynamic> data = json.decode(response.body).cast<String, dynamic>();
         return data;
       } else {
-        throw Exception('❌ Erreur lors du chargement du board: ${response.statusCode} / ${response.body}');
+        throw Exception('Erreur lors du chargement du board: ${response.statusCode} / ${response.body}');
       }
     } catch (error) {
-      throw Exception('❌ Erreur dans getBoard: $error');
+      throw Exception('Erreur dans getBoard: $error');
     }
   }
 
-}
-
-/// Get all boards of a workspace 
-static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async {
+  /// Get all boards of a workspace 
+  static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async {
   final String url = 'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken';
 
   try {
@@ -112,8 +110,9 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
   }
 }
 
+
   /// Get a board id
-  static Future<List<dynamic>?> getBoardWithShortId(String boardId) async {
+  static Future<Map<String, dynamic>?> getBoardWithShortId(String boardId) async {
     final String url = 'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken';
     try {
       final http.Response response = await http.get(Uri.parse(url));
@@ -122,10 +121,10 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
         final dynamic data = json.decode(response.body);
         return data;
       } else {
-        throw Exception('Erreur lors de la crea du board : ${response.statusCode} / ${response.body}');
+        throw Exception('Erreur lors du chargement du board : ${response.statusCode} / ${response.body}');
       }
     } catch (error) {
-      throw Exception('Erreur dans createBoard: $error');
+      throw Exception('Erreur dans getBoardWithShortId: $error');
     }
   }
 
@@ -139,31 +138,37 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
       if (response.statusCode == 200) {
         return true;
       } else {
-        throw Exception('Erreur lors de la supression du board : ${response.statusCode}');
+        throw Exception('Erreur lors de la suppression du board : ${response.statusCode}');
       }
     } catch (error) {
-      throw Exception('Erreur dans suppressBoard: $error');
+      throw Exception('Erreur dans deleteBoard: $error');
     }
   }
 
-  /// Get favorite board of a member (a mettre dans member_service ??)
+  /// Get favorite boards of a member
   static Future<List<Map<String, dynamic>>> getFavBoards() async {
     final String url = 'https://api.trello.com/1/members/me/boardStars?key=$apiKey&token=$apiToken';
-      final List<String> boardIds = data.map((dynamic item) => item['idBoard'].toString()).toList();
+
+    try {
+      final http.Response response = await http.get(Uri.parse(url));
+      _incrementBoardApiRequestCount();
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        final List<String> boardIds = data.map((dynamic item) => item['idBoard'].toString()).toList();
         final List<Map<String, dynamic>> boardData = await Future.wait(
           boardIds.map(getBoard),
         );
 
         return boardData;
       } else {
-        throw Exception('❌ Erreur lors du chargement des favoris: ${response.statusCode} / ${response.body}');
+        throw Exception('Erreur lors du chargement des favoris: ${response.statusCode} / ${response.body}');
       }
     } catch (error) {
-      throw Exception('❌ Erreur dans getFavBoards: $error');
+      throw Exception('Erreur dans getFavBoards: $error');
     }
   }
 
-  /// Ajouter un board aux favoris
+  /// Add a board to favorites
   Future<void> addBoardToFavorite(String userId, String boardId) async {
     final String url = 'https://api.trello.com/1/members/$userId/boardStars?idBoard=$boardId&pos=bottom&key=$apiKey&token=$apiToken';
 
@@ -180,7 +185,7 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
     }
   }
 
-  /// Supprimer un board des favoris
+  /// Remove a board from favorites
   Future<void> removeBoardFromFavorite(String userId, String boardStarId) async {
     final String url = 'https://api.trello.com/1/members/$userId/boardStars/$boardStarId?key=$apiKey&token=$apiToken';
 
@@ -197,7 +202,7 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
     }
   }
 
-  /// Récupérer les boards favoris
+  /// Get favorite boards of a member
   Future<List<Map<String, dynamic>>> getBoardFromFavorite(String memberId) async {
     final String url = 'https://api.trello.com/1/members/$memberId/boards?key=$apiKey&token=$apiToken';
 
@@ -218,19 +223,19 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
     }
   }
 
-  /// Refresh
+  /// Refresh lists and cards
   Future<void> refreshListsAndCards(String boardId) async {
     await fetchBoardData(boardId);
   }
 
-  /// Actualise
-    Future<void> fetchBoardData(String boardId) async {
+  /// Fetch board data
+  Future<void> fetchBoardData(String boardId) async {
     try {
-      final dynamic listsResponse = await _makeRequest(
+      final http.Response listsResponse = await _makeRequest(
         'https://api.trello.com/1/boards/$boardId/lists?key=$apiKey&token=$apiToken',
         method: 'GET',
       );
-      final dynamic cardsResponse = await _makeRequest(
+      final http.Response cardsResponse = await _makeRequest(
         'https://api.trello.com/1/boards/$boardId/cards?key=$apiKey&token=$apiToken',
         method: 'GET',
       );
@@ -283,5 +288,4 @@ static Future<List<Map<String, dynamic>>> getAllBoard(String workspaceId) async 
     _boardApiRequestCount += 1;
     print('board: $_boardApiRequestCount');
   }
-
 }
