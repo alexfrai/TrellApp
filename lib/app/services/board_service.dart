@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 
@@ -89,6 +90,25 @@ class BoardService {
       }
     } catch (error) {
       throw Exception('Erreur dans getBoard: $error');
+    }
+  }
+
+  /// Update the visibility of a board
+  static Future<Map<String, dynamic>> updateBoardVisibility(String boardId , String visibility) async {
+    final String url = 'https://api.trello.com/1/boards/$boardId?prefs/permissionLevel=$visibility&key=$apiKey&token=$apiToken';
+
+    try {
+      final http.Response response = await http.put(Uri.parse(url));
+      _incrementBoardApiRequestCount();
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> data = json.decode(response.body).cast<String, dynamic>();
+        print(data);
+        return data;
+      } else {
+        throw Exception('Erreur lors du chargement du board: ${response.statusCode} / ${response.body}');
+      }
+    } catch (error) {
+      throw Exception('Erreur dans updateBoardVisibility: $error');
     }
   }
 
