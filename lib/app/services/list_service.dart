@@ -49,6 +49,32 @@ class ListService {
     }
   }
 
+
+  ///copy list
+  Future<void> copyList({
+  required String idBoard,
+  required String idListSource,
+  required String newName,
+}) async {
+  final http.Response response = await http.post(
+    Uri.parse(
+      'https://api.trello.com/1/lists?key=$apikey&token=$apitoken',
+    ),
+    headers: <String, String>{'Content-Type': 'application/json'},
+    body: json.encode(<String, String>{
+      'name': newName,
+      'idBoard': idBoard,
+      'idListSource': idListSource,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    //print('Liste copiée avec succès !');
+  } else {
+    throw Exception('Erreur lors de la copie de la liste : ${response.body}');
+  }
+}
+
   /// Retourne les listes présentes dans un board
   /// @var String Board_Id
   static Future<List<dynamic>> getList(String boardId) async {

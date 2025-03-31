@@ -106,14 +106,14 @@ class _CreatelistbuttonState extends State<Createlistbutton> {
             child: ElevatedButton(
               onPressed: _isLoading ? null : _createList,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color.fromRGBO(186, 203, 169, 1),
+                backgroundColor: const Color.fromRGBO(63, 71, 57, 1),
                 foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: _isLoading
                   ? const CircularProgressIndicator(color: Colors.white)
-                  : const Text('Create a list'),
+                  : const Text('Create list'),
             ),
           ),
         ],

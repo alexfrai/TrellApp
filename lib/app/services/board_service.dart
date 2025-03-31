@@ -259,7 +259,6 @@ class BoardService {
         'https://api.trello.com/1/boards/$boardId/cards?key=$apiKey&token=$apiToken',
         method: 'GET',
       );
-
       _incrementBoardApiRequestCount();
       _incrementBoardApiRequestCount();
 

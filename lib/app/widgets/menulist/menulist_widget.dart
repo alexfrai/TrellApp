@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_trell_app/app/services/list_service.dart';
+import 'package:flutter_trell_app/app/widgets/menulist/copylist_widget.dart';
 import 'package:flutter_trell_app/app/widgets/menulist/moveallcard_widget.dart';
 import 'package:flutter_trell_app/app/widgets/menulist/movelist_widget.dart';
 
@@ -74,8 +75,28 @@ class ModalListWidgetState extends State<ModalListWidget> {
   }
 
   void _copyList() {
-    widget.closeModal();
-  }
+  // Fetch cards from the source list before copying
+  final cards = _getCardsFromSourceList();
+  widget.closeModal();
+
+  // Show the CopylistWidget with the fetched cards
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return CopylistWidget(
+        sourceListId: widget.listId,
+        onCopySuccess: widget.refreshLists, boardId: widget.boardId,
+      );
+    },
+  );
+}
+
+List<Map<String, dynamic>> _getCardsFromSourceList() {
+  // Logique pour obtenir les cartes de la liste source
+  // Vous pouvez utiliser un service pour récupérer les cartes
+  return <Map<String, dynamic>>[];
+}
+
 
   void _moveList(TapDownDetails details) {
     setState(() {
@@ -151,7 +172,7 @@ class ModalListWidgetState extends State<ModalListWidget> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   const Text(
-                    'Liste',
+                    'Actions list',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,

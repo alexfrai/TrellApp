@@ -59,7 +59,7 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
     focusNode.addListener(_onFocusChange);
     unawaited(_getCardsInList());
 
-    Timer.periodic(const Duration(seconds: 3), (Timer timer) {
+    Timer.periodic(const Duration(seconds: 10), (Timer timer) {
       if (mounted) {
         unawaited(_getCardsInList());
       } else {
@@ -112,12 +112,12 @@ class GetOneListWidgetState extends State<GetOneListWidget> {
     }
 
     try {
+      print("requestcards");
       final http.Response response = await http.get(
         Uri.parse(
           'https://api.trello.com/1/lists/${widget.list['id']}/cards?members=true&key=$apiKey&token=$apiToken',
         ),
       );
-
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         final List<Map<String, dynamic>> newCards = data.map((dynamic card) {
