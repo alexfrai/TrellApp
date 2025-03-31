@@ -9,19 +9,19 @@ import 'package:http/http.dart' as http;
 
 /// API KEYS
 final String apiKey = dotenv.env['NEXT_PUBLIC_API_KEY'] ?? '';
-
-/// API TOKEN
 final String apiToken = dotenv.env['NEXT_PUBLIC_API_TOKEN'] ?? '';
 
-///Class
 class Sidebar extends StatefulWidget {
-  final Function(String) onBoardChanged; // Ajoute un callback
-  ///Page
-  String currentPage;
-  //Id du workspace parent
-  String workspaceId;
+  final Function(String) onBoardChanged;
+  final String currentPage;
+  final String workspaceId;
 
-  Sidebar({required this.currentPage, required this.onBoardChanged,required this.workspaceId , super.key});
+  const Sidebar({
+    required this.currentPage,
+    required this.onBoardChanged,
+    required this.workspaceId,
+    super.key,
+  });
 
   @override
   _SidebarState createState() => _SidebarState();
@@ -37,11 +37,10 @@ class _SidebarState extends State<Sidebar> {
   List<dynamic> allBoards = [];
   String curentWorkspace = '';
 
-  bool isLoading = true;
-
   @override
   void initState() {
     super.initState();
+    workspaceId = widget.workspaceId;
     fetchData();
     setState(() {
       workspaceId = widget.workspaceId;
@@ -49,31 +48,23 @@ class _SidebarState extends State<Sidebar> {
   }
 
   @override
-void didUpdateWidget(covariant Sidebar oldWidget) {
-  super.didUpdateWidget(oldWidget);
-  
-  if (oldWidget.workspaceId != widget.workspaceId) {
-    setState(() {
-      workspaceId = widget.workspaceId;
-    });
-    fetchData(); // 🔥 Recharge les données quand le workspace change
-  }
-}
-  
+  void didUpdateWidget(covariant Sidebar oldWidget) {
+    super.didUpdateWidget(oldWidget);
 
-  Future<void> fetchData() async {
-    
-    await getBoard();
-    await getAllBoards();
-    await getCurentWorkspace();
+    if (oldWidget.workspaceId != widget.workspaceId) {
+      print('🔁 WorkspaceId changé : ${widget.workspaceId}');
+      setState(() {
+        workspaceId = widget.workspaceId;
+      });
+      fetchData(); // 🔁 recharge les données
+    }
   }
 
   Future<dynamic> fetchApi(String apiRequest, String method) async {
     try {
-      final http.Response response =
-          await (method == 'POST'
-              ? http.post(Uri.parse(apiRequest))
-              : http.get(Uri.parse(apiRequest)));
+      final response = method == 'POST'
+          ? await http.post(Uri.parse(apiRequest))
+          : await http.get(Uri.parse(apiRequest));
 
       if (response.statusCode != 200) {
         throw Exception('Erreur HTTP: ${response.statusCode}');
@@ -81,9 +72,16 @@ void didUpdateWidget(covariant Sidebar oldWidget) {
 
       return json.decode(response.body);
     } catch (error) {
-      debugPrint('Erreur dans fetchApi: $error');
+      debugPrint('❌ Erreur dans fetchApi: $error');
       return null;
     }
+  }
+
+  Future<void> fetchData() async {
+    
+    await getBoard();
+    await getAllBoards();
+    await getCurentWorkspace();
   }
 
   Future<void> changeBoard(Map<String, dynamic> data) async {
@@ -114,7 +112,7 @@ void didUpdateWidget(covariant Sidebar oldWidget) {
   }
 
   Future<void> getBoard() async {
-    final dynamic data = await fetchApi(
+    final data = await fetchApi(
       'https://api.trello.com/1/boards/$boardId?key=$apiKey&token=$apiToken',
       'GET',
     );
@@ -134,89 +132,80 @@ void didUpdateWidget(covariant Sidebar oldWidget) {
     if (data != null) {
       setState(() {
         curentWorkspace = data['displayName'];
+        print('✅ Workspace affiché : $curentWorkspace');
       });
     }
   }
 
   Future<void> getAllBoards() async {
-    final dynamic boards = await fetchApi(
+    final boards = await fetchApi(
       'https://api.trello.com/1/organizations/$workspaceId/boards?key=$apiKey&token=$apiToken',
       'GET',
     );
     if (boards != null) {
       setState(() {
-        // final int boardLenght = boards.length;
-        //print('all board $boardLenght');
         allBoards = boards;
       });
     }
   }
 
-  Future<void> showCreateBoardDialog() async {
-    await showDialog(
+  Future<void> modalDeleteBoard(String boardId, String boardName) async {
+    await showModalBottomSheet(
       context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Créer un nouveau board'),
-          content: Column(
-            children: <Widget>[
-              TextField(
-                decoration: const InputDecoration(labelText: 'Nom du board'),
-                onChanged: (String value) => boardName = value,
+      builder: (_) {
+        return SizedBox(
+          height: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Supprimer le board "$boardName" ?'),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ElevatedButton(
+                    child: const Text('Oui'),
+                    onPressed: () async {
+                      Navigator.pop(context);
+                      await deleteBoard(boardId);
+                    },
+                  ),
+                  ElevatedButton(
+                    child: const Text('Non'),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
               ),
             ],
           ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Annuler'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                createBoard();
-                Navigator.of(context).pop();
-              },
-              child: const Text('Créer'),
-            ),
-          ],
         );
       },
     );
   }
 
-  Future<void> modalDeleteBoard(String boardToDelete, String boardName) async {
-    await showModalBottomSheet(
+  Future<void> showCreateBoardDialog() async {
+    await showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return SizedBox(
-          height: 200,
-
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                Text('Are you sure you want to delete $boardName?'),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    ElevatedButton(
-                      child: const Text('YES'),
-                      onPressed: () async {
-                        Navigator.pop(context);
-                        //print(boardToDelete);
-                        await deleteBoard(boardToDelete);
-                      },
-                    ),
-                    ElevatedButton(
-                      child: const Text('No'),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+      builder: (_) {
+        return AlertDialog(
+          title: const Text('Créer un board'),
+          content: TextField(
+            decoration: const InputDecoration(labelText: 'Nom du board'),
+            onChanged: (value) => boardName = value,
           ),
+          actions: [
+            TextButton(
+              child: const Text('Annuler'),
+              onPressed: () => Navigator.pop(context),
+            ),
+            ElevatedButton(
+              child: const Text('Créer'),
+              onPressed: () {
+                createBoard();
+                Navigator.pop(context);
+              },
+            ),
+          ],
         );
       },
     );
@@ -226,29 +215,31 @@ void didUpdateWidget(covariant Sidebar oldWidget) {
   Widget build(BuildContext context) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.2,
-      color: Colors.grey[800],
+      color: Colors.grey[850],
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          // Header de l'espace de travail
+        children: [
+          // Header
           Container(
-            height: MediaQuery.of(context).size.height * 0.1,
+            height: 80,
             padding: const EdgeInsets.all(10),
             decoration: const BoxDecoration(
               border: Border(
-                bottom: BorderSide(color: Color.fromARGB(255, 38, 38, 38)),
+                bottom: BorderSide(color: Colors.grey),
               ),
             ),
             child: Row(
-              children: <Widget>[
+              children: [
                 CircleAvatar(
-                  child: Text(
-                    curentWorkspace.isNotEmpty ? curentWorkspace[0] : '?',
-                  ),
+                  child: Text(curentWorkspace.isNotEmpty ? curentWorkspace[0] : '?'),
                 ),
-                Text(
-                  curentWorkspace,
-                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    curentWorkspace,
+                    style: const TextStyle(color: Colors.white, fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -292,15 +283,13 @@ void didUpdateWidget(covariant Sidebar oldWidget) {
                     ],
                   ),
                 ),
-
-                // Section des Boards
               ],
             ),
           ),
 
           Row(
-            children: <Widget>[
-              SizedBox(width: 10),
+            children: [
+              const SizedBox(width: 10),
               const Text('Vos Boards', style: TextStyle(color: Colors.white)),
               IconButton(
                 onPressed: showCreateBoardDialog,
@@ -309,7 +298,7 @@ void didUpdateWidget(covariant Sidebar oldWidget) {
             ],
           ),
 
-          // Liste des boards
+          // Boards list
           Expanded(
             child: SizedBox(
               child: Padding(
